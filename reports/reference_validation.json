@@ -1,0 +1,151 @@
+{
+  "generated_at": "2026-07-31T02:46:51.589212+00:00",
+  "file_count": 4,
+  "all_roundtrips_identical": true,
+  "all_valid": true,
+  "everything_backups_identical": true,
+  "files": [
+    {
+      "bytes": 67840,
+      "sha256": "5a0996e68b183e9ca3afc5e2f0996945bd13493ba987f5d9af2d13673dd17451",
+      "message_count": 256,
+      "device_ids": [
+        0
+      ],
+      "type_counts": {
+        "SOUND": 256
+      },
+      "address_ranges": {
+        "SOUND": [
+          0,
+          255
+        ]
+      },
+      "roundtrip_identical": true,
+      "validation_issues": [],
+      "filename": "WALDORF_MWXT_ALL_SOUNDS.syx",
+      "message_length_counts": {
+        "265": 256
+      }
+    },
+    {
+      "bytes": 42730,
+      "sha256": "19e24c0c58a45eeb22e80268e156d4baa594debc2aed3a17bb17150ea6878808",
+      "message_count": 282,
+      "device_ids": [
+        0
+      ],
+      "type_counts": {
+        "USER_WAVE": 250,
+        "USER_WAVETABLE": 32
+      },
+      "address_ranges": {
+        "USER_WAVE": [
+          1000,
+          1249
+        ],
+        "USER_WAVETABLE": [
+          96,
+          127
+        ]
+      },
+      "roundtrip_identical": true,
+      "validation_issues": [],
+      "filename": "WALDORF_MWXT_ALL_WAVETABLES_AND_WAVES.syx",
+      "message_length_counts": {
+        "137": 250,
+        "265": 32
+      }
+    },
+    {
+      "bytes": 144529,
+      "sha256": "4488e5fcb1a1991f429ff76044ea5f3bcba3061c3cc11ba60401f626d3510244",
+      "message_count": 667,
+      "device_ids": [
+        0
+      ],
+      "type_counts": {
+        "GLOBAL": 1,
+        "MULTI": 128,
+        "SOUND": 256,
+        "USER_WAVE": 250,
+        "USER_WAVETABLE": 32
+      },
+      "address_ranges": {
+        "GLOBAL": [
+          0,
+          0
+        ],
+        "MULTI": [
+          0,
+          127
+        ],
+        "SOUND": [
+          0,
+          255
+        ],
+        "USER_WAVE": [
+          1000,
+          1249
+        ],
+        "USER_WAVETABLE": [
+          96,
+          127
+        ]
+      },
+      "roundtrip_identical": true,
+      "validation_issues": [],
+      "filename": "WALDORF_MWXT_BACKUP_EVERYTHING_2026-07-22.syx",
+      "message_length_counts": {
+        "39": 1,
+        "137": 250,
+        "265": 416
+      }
+    },
+    {
+      "bytes": 144529,
+      "sha256": "4488e5fcb1a1991f429ff76044ea5f3bcba3061c3cc11ba60401f626d3510244",
+      "message_count": 667,
+      "device_ids": [
+        0
+      ],
+      "type_counts": {
+        "GLOBAL": 1,
+        "MULTI": 128,
+        "SOUND": 256,
+        "USER_WAVE": 250,
+        "USER_WAVETABLE": 32
+      },
+      "address_ranges": {
+        "GLOBAL": [
+          0,
+          0
+        ],
+        "MULTI": [
+          0,
+          127
+        ],
+        "SOUND": [
+          0,
+          255
+        ],
+        "USER_WAVE": [
+          1000,
+          1249
+        ],
+        "USER_WAVETABLE": [
+          96,
+          127
+        ]
+      },
+      "roundtrip_identical": true,
+      "validation_issues": [],
+      "filename": "WALDORF_MWXT_BACKUP_EVERYTHING_2026-07-22_B.syx",
+      "message_length_counts": {
+        "39": 1,
+        "137": 250,
+        "265": 416
+      }
+    }
+  ]
+}

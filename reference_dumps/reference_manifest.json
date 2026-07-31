@@ -1,0 +1,18 @@
+{
+  "WALDORF_MWXT_ALL_SOUNDS.syx": {
+    "bytes": 67840,
+    "sha256": "5a0996e68b183e9ca3afc5e2f0996945bd13493ba987f5d9af2d13673dd17451"
+  },
+  "WALDORF_MWXT_ALL_WAVETABLES_AND_WAVES.syx": {
+    "bytes": 42730,
+    "sha256": "19e24c0c58a45eeb22e80268e156d4baa594debc2aed3a17bb17150ea6878808"
+  },
+  "WALDORF_MWXT_BACKUP_EVERYTHING_2026-07-22.syx": {
+    "bytes": 144529,
+    "sha256": "4488e5fcb1a1991f429ff76044ea5f3bcba3061c3cc11ba60401f626d3510244"
+  },
+  "WALDORF_MWXT_BACKUP_EVERYTHING_2026-07-22_B.syx": {
+    "bytes": 144529,
+    "sha256": "4488e5fcb1a1991f429ff76044ea5f3bcba3061c3cc11ba60401f626d3510244"
+  }
+}
