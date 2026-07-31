@@ -18,6 +18,7 @@ from .audio import InvalidSamplePolicy, MonoPolicy, import_audio
 from .analysis import (
     analyze_audio_source,
     analyze_audio_source_pitch_periodicity,
+    analyze_audio_source_phase_motion,
 )
 from .project import SourceValidationPolicy, open_project, save_project
 
@@ -96,6 +97,14 @@ def _build_parser() -> argparse.ArgumentParser:
     signal_parser.add_argument("--maximum-frequency", type=float, default=2000.0)
     signal_parser.add_argument("--pitch-confidence", type=float, default=0.60)
     signal_parser.add_argument("--reference-a4", type=float, default=440.0)
+    signal_parser.add_argument(
+        "--phase-discontinuity-degrees", type=float, default=60.0
+    )
+    signal_parser.add_argument("--stable-pitch-cents", type=float, default=15.0)
+    signal_parser.add_argument(
+        "--glide-slope-cents-per-second", type=float, default=25.0
+    )
+    signal_parser.add_argument("--stepped-pitch-cents", type=float, default=100.0)
     signal_parser.add_argument("--report", type=Path)
 
 
@@ -289,11 +298,24 @@ def main(argv: list[str] | None = None) -> int:
                 confidence_threshold=args.pitch_confidence,
                 reference_a4_hz=args.reference_a4,
             )
+            phase_motion = analyze_audio_source_phase_motion(
+                source,
+                pitch_periodicity=pitch_periodicity,
+                phase_discontinuity_threshold_degrees=(
+                    args.phase_discontinuity_degrees
+                ),
+                stable_pitch_threshold_cents=args.stable_pitch_cents,
+                glide_slope_threshold_cents_per_second=(
+                    args.glide_slope_cents_per_second
+                ),
+                stepped_pitch_threshold_cents=args.stepped_pitch_cents,
+            )
             rendered = json.dumps(
                 {
                     "audio": source.to_summary(),
                     "time_domain_analysis": analysis.to_dict(),
                     "pitch_periodicity_analysis": pitch_periodicity.to_dict(),
+                    "phase_motion_analysis": phase_motion.to_dict(),
                 },
                 indent=2,
                 ensure_ascii=False,

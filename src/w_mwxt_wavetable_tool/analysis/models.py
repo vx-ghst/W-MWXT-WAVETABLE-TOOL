@@ -522,3 +522,283 @@ class PitchPeriodicityAnalysis:
         result["analysis_sha256"] = self.analysis_sha256
         return result
 
+class PhaseContinuityClass(str, Enum):
+    UNAVAILABLE = "unavailable"
+    STABLE = "stable"
+    VARIABLE = "variable"
+    DISCONTINUOUS = "discontinuous"
+
+
+class PitchMotionClass(str, Enum):
+    UNVOICED = "unvoiced"
+    INSUFFICIENT = "insufficient"
+    STABLE = "stable"
+    GLIDE_UP = "glide_up"
+    GLIDE_DOWN = "glide_down"
+    VIBRATO = "vibrato"
+    STEPPED = "stepped"
+    IRREGULAR = "irregular"
+
+
+@dataclass(frozen=True, slots=True)
+class PhaseFrameAnalysis:
+    frame_index: int
+    start_sample: int
+    center_seconds: float
+    sample_count: int
+    voiced: bool
+    frequency_hz: float | None
+    phase_radians: float | None
+    projection_strength: float
+
+    def __post_init__(self) -> None:
+        if self.frame_index < 0 or self.start_sample < 0:
+            raise ValueError("frame_index and start_sample must not be negative")
+        if self.sample_count <= 0:
+            raise ValueError("sample_count must be positive")
+        center = _require_finite(self.center_seconds, name="center_seconds")
+        if center < 0.0:
+            raise ValueError("center_seconds must not be negative")
+        frequency = _optional_finite(self.frequency_hz, name="frequency_hz")
+        phase = _optional_finite(self.phase_radians, name="phase_radians")
+        _require_ratio(self.projection_strength, name="projection_strength")
+        if self.voiced:
+            if frequency is None or phase is None:
+                raise ValueError("voiced phase frames require frequency and phase")
+            if frequency <= 0.0:
+                raise ValueError("frequency_hz must be positive")
+            if not -math.pi <= phase <= math.pi:
+                raise ValueError("phase_radians must be wrapped to [-pi, pi]")
+        elif frequency is not None or phase is not None:
+            raise ValueError("unvoiced phase frames must not expose frequency or phase")
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "frame_index": self.frame_index,
+            "start_sample": self.start_sample,
+            "center_seconds": self.center_seconds,
+            "sample_count": self.sample_count,
+            "voiced": self.voiced,
+            "frequency_hz": self.frequency_hz,
+            "phase_radians": self.phase_radians,
+            "projection_strength": self.projection_strength,
+        }
+
+
+@dataclass(frozen=True, slots=True)
+class PhaseTransitionAnalysis:
+    from_frame_index: int
+    to_frame_index: int
+    delta_seconds: float
+    phase_error_radians: float
+    phase_error_degrees: float
+    discontinuity: bool
+
+    def __post_init__(self) -> None:
+        if self.from_frame_index < 0 or self.to_frame_index <= self.from_frame_index:
+            raise ValueError("phase transition frame indexes are invalid")
+        delta = _require_finite(self.delta_seconds, name="delta_seconds")
+        if delta <= 0.0:
+            raise ValueError("delta_seconds must be positive")
+        radians = _require_finite(self.phase_error_radians, name="phase_error_radians")
+        degrees = _require_finite(self.phase_error_degrees, name="phase_error_degrees")
+        if not -math.pi <= radians <= math.pi:
+            raise ValueError("phase_error_radians must be wrapped to [-pi, pi]")
+        if not -180.0 <= degrees <= 180.0:
+            raise ValueError("phase_error_degrees must be between -180 and 180")
+        if not math.isclose(degrees, math.degrees(radians), abs_tol=1e-9):
+            raise ValueError("phase error degree and radian values are inconsistent")
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "from_frame_index": self.from_frame_index,
+            "to_frame_index": self.to_frame_index,
+            "delta_seconds": self.delta_seconds,
+            "phase_error_radians": self.phase_error_radians,
+            "phase_error_degrees": self.phase_error_degrees,
+            "discontinuity": self.discontinuity,
+        }
+
+
+@dataclass(frozen=True, slots=True)
+class PhaseMotionAnalysis:
+    schema_version: int
+    sample_rate: int
+    sample_count: int
+    sample_sha256: str
+    frame_size: int
+    hop_size: int
+    phase_discontinuity_threshold_degrees: float
+    stable_pitch_threshold_cents: float
+    glide_slope_threshold_cents_per_second: float
+    stepped_pitch_threshold_cents: float
+    frames: tuple[PhaseFrameAnalysis, ...]
+    phase_transitions: tuple[PhaseTransitionAnalysis, ...]
+    phase_frame_count: int
+    phase_transition_count: int
+    median_phase_error_degrees: float | None
+    phase_error_p95_degrees: float | None
+    maximum_phase_error_degrees: float | None
+    phase_stability: float
+    discontinuity_count: int
+    discontinuity_ratio: float
+    phase_continuity_class: PhaseContinuityClass
+    phase_classification_reason: str
+    pitch_transition_count: int
+    pitch_excursion_cents: float | None
+    median_pitch_step_cents: float | None
+    maximum_pitch_step_cents: float | None
+    pitch_slope_cents_per_second: float | None
+    direction_consistency: float
+    reversal_count: int
+    reversal_rate: float
+    pitch_motion_class: PitchMotionClass
+    pitch_motion_reason: str
+
+    def __post_init__(self) -> None:
+        if self.schema_version != 1:
+            raise ValueError("Unsupported phase-motion schema version")
+        if self.sample_rate <= 0 or self.sample_count <= 0:
+            raise ValueError("sample_rate and sample_count must be positive")
+        if len(self.sample_sha256) != 64 or any(
+            character not in "0123456789abcdef" for character in self.sample_sha256
+        ):
+            raise ValueError("sample_sha256 must be a lowercase SHA-256 digest")
+        if self.frame_size <= 0 or self.hop_size <= 0:
+            raise ValueError("frame_size and hop_size must be positive")
+        for name in (
+            "phase_discontinuity_threshold_degrees",
+            "stable_pitch_threshold_cents",
+            "glide_slope_threshold_cents_per_second",
+            "stepped_pitch_threshold_cents",
+        ):
+            value = _require_finite(getattr(self, name), name=name)
+            if value <= 0.0:
+                raise ValueError(f"{name} must be positive")
+        if not self.frames:
+            raise ValueError("frames must not be empty")
+        if tuple(frame.frame_index for frame in self.frames) != tuple(range(len(self.frames))):
+            raise ValueError("phase frame indexes must be contiguous from zero")
+        if tuple(sorted(frame.start_sample for frame in self.frames)) != tuple(
+            frame.start_sample for frame in self.frames
+        ):
+            raise ValueError("phase frame starts must be sorted")
+        if self.phase_frame_count != sum(frame.voiced for frame in self.frames):
+            raise ValueError("phase_frame_count is inconsistent")
+        if self.phase_transition_count != len(self.phase_transitions):
+            raise ValueError("phase_transition_count is inconsistent")
+        if not 0 <= self.discontinuity_count <= self.phase_transition_count:
+            raise ValueError("discontinuity_count is outside the transition range")
+        if self.discontinuity_count != sum(
+            transition.discontinuity for transition in self.phase_transitions
+        ):
+            raise ValueError("discontinuity_count is inconsistent")
+        _require_ratio(self.phase_stability, name="phase_stability")
+        _require_ratio(self.discontinuity_ratio, name="discontinuity_ratio")
+        _require_ratio(self.direction_consistency, name="direction_consistency")
+        _require_ratio(self.reversal_rate, name="reversal_rate")
+        for name in (
+            "median_phase_error_degrees",
+            "phase_error_p95_degrees",
+            "maximum_phase_error_degrees",
+            "pitch_excursion_cents",
+            "median_pitch_step_cents",
+            "maximum_pitch_step_cents",
+        ):
+            value = _optional_finite(getattr(self, name), name=name)
+            if value is not None and value < 0.0:
+                raise ValueError(f"{name} must not be negative")
+        _optional_finite(
+            self.pitch_slope_cents_per_second,
+            name="pitch_slope_cents_per_second",
+        )
+        if self.pitch_transition_count < 0:
+            raise ValueError("pitch_transition_count must not be negative")
+        if self.reversal_count < 0:
+            raise ValueError("reversal_count must not be negative")
+        if not isinstance(self.phase_continuity_class, PhaseContinuityClass):
+            raise ValueError("phase_continuity_class must be a PhaseContinuityClass")
+        if not isinstance(self.pitch_motion_class, PitchMotionClass):
+            raise ValueError("pitch_motion_class must be a PitchMotionClass")
+        if not self.phase_classification_reason or not self.pitch_motion_reason:
+            raise ValueError("classification reasons must not be empty")
+        if self.phase_transition_count == 0:
+            if any(
+                value is not None
+                for value in (
+                    self.median_phase_error_degrees,
+                    self.phase_error_p95_degrees,
+                    self.maximum_phase_error_degrees,
+                )
+            ):
+                raise ValueError("phase error aggregates require transitions")
+        else:
+            if any(
+                value is None
+                for value in (
+                    self.median_phase_error_degrees,
+                    self.phase_error_p95_degrees,
+                    self.maximum_phase_error_degrees,
+                )
+            ):
+                raise ValueError("phase transitions require phase error aggregates")
+
+    @property
+    def frame_count(self) -> int:
+        return len(self.frames)
+
+    def _content_dict(self) -> dict[str, Any]:
+        return {
+            "schema_version": self.schema_version,
+            "sample_rate": self.sample_rate,
+            "sample_count": self.sample_count,
+            "sample_sha256": self.sample_sha256,
+            "frame_size": self.frame_size,
+            "hop_size": self.hop_size,
+            "phase_discontinuity_threshold_degrees": self.phase_discontinuity_threshold_degrees,
+            "stable_pitch_threshold_cents": self.stable_pitch_threshold_cents,
+            "glide_slope_threshold_cents_per_second": self.glide_slope_threshold_cents_per_second,
+            "stepped_pitch_threshold_cents": self.stepped_pitch_threshold_cents,
+            "frame_count": self.frame_count,
+            "frames": [frame.to_dict() for frame in self.frames],
+            "phase_transitions": [
+                transition.to_dict() for transition in self.phase_transitions
+            ],
+            "phase_frame_count": self.phase_frame_count,
+            "phase_transition_count": self.phase_transition_count,
+            "median_phase_error_degrees": self.median_phase_error_degrees,
+            "phase_error_p95_degrees": self.phase_error_p95_degrees,
+            "maximum_phase_error_degrees": self.maximum_phase_error_degrees,
+            "phase_stability": self.phase_stability,
+            "discontinuity_count": self.discontinuity_count,
+            "discontinuity_ratio": self.discontinuity_ratio,
+            "phase_continuity_class": self.phase_continuity_class.value,
+            "phase_classification_reason": self.phase_classification_reason,
+            "pitch_transition_count": self.pitch_transition_count,
+            "pitch_excursion_cents": self.pitch_excursion_cents,
+            "median_pitch_step_cents": self.median_pitch_step_cents,
+            "maximum_pitch_step_cents": self.maximum_pitch_step_cents,
+            "pitch_slope_cents_per_second": self.pitch_slope_cents_per_second,
+            "direction_consistency": self.direction_consistency,
+            "reversal_count": self.reversal_count,
+            "reversal_rate": self.reversal_rate,
+            "pitch_motion_class": self.pitch_motion_class.value,
+            "pitch_motion_reason": self.pitch_motion_reason,
+        }
+
+    @property
+    def analysis_sha256(self) -> str:
+        rendered = json.dumps(
+            self._content_dict(),
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+            allow_nan=False,
+        ).encode("utf-8")
+        return sha256(rendered).hexdigest()
+
+    def to_dict(self) -> dict[str, Any]:
+        result = self._content_dict()
+        result["analysis_sha256"] = self.analysis_sha256
+        return result
+
