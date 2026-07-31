@@ -15,7 +15,12 @@ from .hardware_validation import (
 )
 from .identity import IdentityReply
 from .audio import InvalidSamplePolicy, MonoPolicy, import_audio
-from .analysis import analyze_audio_source_signal, analyze_audio_source_spectral
+from .analysis import (
+    analyze_audio_source_pitch_periodicity,
+    analyze_audio_source_signal,
+    analyze_audio_source_spectral,
+    analyze_harmonic_perceptual,
+)
 from .project import SourceValidationPolicy, open_project, save_project
 
 PROGRAM_NAME = "W-MWXT-WAVETABLE-TOOL"
@@ -134,6 +139,49 @@ def _build_parser() -> argparse.ArgumentParser:
     spectral_parser.add_argument("--mid-band-max", type=float, default=4000.0)
     spectral_parser.add_argument("--keep-dc", action="store_true")
     spectral_parser.add_argument("--report", type=Path)
+
+    perceptual_parser = sub.add_parser(
+        "perceptual-analyze",
+        help=(
+            "Import audio and print deterministic CODE V5 harmonic and "
+            "perceptual measurements"
+        ),
+    )
+    perceptual_parser.add_argument("file", type=Path)
+    perceptual_parser.add_argument(
+        "--mono-policy",
+        choices=[policy.value for policy in MonoPolicy],
+        default=MonoPolicy.AUTO.value,
+    )
+    perceptual_parser.add_argument(
+        "--invalid-sample-policy",
+        choices=[policy.value for policy in InvalidSamplePolicy],
+        default=InvalidSamplePolicy.REJECT.value,
+    )
+    perceptual_parser.add_argument("--pitch-frame-size", type=int, default=4096)
+    perceptual_parser.add_argument("--pitch-hop-size", type=int, default=1024)
+    perceptual_parser.add_argument("--minimum-frequency", type=float, default=40.0)
+    perceptual_parser.add_argument("--maximum-frequency", type=float, default=2000.0)
+    perceptual_parser.add_argument("--pitch-confidence", type=float, default=0.60)
+    perceptual_parser.add_argument("--reference-a4", type=float, default=440.0)
+    perceptual_parser.add_argument("--spectral-frame-size", type=int, default=4096)
+    perceptual_parser.add_argument("--spectral-hop-size", type=int, default=1024)
+    perceptual_parser.add_argument("--fft-size", type=int)
+    perceptual_parser.add_argument(
+        "--active-rms-threshold", type=float, default=1.0e-8
+    )
+    perceptual_parser.add_argument("--low-band-max", type=float, default=250.0)
+    perceptual_parser.add_argument("--mid-band-max", type=float, default=4000.0)
+    perceptual_parser.add_argument("--keep-dc", action="store_true")
+    perceptual_parser.add_argument("--maximum-harmonics", type=int, default=64)
+    perceptual_parser.add_argument(
+        "--harmonic-window-cents", type=float, default=35.0
+    )
+    perceptual_parser.add_argument(
+        "--minimum-harmonic-power-ratio", type=float, default=1.0e-6
+    )
+    perceptual_parser.add_argument("--bark-band-count", type=int, default=24)
+    perceptual_parser.add_argument("--report", type=Path)
 
 
     project_create_parser = sub.add_parser(
@@ -375,6 +423,61 @@ def main(argv: list[str] | None = None) -> int:
                 {
                     "audio": source.to_summary(),
                     "spectral_analysis": spectral_analysis.to_dict(),
+                },
+                indent=2,
+                ensure_ascii=False,
+                sort_keys=True,
+            )
+            print(rendered)
+            if args.report is not None:
+                args.report.parent.mkdir(parents=True, exist_ok=True)
+                args.report.write_text(rendered + "\n", encoding="utf-8", newline="\n")
+            return 0
+
+
+        if args.command == "perceptual-analyze":
+            source = import_audio(
+                args.file,
+                mono_policy=args.mono_policy,
+                invalid_sample_policy=args.invalid_sample_policy,
+            )
+            pitch_analysis = analyze_audio_source_pitch_periodicity(
+                source,
+                frame_size=args.pitch_frame_size,
+                hop_size=args.pitch_hop_size,
+                minimum_frequency_hz=args.minimum_frequency,
+                maximum_frequency_hz=args.maximum_frequency,
+                confidence_threshold=args.pitch_confidence,
+                reference_a4_hz=args.reference_a4,
+            )
+            spectral_analysis = analyze_audio_source_spectral(
+                source,
+                frame_size=args.spectral_frame_size,
+                hop_size=args.spectral_hop_size,
+                fft_size=args.fft_size,
+                remove_dc=not args.keep_dc,
+                active_rms_threshold=args.active_rms_threshold,
+                low_band_max_hz=args.low_band_max,
+                mid_band_max_hz=args.mid_band_max,
+            )
+            harmonic_perceptual_analysis = analyze_harmonic_perceptual(
+                spectral_analysis,
+                fundamental_frequency_hz=pitch_analysis.frequency_hz,
+                maximum_harmonics=args.maximum_harmonics,
+                harmonic_window_cents=args.harmonic_window_cents,
+                minimum_harmonic_power_ratio=(
+                    args.minimum_harmonic_power_ratio
+                ),
+                bark_band_count=args.bark_band_count,
+            )
+            rendered = json.dumps(
+                {
+                    "audio": source.to_summary(),
+                    "pitch_periodicity_analysis": pitch_analysis.to_dict(),
+                    "spectral_analysis": spectral_analysis.to_dict(),
+                    "harmonic_perceptual_analysis": (
+                        harmonic_perceptual_analysis.to_dict()
+                    ),
                 },
                 indent=2,
                 ensure_ascii=False,
