@@ -249,7 +249,7 @@ The project follows two rules:
 
 ## Public repository and licensing
 
-The repository is public. The package metadata currently uses the license text `Public project`, as requested by the project owner. This phrase is not a standard open-source license and does not itself define reuse, modification, or redistribution rights. A formal `LICENSE` file can be selected later without changing the CODE V1 implementation.
+The repository is public. The package metadata currently uses the license text `Private project`, as requested by the project owner. This phrase is not a standard open-source license and does not itself define reuse, modification, or redistribution rights. A formal `LICENSE` file can be selected later without changing the CODE V1 implementation.
 
 ## Contributing
 
