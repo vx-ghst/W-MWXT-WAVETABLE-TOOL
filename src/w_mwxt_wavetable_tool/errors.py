@@ -19,3 +19,15 @@ class ChecksumError(SysExError):
 
 class PayloadLengthError(SysExError):
     """Raised when a known message type has the wrong payload size."""
+
+
+class DestinationError(ProtocolError):
+    """Raised when a user-facing hardware destination is invalid or unsafe."""
+
+
+class AllocationError(ProtocolError):
+    """Raised when a requested hardware-memory allocation cannot fit."""
+
+
+class SafetyError(ProtocolError):
+    """Raised when an overwrite plan contains unresolved collisions."""
