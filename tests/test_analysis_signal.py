@@ -6,6 +6,7 @@ import math
 import numpy as np
 import pytest
 
+from w_mwxt_wavetable_tool import __version__
 from w_mwxt_wavetable_tool.analysis import SignalAnalysis, analyze_signal
 from w_mwxt_wavetable_tool.audio.models import (
     AudioContainerFormat,
@@ -80,7 +81,7 @@ def _assert_finite(value: object) -> None:
 def test_signal_analysis_combines_every_code_v4_component() -> None:
     analysis = _analyze()
     assert analysis.schema_version == 1
-    assert analysis.tool_version == "0.4.0"
+    assert analysis.tool_version == __version__
     assert analysis.time_domain_analysis.sample_count == analysis.sample_count
     assert analysis.pitch_periodicity_analysis.sample_count == analysis.sample_count
     assert analysis.phase_motion_analysis.sample_count == analysis.sample_count
@@ -121,7 +122,7 @@ def test_aggregate_hash_changes_when_samples_change() -> None:
 def test_to_dict_exposes_complete_contract() -> None:
     payload = _analyze().to_dict()
     assert payload["schema_version"] == 1
-    assert payload["tool_version"] == "0.4.0"
+    assert payload["tool_version"] == __version__
     assert set(payload["component_analysis_sha256"]) == {
         "time_domain_analysis", "pitch_periodicity_analysis",
         "phase_motion_analysis", "noise_analysis",

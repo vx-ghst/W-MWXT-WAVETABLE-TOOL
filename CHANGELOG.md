@@ -2,6 +2,30 @@
 
 All notable changes to **W-MWXT-WAVETABLE-TOOL** are documented here.
 
+## 0.5.0 — CODE V5
+
+### Spectral and perceptual analysis
+
+- Added deterministic framed FFT, local and aggregate spectra, band energy, centroid, bandwidth, roll-off, flatness, entropy, flux, dominant-frequency, and stationarity evidence.
+- Added harmonic/residual energy, odd/even balance, tristimulus, inharmonicity, spectral slope, Bark-band descriptors, brightness, concentration, and noisiness.
+
+### Explainable classification and decisions
+
+- Added six canonical source families with normalized scores, confidence, ambiguity, evidence, and deterministic tie-breaking.
+- Added readiness/risk decisions, blockers, and prioritized recommendations that are always non-automated.
+- Added the immutable `CodeV5Analysis` aggregate with complete component-link validation and one final SHA-256.
+- Added `spectral-analyze`, `perceptual-analyze`, `classify-audio`, `recommend-audio`, and final `analyze-audio` CLI reports.
+
+### Validation
+
+- CODE V5-A targeted suite: 35 passed.
+- CODE V5-B targeted suite: 38 passed.
+- CODE V5-C targeted suite: 45 passed.
+- CODE V5-D targeted suite: 45 passed.
+- CODE V5-E targeted suite: 50 passed.
+- Final public/private targets: 610 passed, 4 skipped / 614 passed.
+- Manual real-audio classification, decision, and aggregate determinism gates passed before release closure.
+
 ## 0.4.0 — CODE V4
 
 ### Deterministic signal analysis

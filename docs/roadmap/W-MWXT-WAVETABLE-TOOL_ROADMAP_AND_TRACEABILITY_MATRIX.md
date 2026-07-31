@@ -4,8 +4,8 @@
 **Project:** W-MWXT-WAVETABLE-TOOL  
 **Owner:** R-MiT  
 **Document type:** public development roadmap and traceability register  
-**Document version:** 2.0-public  
-**Baseline:** CODE V1 / `v0.1.0`  
+**Document version:** 2.1-public<br>
+**Baseline:** CODE V5 / `v0.5.0`<br>
 **Target:** `v1.0.0-prototype`  
 **Primary platform:** Windows 11  
 **Status:** authoritative public execution order
@@ -367,92 +367,111 @@ All metrics shall include units, confidence where relevant, and documented toler
 
 ## Objective
 
-Convert measurements into explainable processing decisions.
+Convert the accepted CODE V4 measurements into deterministic spectral evidence,
+explainable source classification, and auditable engineering guidance.
 
-## Scope
+## Accepted release scope
 
-### Spectral
+### Spectral analysis
 
-- FFT and spectrogram;
-- average/local spectra;
-- H1, H2, H3+;
-- spectral bands;
-- centroid;
-- brightness;
-- roll-off;
-- flux;
-- harmonic evolution;
-- harmonic and inharmonic partials;
-- formants;
-- close fundamentals and beating;
-- saturation evolution;
-- spectral distances;
-- aliasing risk.
+- deterministic framed FFT and active-frame selection;
+- average and local spectra;
+- dominant frequency and dominant-energy ratio;
+- low, mid, and high band energy;
+- centroid, bandwidth, roll-off, flatness, entropy, and flux;
+- spectral stationarity and change evidence;
+- component-level deterministic SHA-256.
 
-### Perceptual
+### Harmonic and perceptual analysis
 
-- bass power;
-- fundamental presence;
-- brightness;
-- hardness;
-- saturation;
-- density;
-- motion;
-- similarity;
-- redundancy;
-- expected scan continuity.
+- fundamental-linked harmonic peaks;
+- harmonic and residual energy;
+- harmonic-to-residual ratio;
+- odd/even balance and tristimulus;
+- inharmonicity and spectral slope;
+- Bark-band centroid, spread, and entropy;
+- brightness, concentration, and noisiness;
+- component-level deterministic SHA-256.
 
-### Classification
+### Explainable source classification
 
-- signal behavior classes;
-- musical multi-label classes;
-- confidence;
-- explanation.
-
-### Decision modes
-
-- Stable Cycle;
-- Evolving Harmonics;
-- Dynamic Pitch;
-- Spectral Reconstruction;
-- Hybrid.
-
-### Profiles
-
-- Bass/Sub;
-- Lead;
-- Pad;
-- Bell/FM;
-- Vocal/Choir;
-- Texture;
-- Drone;
-- Percussive;
-- Experimental.
-
-## Modules
+Canonical families:
 
 ```text
-spectral/fft.py
-spectral/spectrogram.py
-spectral/harmonics.py
-spectral/partials.py
-spectral/formants.py
-spectral/beating.py
-spectral/features.py
-spectral/aliasing.py
-perceptual/features.py
-perceptual/distances.py
-perceptual/motion.py
-decision/signal_classifier.py
-decision/musical_classifier.py
-decision/mode_selector.py
-decision/profile_selector.py
-decision/explanations.py
+silent
+stable_tonal
+evolving_tonal
+noisy_texture
+transient_rich
+mixed_complex
 ```
 
-## Acceptance
+Every classification includes bounded features, normalized scores, confidence,
+ambiguity, evidence, deterministic tie-breaking, and a non-empty reason.
 
-Every selected class, mode, and profile shall include measurable evidence and a non-empty explanation. No opaque AI-only decision is permitted.
+### Engineering decision layer
+
+Canonical states:
+
+```text
+ready
+review
+not_recommended
+```
+
+Every decision includes readiness, risk, blockers where applicable, prioritized
+recommendations, measured evidence, and a non-empty reason. Recommendations are
+advisory and never automated.
+
+### Final aggregate contract
+
+`CodeV5Analysis` preserves every component report, validates the complete hash
+chain and canonical sample identity, and produces one deterministic aggregate
+SHA-256. The `analyze-audio` command exposes the complete report.
+
+## Explicitly deferred scope
+
+The following original roadmap concepts are not claimed as implemented in 0.5.0:
+
+- dedicated formant and close-fundamental/beating models;
+- explicit aliasing-risk estimation;
+- musical multi-label role and profile selection;
+- final conversion-mode selection;
+- scan-continuity prediction tied to generated cycles;
+- segmentation, working-pitch selection, reconstruction, and XT optimization.
+
+These items remain assigned to later stages where cycle material and XT-native
+representation exist.
+
+## Implemented modules
+
+```text
+analysis/spectral.py
+analysis/harmonic_perceptual.py
+analysis/classification.py
+analysis/decisions.py
+analysis/code_v5.py
+cli.py
+```
+
+## Acceptance evidence
+
+```text
+Targeted CODE V5-E : 50 passed
+Public full suite   : 610 passed, 4 skipped
+Private full suite  : 614 passed
+```
+
+Real-audio acceptance requires two byte-identical aggregate reports, valid
+component links, an aggregate SHA-256, and preserved non-automated recommendations.
+No opaque AI-only decision is permitted.
+
+## Gate
+
+```text
+STATUS: PASS after automated and manual aggregate validation
+NEXT: CODE V6
+```
 
 ---
 
