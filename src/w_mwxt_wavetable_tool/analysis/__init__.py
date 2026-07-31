@@ -33,6 +33,19 @@ from .pitch import (
     midi_to_frequency,
     nearest_midi_note,
 )
+from .pitch_candidates import (
+    WorkingPitchCandidate,
+    WorkingPitchCandidateKind,
+    WorkingPitchCandidates,
+    generate_working_pitch_candidates,
+)
+from .repitch import (
+    WorkingPitchDecision,
+    WorkingPitchPlan,
+    WorkingPitchPolicy,
+    analyze_audio_source_working_pitch,
+    plan_working_pitch,
+)
 from .signal import SignalAnalysis, analyze_audio_source_signal, analyze_signal
 from .classification import (
     ClassificationFeature,
@@ -91,6 +104,12 @@ __all__ = [
     "PitchMotionClass",
     "PitchFrameAnalysis",
     "PitchPeriodicityAnalysis",
+    "WorkingPitchCandidate",
+    "WorkingPitchCandidateKind",
+    "WorkingPitchCandidates",
+    "WorkingPitchDecision",
+    "WorkingPitchPlan",
+    "WorkingPitchPolicy",
     "SignalAnalysis",
     "SourceClass",
     "SourceClassScore",
@@ -112,11 +131,14 @@ __all__ = [
     "analyze_audio_source_phase_motion",
     "analyze_audio_source_pitch_periodicity",
     "analyze_audio_source_transients",
+    "analyze_audio_source_working_pitch",
     "analyze_envelope",
     "analyze_levels",
     "analyze_noise",
     "analyze_phase_motion",
     "analyze_pitch_periodicity",
+    "generate_working_pitch_candidates",
+    "plan_working_pitch",
     "analyze_signal",
     "assemble_code_v5_analysis",
     "classify_source",

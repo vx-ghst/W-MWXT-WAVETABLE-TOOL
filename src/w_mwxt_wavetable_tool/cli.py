@@ -16,6 +16,7 @@ from .hardware_validation import (
 from .identity import IdentityReply
 from .audio import InvalidSamplePolicy, MonoPolicy, import_audio
 from .analysis import (
+    WorkingPitchPolicy,
     analyze_audio_source_code_v5,
     analyze_audio_source_pitch_periodicity,
     analyze_audio_source_signal,
@@ -23,6 +24,7 @@ from .analysis import (
     analyze_harmonic_perceptual,
     classify_source,
     decide_wavetable_readiness,
+    plan_working_pitch,
 )
 from .project import SourceValidationPolicy, open_project, save_project
 
@@ -237,6 +239,55 @@ def _build_parser() -> argparse.ArgumentParser:
         default=InvalidSamplePolicy.REJECT.value,
     )
     aggregate_parser.add_argument("--report", type=Path)
+
+
+    working_pitch_parser = sub.add_parser(
+        "pitch-plan",
+        help="Analyze source pitch and print a deterministic CODE V6-A working-pitch plan",
+    )
+    working_pitch_parser.add_argument("file", type=Path)
+    working_pitch_parser.add_argument(
+        "--mono-policy",
+        choices=[policy.value for policy in MonoPolicy],
+        default=MonoPolicy.AUTO.value,
+    )
+    working_pitch_parser.add_argument(
+        "--invalid-sample-policy",
+        choices=[policy.value for policy in InvalidSamplePolicy],
+        default=InvalidSamplePolicy.REJECT.value,
+    )
+    working_pitch_parser.add_argument(
+        "--policy",
+        choices=[policy.value for policy in WorkingPitchPolicy],
+        default=WorkingPitchPolicy.AUTO.value,
+    )
+    working_pitch_parser.add_argument("--locked-frequency", type=float)
+    working_pitch_parser.add_argument("--pitch-frame-size", type=int, default=4096)
+    working_pitch_parser.add_argument("--pitch-hop-size", type=int, default=1024)
+    working_pitch_parser.add_argument("--minimum-frequency", type=float, default=40.0)
+    working_pitch_parser.add_argument("--maximum-frequency", type=float, default=2000.0)
+    working_pitch_parser.add_argument("--pitch-confidence", type=float, default=0.60)
+    working_pitch_parser.add_argument("--reference-a4", type=float, default=440.0)
+    working_pitch_parser.add_argument(
+        "--preferred-period-samples", type=float, default=128.0
+    )
+    working_pitch_parser.add_argument(
+        "--minimum-period-samples", type=float, default=64.0
+    )
+    working_pitch_parser.add_argument(
+        "--maximum-period-samples", type=float, default=256.0
+    )
+    working_pitch_parser.add_argument("--maximum-octave-shift", type=int, default=4)
+    working_pitch_parser.add_argument(
+        "--minimum-periodicity-score", type=float, default=0.60
+    )
+    working_pitch_parser.add_argument(
+        "--minimum-pitch-stability", type=float, default=0.25
+    )
+    working_pitch_parser.add_argument(
+        "--minimum-score-improvement", type=float, default=0.10
+    )
+    working_pitch_parser.add_argument("--report", type=Path)
 
 
     project_create_parser = sub.add_parser(
@@ -617,6 +668,50 @@ def main(argv: list[str] | None = None) -> int:
                     ),
                     "source_classification": source_classification.to_dict(),
                     "engineering_decision": engineering_decision.to_dict(),
+                },
+                indent=2,
+                ensure_ascii=False,
+                sort_keys=True,
+            )
+            print(rendered)
+            if args.report is not None:
+                args.report.parent.mkdir(parents=True, exist_ok=True)
+                args.report.write_text(rendered + "\n", encoding="utf-8", newline="\n")
+            return 0
+
+
+        if args.command == "pitch-plan":
+            source = import_audio(
+                args.file,
+                mono_policy=args.mono_policy,
+                invalid_sample_policy=args.invalid_sample_policy,
+            )
+            pitch_analysis = analyze_audio_source_pitch_periodicity(
+                source,
+                frame_size=args.pitch_frame_size,
+                hop_size=args.pitch_hop_size,
+                minimum_frequency_hz=args.minimum_frequency,
+                maximum_frequency_hz=args.maximum_frequency,
+                confidence_threshold=args.pitch_confidence,
+                reference_a4_hz=args.reference_a4,
+            )
+            working_pitch_plan = plan_working_pitch(
+                pitch_analysis,
+                policy=args.policy,
+                locked_frequency_hz=args.locked_frequency,
+                preferred_period_samples=args.preferred_period_samples,
+                minimum_period_samples=args.minimum_period_samples,
+                maximum_period_samples=args.maximum_period_samples,
+                maximum_octave_shift=args.maximum_octave_shift,
+                minimum_periodicity_score=args.minimum_periodicity_score,
+                minimum_pitch_stability=args.minimum_pitch_stability,
+                minimum_score_improvement=args.minimum_score_improvement,
+            )
+            rendered = json.dumps(
+                {
+                    "audio": source.to_summary(),
+                    "pitch_periodicity_analysis": pitch_analysis.to_dict(),
+                    "working_pitch_plan": working_pitch_plan.to_dict(),
                 },
                 indent=2,
                 ensure_ascii=False,
