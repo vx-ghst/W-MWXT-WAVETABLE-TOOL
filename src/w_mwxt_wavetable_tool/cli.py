@@ -15,13 +15,7 @@ from .hardware_validation import (
 )
 from .identity import IdentityReply
 from .audio import InvalidSamplePolicy, MonoPolicy, import_audio
-from .analysis import (
-    analyze_audio_source,
-    analyze_audio_source_noise,
-    analyze_audio_source_pitch_periodicity,
-    analyze_audio_source_phase_motion,
-    analyze_audio_source_transients,
-)
+from .analysis import analyze_audio_source_signal
 from .project import SourceValidationPolicy, open_project, save_project
 
 PROGRAM_NAME = "W-MWXT-WAVETABLE-TOOL"
@@ -294,23 +288,16 @@ def main(argv: list[str] | None = None) -> int:
                 mono_policy=args.mono_policy,
                 invalid_sample_policy=args.invalid_sample_policy,
             )
-            analysis = analyze_audio_source(
+            signal_analysis = analyze_audio_source_signal(
                 source,
-                frame_size=args.frame_size,
-                hop_size=args.hop_size,
-            )
-            pitch_periodicity = analyze_audio_source_pitch_periodicity(
-                source,
-                frame_size=args.pitch_frame_size,
-                hop_size=args.pitch_hop_size,
+                time_frame_size=args.frame_size,
+                time_hop_size=args.hop_size,
+                pitch_frame_size=args.pitch_frame_size,
+                pitch_hop_size=args.pitch_hop_size,
                 minimum_frequency_hz=args.minimum_frequency,
                 maximum_frequency_hz=args.maximum_frequency,
                 confidence_threshold=args.pitch_confidence,
                 reference_a4_hz=args.reference_a4,
-            )
-            phase_motion = analyze_audio_source_phase_motion(
-                source,
-                pitch_periodicity=pitch_periodicity,
                 phase_discontinuity_threshold_degrees=(
                     args.phase_discontinuity_degrees
                 ),
@@ -319,17 +306,10 @@ def main(argv: list[str] | None = None) -> int:
                     args.glide_slope_cents_per_second
                 ),
                 stepped_pitch_threshold_cents=args.stepped_pitch_cents,
-            )
-            noise = analyze_audio_source_noise(
-                source,
-                pitch_periodicity=pitch_periodicity,
-                lower_quantile=args.noise_lower_quantile,
-            )
-            transient_change = analyze_audio_source_transients(
-                source,
-                frame_size=args.transient_frame_size,
-                hop_size=args.transient_hop_size,
-                sensitivity=args.transient_sensitivity,
+                noise_lower_quantile=args.noise_lower_quantile,
+                transient_frame_size=args.transient_frame_size,
+                transient_hop_size=args.transient_hop_size,
+                transient_sensitivity=args.transient_sensitivity,
                 minimum_onset_strength=args.minimum_onset_strength,
                 change_energy_threshold_db=args.change_energy_db,
                 change_spectral_flux_threshold=args.change_spectral_flux,
@@ -338,11 +318,7 @@ def main(argv: list[str] | None = None) -> int:
             rendered = json.dumps(
                 {
                     "audio": source.to_summary(),
-                    "time_domain_analysis": analysis.to_dict(),
-                    "pitch_periodicity_analysis": pitch_periodicity.to_dict(),
-                    "phase_motion_analysis": phase_motion.to_dict(),
-                    "noise_analysis": noise.to_dict(),
-                    "transient_change_analysis": transient_change.to_dict(),
+                    **signal_analysis.to_dict(),
                 },
                 indent=2,
                 ensure_ascii=False,

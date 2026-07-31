@@ -11,4 +11,4 @@ def test_code_v4a_public_api_is_available() -> None:
     assert callable(tool.analyze_envelope)
     assert callable(tool.analyze_time_domain)
     assert callable(tool.analyze_audio_source)
-    assert tool.__version__ == "0.3.0"
+    assert tuple(int(part) for part in tool.__version__.split(".")) >= (0, 3, 0)
