@@ -63,6 +63,17 @@ from .package import (
     build_package,
     plan_package,
 )
+from .project import (
+    MinimalProject,
+    MinimalProjectManifest,
+    ProjectAudioRecord,
+    ProjectSaveResult,
+    ProjectSourceCheck,
+    SourceStatus,
+    SourceValidationPolicy,
+    open_project,
+    save_project,
+)
 from .safety import (
     CollisionReport,
     MemoryTarget,
@@ -96,6 +107,13 @@ __all__ = [
     "InvalidSamplePolicy",
     "MemoryTarget",
     "MemoryTargetKind",
+    "MinimalProject",
+    "MinimalProjectManifest",
+    "ProjectAudioRecord",
+    "ProjectSaveResult",
+    "ProjectSourceCheck",
+    "SourceStatus",
+    "SourceValidationPolicy",
     "MonoConversionReport",
     "MonoPolicy",
     "MonoStrategy",
@@ -129,8 +147,10 @@ __all__ = [
     "inspect_hardware_package",
     "measure_mono",
     "normalize_float_samples",
+    "open_project",
     "plan_package",
     "prepare_hardware_validation",
+    "save_project",
     "split_sysex_stream",
     "supported_extensions",
 ]

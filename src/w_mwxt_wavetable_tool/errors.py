@@ -55,3 +55,23 @@ class InvalidAudioDataError(AudioImportError):
 
 class SourceChangedError(AudioImportError):
     """Raised when a source file changes during deterministic import."""
+
+
+class ProjectError(ValueError):
+    """Base error for minimal project schema and persistence failures."""
+
+
+class ProjectFormatError(ProjectError):
+    """Raised when a project container or manifest has an invalid structure."""
+
+
+class ProjectIntegrityError(ProjectError):
+    """Raised when project content does not match its recorded hashes or lengths."""
+
+
+class ProjectSourceError(ProjectError):
+    """Raised when strict source validation finds a missing or changed source."""
+
+
+class ProjectExistsError(ProjectError):
+    """Raised when a project save would overwrite an existing file without opt-in."""
