@@ -15,6 +15,7 @@ from .hardware_validation import (
 )
 from .identity import IdentityReply
 from .audio import InvalidSamplePolicy, MonoPolicy, import_audio
+from .analysis import analyze_audio_source
 from .project import SourceValidationPolicy, open_project, save_project
 
 PROGRAM_NAME = "W-MWXT-WAVETABLE-TOOL"
@@ -67,6 +68,26 @@ def _build_parser() -> argparse.ArgumentParser:
         default=InvalidSamplePolicy.REJECT.value,
     )
     audio_parser.add_argument("--report", type=Path)
+
+
+    signal_parser = sub.add_parser(
+        "signal-analyze",
+        help="Import audio and print deterministic CODE V4 time-domain measurements",
+    )
+    signal_parser.add_argument("file", type=Path)
+    signal_parser.add_argument(
+        "--mono-policy",
+        choices=[policy.value for policy in MonoPolicy],
+        default=MonoPolicy.AUTO.value,
+    )
+    signal_parser.add_argument(
+        "--invalid-sample-policy",
+        choices=[policy.value for policy in InvalidSamplePolicy],
+        default=InvalidSamplePolicy.REJECT.value,
+    )
+    signal_parser.add_argument("--frame-size", type=int, default=2048)
+    signal_parser.add_argument("--hop-size", type=int, default=512)
+    signal_parser.add_argument("--report", type=Path)
 
 
     project_create_parser = sub.add_parser(
@@ -231,6 +252,33 @@ def main(argv: list[str] | None = None) -> int:
             )
             rendered = json.dumps(
                 source.to_summary(), indent=2, ensure_ascii=False, sort_keys=True
+            )
+            print(rendered)
+            if args.report is not None:
+                args.report.parent.mkdir(parents=True, exist_ok=True)
+                args.report.write_text(rendered + "\n", encoding="utf-8", newline="\n")
+            return 0
+
+
+        if args.command == "signal-analyze":
+            source = import_audio(
+                args.file,
+                mono_policy=args.mono_policy,
+                invalid_sample_policy=args.invalid_sample_policy,
+            )
+            analysis = analyze_audio_source(
+                source,
+                frame_size=args.frame_size,
+                hop_size=args.hop_size,
+            )
+            rendered = json.dumps(
+                {
+                    "audio": source.to_summary(),
+                    "time_domain_analysis": analysis.to_dict(),
+                },
+                indent=2,
+                ensure_ascii=False,
+                sort_keys=True,
             )
             print(rendered)
             if args.report is not None:

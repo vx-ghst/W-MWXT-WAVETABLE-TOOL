@@ -1,6 +1,15 @@
 """Public API for W-MWXT-WAVETABLE-TOOL."""
 
 from .allocation import UserWaveAllocation, allocate_user_waves
+from .analysis import (
+    EnvelopeAnalysis,
+    LevelAnalysis,
+    TimeDomainAnalysis,
+    analyze_audio_source,
+    analyze_envelope,
+    analyze_levels,
+    analyze_time_domain,
+)
 from .audio import (
     AudioContainerFormat,
     AudioMeasurements,
@@ -95,6 +104,9 @@ __all__ = [
     "DumpFile",
     "DumpType",
     "GlobalParameters",
+    "TimeDomainAnalysis",
+    "LevelAnalysis",
+    "EnvelopeAnalysis",
     "HardwarePackageProfile",
     "HardwarePreparation",
     "HardwarePreflightReport",
@@ -136,6 +148,10 @@ __all__ = [
     "__version__",
     "allocate_user_waves",
     "analyze_collisions",
+    "analyze_time_domain",
+    "analyze_levels",
+    "analyze_envelope",
+    "analyze_audio_source",
     "build_hardware_test_from_backup",
     "build_package",
     "compare_hardware_readback",
