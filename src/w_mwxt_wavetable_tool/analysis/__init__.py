@@ -1,4 +1,4 @@
-"""Deterministic DSP analysis for CODE V4."""
+"""Deterministic DSP analysis for CODE V4 and CODE V5."""
 
 from .envelope import analyze_envelope
 from .levels import analyze_levels
@@ -49,6 +49,11 @@ from .decisions import (
     RecommendationPriority,
     decide_wavetable_readiness,
 )
+from .code_v5 import (
+    CodeV5Analysis,
+    analyze_audio_source_code_v5,
+    assemble_code_v5_analysis,
+)
 from .harmonic_perceptual import (
     HarmonicPeak,
     HarmonicPerceptualAnalysis,
@@ -67,6 +72,7 @@ from .transients import analyze_audio_source_transients, analyze_transients
 __all__ = [
     "ChangePointEvent",
     "ClassificationFeature",
+    "CodeV5Analysis",
     "DecisionStatus",
     "EngineeringDecision",
     "EngineeringRecommendation",
@@ -99,6 +105,7 @@ __all__ = [
     "TransientEvent",
     "TransientFrameAnalysis",
     "analyze_audio_source",
+    "analyze_audio_source_code_v5",
     "analyze_audio_source_harmonic_perceptual",
     "analyze_audio_source_signal",
     "analyze_audio_source_noise",
@@ -111,6 +118,7 @@ __all__ = [
     "analyze_phase_motion",
     "analyze_pitch_periodicity",
     "analyze_signal",
+    "assemble_code_v5_analysis",
     "classify_source",
     "decide_wavetable_readiness",
     "analyze_harmonic_perceptual",

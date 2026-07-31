@@ -16,6 +16,7 @@ from .hardware_validation import (
 from .identity import IdentityReply
 from .audio import InvalidSamplePolicy, MonoPolicy, import_audio
 from .analysis import (
+    analyze_audio_source_code_v5,
     analyze_audio_source_pitch_periodicity,
     analyze_audio_source_signal,
     analyze_audio_source_spectral,
@@ -31,7 +32,7 @@ PROGRAM_NAME = "W-MWXT-WAVETABLE-TOOL"
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog=PROGRAM_NAME,
-        description="Inspect, validate, and verify Waldorf Microwave XT SysEx data.",
+        description="Analyze audio and inspect, validate, and verify Microwave XT engineering data.",
     )
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -218,6 +219,24 @@ def _build_parser() -> argparse.ArgumentParser:
         default=InvalidSamplePolicy.REJECT.value,
     )
     decision_parser.add_argument("--report", type=Path)
+
+
+    aggregate_parser = sub.add_parser(
+        "analyze-audio",
+        help="Import audio and print the complete deterministic CODE V5 report",
+    )
+    aggregate_parser.add_argument("file", type=Path)
+    aggregate_parser.add_argument(
+        "--mono-policy",
+        choices=[policy.value for policy in MonoPolicy],
+        default=MonoPolicy.AUTO.value,
+    )
+    aggregate_parser.add_argument(
+        "--invalid-sample-policy",
+        choices=[policy.value for policy in InvalidSamplePolicy],
+        default=InvalidSamplePolicy.REJECT.value,
+    )
+    aggregate_parser.add_argument("--report", type=Path)
 
 
     project_create_parser = sub.add_parser(
@@ -598,6 +617,29 @@ def main(argv: list[str] | None = None) -> int:
                     ),
                     "source_classification": source_classification.to_dict(),
                     "engineering_decision": engineering_decision.to_dict(),
+                },
+                indent=2,
+                ensure_ascii=False,
+                sort_keys=True,
+            )
+            print(rendered)
+            if args.report is not None:
+                args.report.parent.mkdir(parents=True, exist_ok=True)
+                args.report.write_text(rendered + "\n", encoding="utf-8", newline="\n")
+            return 0
+
+
+        if args.command == "analyze-audio":
+            source = import_audio(
+                args.file,
+                mono_policy=args.mono_policy,
+                invalid_sample_policy=args.invalid_sample_policy,
+            )
+            code_v5_analysis = analyze_audio_source_code_v5(source)
+            rendered = json.dumps(
+                {
+                    "audio": source.to_summary(),
+                    "code_v5_analysis": code_v5_analysis.to_dict(),
                 },
                 indent=2,
                 ensure_ascii=False,

@@ -6,6 +6,7 @@ from pathlib import Path
 import numpy as np
 import soundfile as sf
 
+from w_mwxt_wavetable_tool import __version__
 from w_mwxt_wavetable_tool.cli import main
 
 
@@ -30,7 +31,7 @@ def test_cli_root_is_the_signal_analysis_contract(tmp_path: Path, capsys) -> Non
     assert main(_args(source)) == 0
     payload = json.loads(capsys.readouterr().out)
     assert payload["schema_version"] == 1
-    assert payload["tool_version"] == "0.4.0"
+    assert payload["tool_version"] == __version__
     assert len(payload["analysis_sha256"]) == 64
     assert payload["sample_sha256"] == payload["audio"]["sample_sha256"]
 

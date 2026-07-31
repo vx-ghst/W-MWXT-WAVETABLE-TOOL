@@ -19,5 +19,5 @@ def test_v5b_names_are_exported() -> None:
     } <= set(tool.__all__)
 
 
-def test_intermediate_gate_keeps_release_version() -> None:
-    assert tool.__version__ == "0.4.0"
+def test_code_v5_release_or_newer_is_public() -> None:
+    assert tuple(int(part) for part in tool.__version__.split(".")) >= (0, 5, 0)

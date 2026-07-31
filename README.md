@@ -2,13 +2,13 @@
 
 **W-MWXT-WAVETABLE-TOOL** is a deterministic Python toolkit for wave, wavetable, audio-source, and SysEx engineering for the **Waldorf Microwave XT**.
 
-> **Current release:** `0.4.0` — CODE V4  
+> **Current release:** `0.5.0` — CODE V5<br>
 > **Distribution and CLI:** `W-MWXT-WAVETABLE-TOOL`  
 > **Python package:** `w_mwxt_wavetable_tool`  
 > **Primary platform:** Windows 11  
 > **Python:** 3.11 or newer
 
-The project is developed through controlled, testable stages. CODE V1 established the strict SysEx core, CODE V2 added safe deterministic package construction and hardware read-back validation, CODE V3 added deterministic audio import and minimal project persistence, and CODE V4 adds the complete deterministic time-domain signal-analysis contract.
+The project is developed through controlled, testable stages. CODE V1 established the strict SysEx core, CODE V2 added safe deterministic package construction and hardware read-back validation, CODE V3 added deterministic audio import and minimal project persistence, CODE V4 added the complete deterministic time-domain signal-analysis contract, and CODE V5 adds spectral and perceptual analysis, explainable source classification, auditable engineering decisions, and one aggregate analysis contract.
 
 ## Current capabilities
 
@@ -62,6 +62,16 @@ The tool does **not** transmit MIDI automatically. Hardware transmission remains
 - immutable `SignalAnalysis` aggregate with one sample identity and component hashes;
 - deterministic `signal-analyze` JSON reports with a complete aggregate SHA-256.
 
+### CODE V5 — spectral, perceptual, classification, and decisions
+
+- deterministic framed FFT analysis with local and aggregate spectral descriptors;
+- harmonic, residual, inharmonicity, tristimulus, Bark-band, brightness, concentration, and noisiness evidence;
+- explainable canonical source-family classification with normalized scores, confidence, ambiguity, and measured evidence;
+- deterministic readiness and risk decisions with blockers and prioritized non-automated recommendations;
+- strict SHA-256 links across every CODE V4 and CODE V5 component;
+- immutable `CodeV5Analysis` aggregate with one canonical sample identity and one final aggregate SHA-256;
+- deterministic `analyze-audio` JSON reports containing the complete accepted analysis chain.
+
 ## Installation on Windows 11
 
 Open PowerShell in the repository root:
@@ -83,7 +93,7 @@ python -c "import w_mwxt_wavetable_tool as tool; print(tool.__version__)"
 Both commands must report:
 
 ```text
-0.4.0
+0.5.0
 ```
 
 ## Command-line usage
@@ -131,6 +141,18 @@ W-MWXT-WAVETABLE-TOOL signal-analyze `
 ```
 
 The report preserves the accepted component keys and adds the CODE V4 aggregate schema, tool version, canonical sample identity, component hashes, and overall `analysis_sha256`.
+
+### Analyze the complete CODE V5 chain
+
+```powershell
+W-MWXT-WAVETABLE-TOOL analyze-audio `
+  "D:\Audio\source.wav" `
+  --report "D:\Reports\source.code-v5.json"
+```
+
+The report contains the imported-audio summary plus one `code_v5_analysis` object. That aggregate preserves the complete signal, spectral, harmonic/perceptual, classification, and engineering-decision reports, validates every component link, and adds the final CODE V5 `analysis_sha256`.
+
+The component commands `spectral-analyze`, `perceptual-analyze`, `classify-audio`, and `recommend-audio` remain available for focused inspection.
 
 ### Create a minimal project
 
@@ -209,7 +231,7 @@ The project follows two rules:
 1. identical source data and configuration must produce identical outputs;
 2. automatic decisions must be accompanied by measurements, policies, and explicit explanations.
 
-CODE V4 preserves the CODE V3 source and project fingerprints and adds component-level and aggregate signal-analysis fingerprints.
+CODE V5 preserves the CODE V3 source and project fingerprints, the CODE V4 time-domain analysis hashes, every V5 component hash, and one final aggregate analysis fingerprint.
 
 ## Safety
 
@@ -234,10 +256,10 @@ Completed:
 - [x] CODE V2 — safe package builder and hardware validation
 - [x] CODE V3 — audio import, mono conversion, and minimal project persistence
 - [x] CODE V4 — time-domain DSP, pitch, periodicity, phase, levels, noise, transients, and change points
+- [x] CODE V5 — spectral, perceptual, classification, decisions, and aggregate analysis
 
 Next:
 
-- [ ] CODE V5 — spectral, perceptual, classification, and decision engine
 - [ ] CODE V6 — segmentation, cycle ranking, and reconstruction
 - [ ] CODE V7 — XT-native optimization, quantization, and Auto Repair
 - [ ] CODE V8 — complete 61-position wavetable generation and transitions

@@ -17,4 +17,4 @@ def test_signal_analysis_exports_are_declared() -> None:
 
 
 def test_code_v4_release_version_is_public() -> None:
-    assert tool.__version__ == "0.4.0"
+    assert tuple(int(part) for part in tool.__version__.split(".")) >= (0, 4, 0)
