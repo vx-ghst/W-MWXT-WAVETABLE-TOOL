@@ -25,11 +25,13 @@ dist/
 .vscode/
 .idea/
 
-# Private hardware dumps & docs
+# Private project documentation
+private_docs/
+
+# Private hardware material
 private_dumps/
-dumps/
+private_captures/
 *.syx
-intern_docs/
 
 # Keep explicitly approved synthetic fixtures
 !tests/fixtures/*.syx
