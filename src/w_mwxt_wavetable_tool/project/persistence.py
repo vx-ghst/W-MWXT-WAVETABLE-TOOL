@@ -12,6 +12,7 @@ import numpy as np
 
 from importlib.metadata import PackageNotFoundError, version as distribution_version
 from ..audio import AudioSource, fingerprint_file
+from ..version import __version__
 from ..errors import (
     ProjectExistsError,
     ProjectFormatError,
@@ -129,7 +130,7 @@ def save_project(
         try:
             selected_tool_version = distribution_version("W-MWXT-WAVETABLE-TOOL")
         except PackageNotFoundError:
-            selected_tool_version = "0.2.0"
+            selected_tool_version = __version__
     else:
         selected_tool_version = tool_version
     manifest = MinimalProjectManifest.create(

@@ -1,96 +1,56 @@
 # W-MWXT-WAVETABLE-TOOL
 
-**W-MWXT-WAVETABLE-TOOL** is a public Python project for wave and wavetable engineering on the **Waldorf Microwave XT**.
+**W-MWXT-WAVETABLE-TOOL** is a deterministic Python toolkit for wave, wavetable, audio-source, and SysEx engineering for the **Waldorf Microwave XT**.
 
-The project is developed in controlled stages. **CODE V1** establishes a deterministic SysEx foundation: it reads, validates, models, and re-encodes Microwave XT dumps without changing a byte. Audio import, DSP analysis, wavetable optimization, package generation, hardware-calibrated preview, and the graphical editor are later stages.
-
-> **Status:** early development — CODE V1  
+> **Current release:** `0.3.0` — CODE V3  
 > **Distribution and CLI:** `W-MWXT-WAVETABLE-TOOL`  
-> **Python import package:** `w_mwxt_wavetable_tool`  
+> **Python package:** `w_mwxt_wavetable_tool`  
 > **Primary platform:** Windows 11  
 > **Python:** 3.11 or newer
 
-## Project objective
+The project is developed through controlled, testable stages. CODE V1 established the strict SysEx core, CODE V2 added safe deterministic package construction and hardware read-back validation, and CODE V3 adds deterministic audio import and minimal project persistence.
 
-The long-term objective is a dedicated Microwave XT wavetable engineering environment able to:
+## Current capabilities
 
-- import clean WAV, AIFF, and FLAC files;
-- convert imported audio to mono automatically;
-- analyze pitch, periodicity, phase, cycles, and spectral evolution;
-- optimize source material for Microwave XT User Waves;
-- select and place useful waves across the programmable table positions;
-- create a User Wavetable and a named Sound patch;
-- export one ordered `.syx` package containing the required User Waves, User Wavetable, and Sound patch;
-- preview and validate the result before transmission to the hardware.
+### CODE V1 — deterministic Microwave XT SysEx core
 
-These are roadmap targets. CODE V1 implements only the SysEx core described below.
+- split concatenated SysEx streams;
+- validate `F0`/`F7` framing, Waldorf identifiers, addresses, payload lengths, and checksums;
+- decode and re-encode Sounds, Multis, User Waves, User Wavetables, and Global parameters;
+- decode User Wave samples and User Wavetable references;
+- read and edit 16-character Sound names;
+- decode a Universal Device Identity reply;
+- preserve byte-identical round trips.
 
-## CODE V1 capabilities
+### CODE V2 — safe package builder and hardware validation
 
-- strict splitting of binary files containing concatenated SysEx messages;
-- strict `F0` / `F7` framing validation;
-- validation of Waldorf manufacturer ID `3E`;
-- validation of Microwave II/XT equipment ID `0E`;
-- Device ID, dump type, and 14-bit address decoding;
-- checksum validation using `sum(payload) & 0x7F`;
-- typed models for:
-  - Sound programs (`SNDD`, type `10h`);
-  - Multi programs (`MULT`, type `11h`);
-  - User Waves (`WAVD`, type `12h`);
-  - User Wavetables (`WCTD`, type `13h`);
-  - Global parameters (`GLOBAL`, type `14h`);
-- MIDI-safe nibble encoding and decoding;
-- decoding of the 64 signed samples stored in a User Wave dump;
-- explicit reconstruction policies for the second 64 samples;
-- decoding of the 64 references stored in a User Wavetable control table;
-- reading and editing the 16-character Sound name;
-- Universal Device Identity reply decoding;
-- byte-identical decode/re-encode round trips;
-- CLI inspection, validation, and round-trip commands;
-- synthetic unit tests and validation against four real hardware dumps.
+- typed Device ID, Sound, User Wavetable, and User Wave destinations;
+- explicit broadcast opt-in;
+- consecutive User Wave allocation;
+- collision and overwrite analysis;
+- deterministic `WAVD → WCTD → SNDD` package generation;
+- JSON and Markdown package manifests;
+- hardware preflight and exact restore-bundle generation;
+- read-back comparison with exact payload and address diagnostics;
+- controlled hardware write and restoration validated at `63/63` exact messages.
 
-## Hardware validation reference
+The tool does **not** transmit MIDI automatically. Hardware transmission remains a deliberate manual step using an external SysEx utility.
 
-CODE V1 has been validated against dumps captured from this physical instrument:
+### CODE V3 — deterministic audio import and minimal projects
 
-```text
-Model:            Waldorf Microwave XT
-Polyphony:        10 voices
-Mainboard:        non-expandable
-Device ID:        00
-Operating system: 2.33
-Identity reply:   F0 7E 06 02 3E 0E 00 03 00 32 2E 33 33 F7
-```
-
-The private hardware dumps are not included in this public repository. Their file sizes and SHA-256 fingerprints are recorded in `reference_dumps/reference_manifest.json` so the validation can be reproduced locally without publishing synth content.
-
-## Formats confirmed by the reference dumps
-
-| Message | Type ID | Payload | Complete message | Count in an Everything dump |
-|---|---:|---:|---:|---:|
-| Sound program | `10h` | 256 bytes | 265 bytes | 256 |
-| Multi program | `11h` | 256 bytes | 265 bytes | 128 |
-| User Wave | `12h` | 128 bytes | 137 bytes | 250 |
-| User Wavetable | `13h` | 256 bytes | 265 bytes | 32 |
-| Global parameters | `14h` | 30 bytes | 39 bytes | 1 |
-
-Common message layout:
-
-```text
-F0 3E 0E <device> <type> <address_msb_7bit> <address_lsb_7bit>
-<payload> <sum(payload) & 7F> F7
-```
-
-Recorded validation result:
-
-- four hardware dump files parsed successfully;
-- all known message lengths valid;
-- all checksums valid;
-- every decode/re-encode round trip byte-identical;
-- two independently saved Everything dumps byte-identical;
-- 16 automated tests passed.
-
-See `reports/reference_validation.md` and `reports/pytest_reference.txt`.
+- import WAV, AIFF, and FLAC through libsndfile;
+- detect the actual container independently of the file extension;
+- preserve source metadata and SHA-256 fingerprints;
+- decode to immutable contiguous `float64` samples;
+- convert mono, stereo, or multichannel sources to mono deterministically;
+- protect strongly anti-phase stereo from destructive averaging;
+- detect silence, DC offset, invalid samples, peak, RMS, and extrema;
+- produce deterministic sample and imported-state hashes;
+- save deterministic `.mwxtproj` archives;
+- embed canonical little-endian mono samples;
+- reopen the exact imported state without re-decoding the source;
+- detect unchanged, changed, missing, or ignored external sources;
+- allow an explicit embedded-data fallback when the source is unavailable.
 
 ## Installation on Windows 11
 
@@ -103,159 +63,171 @@ python -m pip install --upgrade pip
 python -m pip install -e ".[dev]"
 ```
 
-Check the installed CLI:
+Verify the release:
 
 ```powershell
-W-MWXT-WAVETABLE-TOOL --help
+W-MWXT-WAVETABLE-TOOL --version
+python -c "import w_mwxt_wavetable_tool as tool; print(tool.__version__)"
+```
+
+Both commands must report:
+
+```text
+0.3.0
 ```
 
 ## Command-line usage
 
-### Inspect a dump
+### Inspect a SysEx dump
 
 ```powershell
-W-MWXT-WAVETABLE-TOOL inspect "D:\Dumps\WALDORF_MWXT_BACKUP_EVERYTHING_2026-07-22.syx"
+W-MWXT-WAVETABLE-TOOL inspect "D:\Dumps\backup.syx"
 ```
 
 ### Validate one or more dumps
 
 ```powershell
-W-MWXT-WAVETABLE-TOOL validate "D:\Dumps\WALDORF_MWXT_ALL_SOUNDS.syx"
+W-MWXT-WAVETABLE-TOOL validate "D:\Dumps\backup.syx"
 ```
 
 ### Verify a byte-identical round trip
 
 ```powershell
-W-MWXT-WAVETABLE-TOOL roundtrip "D:\Dumps\WALDORF_MWXT_ALL_WAVETABLES_AND_WAVES.syx"
+W-MWXT-WAVETABLE-TOOL roundtrip "D:\Dumps\backup.syx"
 ```
 
-Expected result:
-
-```text
-IDENTICAL
-```
-
-### Decode a Universal Device Identity reply
+### Decode an XT identity reply
 
 ```powershell
 W-MWXT-WAVETABLE-TOOL identity "F0 7E 06 02 3E 0E 00 03 00 32 2E 33 33 F7"
 ```
 
+### Inspect an audio source
+
+```powershell
+W-MWXT-WAVETABLE-TOOL audio-inspect `
+  "D:\Audio\source.wav" `
+  --report "D:\Reports\source.audio.json"
+```
+
+The JSON report includes format metadata, source SHA-256, mono policy and explanation, measurements, sample SHA-256, and imported-state SHA-256.
+
+### Create a minimal project
+
+```powershell
+W-MWXT-WAVETABLE-TOOL project-create `
+  "D:\Audio\source.wav" `
+  "D:\Projects\source.mwxtproj" `
+  --name "Source project"
+```
+
+The save is deterministic. Repeating the command with the same source, name, policy, and release produces a byte-identical project archive.
+
+### Open and verify a project
+
+Strict source validation is the default:
+
+```powershell
+W-MWXT-WAVETABLE-TOOL project-open `
+  "D:\Projects\source.mwxtproj"
+```
+
+Allow the exact embedded mono state when the source is missing or changed:
+
+```powershell
+W-MWXT-WAVETABLE-TOOL project-open `
+  "D:\Projects\source.mwxtproj" `
+  --source-policy allow_embedded
+```
+
+Ignore the external source and use only embedded data:
+
+```powershell
+W-MWXT-WAVETABLE-TOOL project-open `
+  "D:\Projects\source.mwxtproj" `
+  --source-policy ignore
+```
+
+### Build a controlled hardware acceptance package
+
+```powershell
+W-MWXT-WAVETABLE-TOOL hardware-build-test `
+  "D:\Dumps\everything-before.syx" `
+  --source-wave-start 1000 `
+  --source-wavetable 126 `
+  --source-sound A015 `
+  --target-wave-start 1189 `
+  --target-wavetable 128 `
+  --target-sound B128 `
+  --output-dir "D:\HardwareTest"
+```
+
+Use `hardware-preflight` before manual transmission and `hardware-compare` after a fresh read-back dump. Preserve and use the generated restore bundle.
+
 ## Running tests
 
-Synthetic tests only:
+Public suite:
 
 ```powershell
+Remove-Item Env:W_MWXT_DUMP_DIR -ErrorAction SilentlyContinue
 python -m pytest -v
 ```
 
-Complete validation with the four private dumps:
+Private hardware-reference suite:
 
 ```powershell
-$env:W_MWXT_DUMP_DIR = "D:\Dumps\MicrowaveXT"
+$env:W_MWXT_DUMP_DIR = "D:\W-MWXT-PRIVATE-DUMPS"
 python -m pytest -v
 ```
 
-The files must use the exact names and fingerprints recorded in `reference_dumps/reference_manifest.json`.
-
-PowerShell helpers:
-
-```powershell
-.\run_tests.ps1
-.\validate_dumps.ps1 -DumpDirectory "D:\Dumps\MicrowaveXT"
-```
-
-## Repository layout
-
-```text
-W-MWXT-WAVETABLE-TOOL/
-├── .github/workflows/tests.yml
-├── src/w_mwxt_wavetable_tool/
-│   ├── __init__.py
-│   ├── cli.py
-│   ├── codec.py
-│   ├── constants.py
-│   ├── dump.py
-│   ├── errors.py
-│   ├── identity.py
-│   ├── message.py
-│   └── models.py
-├── tests/
-├── tools/
-├── reference_dumps/
-├── reports/
-├── .gitignore
-├── CHANGELOG.md
-├── pyproject.toml
-├── README.md
-├── run_tests.ps1
-└── validate_dumps.ps1
-```
-
-## Roadmap
-
-### CODE V1 — deterministic SysEx core
-
-- [x] Parse concatenated Microwave XT SysEx streams
-- [x] Validate framing, identifiers, addresses, lengths, and checksums
-- [x] Model Sound, Multi, User Wave, User Wavetable, and Global data
-- [x] Decode and re-encode User Wave and Wavetable nibble payloads
-- [x] Decode the hardware identity response
-- [x] Achieve byte-identical round trips on real dumps
-
-### CODE V2 — safe SysEx package builder
-
-- [ ] Allocate consecutive User Wave locations safely
-- [ ] Select a User Wavetable destination
-- [ ] Select a Sound destination or edit buffer
-- [ ] Set and validate a 16-character Sound name
-- [ ] Build one ordered `.syx` package containing User Waves, User Wavetable, and Sound patch
-- [ ] Detect address collisions and range overflows
-- [ ] Produce a human-readable package manifest
-- [ ] Add golden-vector tests for generated packages
-
-### Later stages
-
-- [ ] WAV, AIFF, and FLAC import
-- [ ] Automatic mono conversion
-- [ ] Pitch, periodicity, cycle, phase, and spectral analysis
-- [ ] Microwave XT User Wave optimization
-- [ ] Intelligent selection and placement of useful waves
-- [ ] Transition generation across the programmable positions
-- [ ] Hardware-calibrated wavetable preview and simulation
-- [ ] Direct MIDI transmission with read-back verification
-- [ ] Graphical wavetable editor and analysis interface
-
-## Safety
-
-SysEx writes can overwrite Sounds, User Waves, User Wavetables, Multis, or global settings.
-
-Before transmitting generated data:
-
-1. create an Everything backup;
-2. verify the target Device ID;
-3. verify every destination address;
-4. inspect the generated package manifest;
-5. transmit only after confirming what will be overwritten.
-
-CODE V1 does not transmit data and does not generate final write packages.
+Private `.syx` files, audio sources, hardware captures, and generated projects must remain outside the repository.
 
 ## Determinism and traceability
 
 The project follows two rules:
 
-1. automatic decisions must be explained by recorded measurements and rules;
-2. identical source data and configuration must produce identical output.
+1. identical source data and configuration must produce identical outputs;
+2. automatic decisions must be accompanied by measurements, policies, and explicit explanations.
+
+CODE V3 records source, sample, state, content, and archive fingerprints so project state can be audited and reproduced.
+
+## Safety
+
+SysEx writes can overwrite Sounds, User Waves, User Wavetables, Multis, or global settings.
+
+Before any hardware write:
+
+1. create and verify an Everything backup;
+2. confirm the XT Device ID;
+3. reserve non-critical destination addresses;
+4. inspect the package and preflight reports;
+5. transmit manually with a proven SysEx utility;
+6. create a fresh read-back dump;
+7. compare every target;
+8. restore and verify the original targets when testing is complete.
+
+## Roadmap
+
+Completed:
+
+- [x] CODE V1 — deterministic SysEx core
+- [x] CODE V2 — safe package builder and hardware validation
+- [x] CODE V3 — audio import, mono conversion, and minimal project persistence
+
+Next:
+
+- [ ] CODE V4 — time-domain DSP, pitch, periodicity, phase, levels, noise, transients, and change points
+- [ ] CODE V5 — spectral, perceptual, classification, and decision engine
+- [ ] CODE V6 — segmentation, cycle ranking, and reconstruction
+- [ ] CODE V7 — XT-native optimization, quantization, and Auto Repair
+- [ ] CODE V8 — complete 61-position wavetable generation and transitions
+- [ ] CODE V9+ — complete project export, preview, transport, and graphical interface
+
+See `docs/roadmap/W-MWXT-WAVETABLE-TOOL_ROADMAP_AND_TRACEABILITY_MATRIX.md` for the full staged plan.
 
 ## Public repository and licensing
 
-The repository is public. The package metadata currently uses the license text `Private project`, as requested by the project owner. This phrase is not a standard open-source license and does not itself define reuse, modification, or redistribution rights. A formal `LICENSE` file can be selected later without changing the CODE V1 implementation.
-
-## Contributing
-
-Contributions must preserve strict protocol validation, deterministic behavior, byte-level tests, and the separation between SysEx, DSP, interface, and transport layers.
-
-Do not submit proprietary factory dumps, personal backups, copyrighted sound banks, or firmware images.
+The repository is public. The package metadata currently uses the license text `Private project`, which is not a standard open-source license and does not grant conventional reuse rights by itself. A formal license can be selected later.
 
 ## Disclaimer
 

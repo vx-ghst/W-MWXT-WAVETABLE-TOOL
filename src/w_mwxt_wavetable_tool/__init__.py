@@ -74,6 +74,7 @@ from .project import (
     open_project,
     save_project,
 )
+from .version import __version__
 from .safety import (
     CollisionReport,
     MemoryTarget,
@@ -82,7 +83,6 @@ from .safety import (
     analyze_collisions,
 )
 
-__version__ = "0.2.0"
 
 __all__ = [
     "AudioContainerFormat",
