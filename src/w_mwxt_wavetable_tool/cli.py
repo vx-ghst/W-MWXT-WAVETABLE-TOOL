@@ -20,6 +20,7 @@ from .analysis import (
     analyze_audio_source_signal,
     analyze_audio_source_spectral,
     analyze_harmonic_perceptual,
+    classify_source,
 )
 from .project import SourceValidationPolicy, open_project, save_project
 
@@ -182,6 +183,23 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     perceptual_parser.add_argument("--bark-band-count", type=int, default=24)
     perceptual_parser.add_argument("--report", type=Path)
+
+    classification_parser = sub.add_parser(
+        "classify-audio",
+        help="Import audio and print deterministic CODE V5 source classification",
+    )
+    classification_parser.add_argument("file", type=Path)
+    classification_parser.add_argument(
+        "--mono-policy",
+        choices=[policy.value for policy in MonoPolicy],
+        default=MonoPolicy.AUTO.value,
+    )
+    classification_parser.add_argument(
+        "--invalid-sample-policy",
+        choices=[policy.value for policy in InvalidSamplePolicy],
+        default=InvalidSamplePolicy.REJECT.value,
+    )
+    classification_parser.add_argument("--report", type=Path)
 
 
     project_create_parser = sub.add_parser(
@@ -478,6 +496,46 @@ def main(argv: list[str] | None = None) -> int:
                     "harmonic_perceptual_analysis": (
                         harmonic_perceptual_analysis.to_dict()
                     ),
+                },
+                indent=2,
+                ensure_ascii=False,
+                sort_keys=True,
+            )
+            print(rendered)
+            if args.report is not None:
+                args.report.parent.mkdir(parents=True, exist_ok=True)
+                args.report.write_text(rendered + "\n", encoding="utf-8", newline="\n")
+            return 0
+
+
+        if args.command == "classify-audio":
+            source = import_audio(
+                args.file,
+                mono_policy=args.mono_policy,
+                invalid_sample_policy=args.invalid_sample_policy,
+            )
+            signal_analysis = analyze_audio_source_signal(source)
+            spectral_analysis = analyze_audio_source_spectral(source)
+            harmonic_perceptual_analysis = analyze_harmonic_perceptual(
+                spectral_analysis,
+                fundamental_frequency_hz=(
+                    signal_analysis.pitch_periodicity_analysis.frequency_hz
+                ),
+            )
+            source_classification = classify_source(
+                signal_analysis,
+                spectral_analysis,
+                harmonic_perceptual_analysis,
+            )
+            rendered = json.dumps(
+                {
+                    "audio": source.to_summary(),
+                    "signal_analysis": signal_analysis.to_dict(),
+                    "spectral_analysis": spectral_analysis.to_dict(),
+                    "harmonic_perceptual_analysis": (
+                        harmonic_perceptual_analysis.to_dict()
+                    ),
+                    "source_classification": source_classification.to_dict(),
                 },
                 indent=2,
                 ensure_ascii=False,

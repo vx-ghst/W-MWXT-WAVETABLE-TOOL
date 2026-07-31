@@ -34,6 +34,13 @@ from .pitch import (
     nearest_midi_note,
 )
 from .signal import SignalAnalysis, analyze_audio_source_signal, analyze_signal
+from .classification import (
+    ClassificationFeature,
+    SourceClass,
+    SourceClassScore,
+    SourceClassification,
+    classify_source,
+)
 from .harmonic_perceptual import (
     HarmonicPeak,
     HarmonicPerceptualAnalysis,
@@ -51,6 +58,7 @@ from .transients import analyze_audio_source_transients, analyze_transients
 
 __all__ = [
     "ChangePointEvent",
+    "ClassificationFeature",
     "EnvelopeAnalysis",
     "HarmonicPeak",
     "HarmonicPerceptualAnalysis",
@@ -67,6 +75,9 @@ __all__ = [
     "PitchFrameAnalysis",
     "PitchPeriodicityAnalysis",
     "SignalAnalysis",
+    "SourceClass",
+    "SourceClassScore",
+    "SourceClassification",
     "SpectralAnalysis",
     "SpectralFrameAnalysis",
     "TimeDomainAnalysis",
@@ -87,6 +98,7 @@ __all__ = [
     "analyze_phase_motion",
     "analyze_pitch_periodicity",
     "analyze_signal",
+    "classify_source",
     "analyze_harmonic_perceptual",
     "analyze_spectral",
     "analyze_audio_source_spectral",
