@@ -17,8 +17,10 @@ from .identity import IdentityReply
 from .audio import InvalidSamplePolicy, MonoPolicy, import_audio
 from .analysis import (
     analyze_audio_source,
+    analyze_audio_source_noise,
     analyze_audio_source_pitch_periodicity,
     analyze_audio_source_phase_motion,
+    analyze_audio_source_transients,
 )
 from .project import SourceValidationPolicy, open_project, save_project
 
@@ -105,6 +107,14 @@ def _build_parser() -> argparse.ArgumentParser:
         "--glide-slope-cents-per-second", type=float, default=25.0
     )
     signal_parser.add_argument("--stepped-pitch-cents", type=float, default=100.0)
+    signal_parser.add_argument("--noise-lower-quantile", type=float, default=0.20)
+    signal_parser.add_argument("--transient-frame-size", type=int, default=1024)
+    signal_parser.add_argument("--transient-hop-size", type=int, default=256)
+    signal_parser.add_argument("--transient-sensitivity", type=float, default=6.0)
+    signal_parser.add_argument("--minimum-onset-strength", type=float, default=1.0)
+    signal_parser.add_argument("--change-energy-db", type=float, default=6.0)
+    signal_parser.add_argument("--change-spectral-flux", type=float, default=0.35)
+    signal_parser.add_argument("--minimum-event-separation-ms", type=float, default=20.0)
     signal_parser.add_argument("--report", type=Path)
 
 
@@ -310,12 +320,29 @@ def main(argv: list[str] | None = None) -> int:
                 ),
                 stepped_pitch_threshold_cents=args.stepped_pitch_cents,
             )
+            noise = analyze_audio_source_noise(
+                source,
+                pitch_periodicity=pitch_periodicity,
+                lower_quantile=args.noise_lower_quantile,
+            )
+            transient_change = analyze_audio_source_transients(
+                source,
+                frame_size=args.transient_frame_size,
+                hop_size=args.transient_hop_size,
+                sensitivity=args.transient_sensitivity,
+                minimum_onset_strength=args.minimum_onset_strength,
+                change_energy_threshold_db=args.change_energy_db,
+                change_spectral_flux_threshold=args.change_spectral_flux,
+                minimum_event_separation_ms=args.minimum_event_separation_ms,
+            )
             rendered = json.dumps(
                 {
                     "audio": source.to_summary(),
                     "time_domain_analysis": analysis.to_dict(),
                     "pitch_periodicity_analysis": pitch_periodicity.to_dict(),
                     "phase_motion_analysis": phase_motion.to_dict(),
+                    "noise_analysis": noise.to_dict(),
+                    "transient_change_analysis": transient_change.to_dict(),
                 },
                 indent=2,
                 ensure_ascii=False,

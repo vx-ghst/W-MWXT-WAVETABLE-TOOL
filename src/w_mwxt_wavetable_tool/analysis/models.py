@@ -802,3 +802,425 @@ class PhaseMotionAnalysis:
         result["analysis_sha256"] = self.analysis_sha256
         return result
 
+
+class NoiseClass(str, Enum):
+    SILENT = "silent"
+    PRISTINE = "pristine"
+    SIGNAL_DOMINATED = "signal_dominated"
+    MIXED = "mixed"
+    NOISE_DOMINATED = "noise_dominated"
+
+
+@dataclass(frozen=True, slots=True)
+class NoiseFrameAnalysis:
+    frame_index: int
+    start_sample: int
+    center_seconds: float
+    sample_count: int
+    rms: float
+    residual_rms: float
+    voiced_periodic: bool
+    period_lag_samples: float | None
+    candidate_method: str
+
+    def __post_init__(self) -> None:
+        if self.frame_index < 0 or self.start_sample < 0:
+            raise ValueError("frame_index and start_sample must not be negative")
+        if self.sample_count <= 0:
+            raise ValueError("sample_count must be positive")
+        center = _require_finite(self.center_seconds, name="center_seconds")
+        if center < 0.0:
+            raise ValueError("center_seconds must not be negative")
+        for name in ("rms", "residual_rms"):
+            value = _require_finite(getattr(self, name), name=name)
+            if value < 0.0:
+                raise ValueError(f"{name} must not be negative")
+        lag = _optional_finite(self.period_lag_samples, name="period_lag_samples")
+        if self.voiced_periodic:
+            if lag is None or lag <= 0.0:
+                raise ValueError("voiced periodic frames require a positive lag")
+            if self.candidate_method != "periodic_residual":
+                raise ValueError("voiced periodic frames require periodic_residual method")
+        elif lag is not None:
+            raise ValueError("non-periodic frames must not expose a period lag")
+        if self.candidate_method not in {"periodic_residual", "frame_rms"}:
+            raise ValueError("candidate_method is unsupported")
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "frame_index": self.frame_index,
+            "start_sample": self.start_sample,
+            "center_seconds": self.center_seconds,
+            "sample_count": self.sample_count,
+            "rms": self.rms,
+            "residual_rms": self.residual_rms,
+            "voiced_periodic": self.voiced_periodic,
+            "period_lag_samples": self.period_lag_samples,
+            "candidate_method": self.candidate_method,
+        }
+
+
+@dataclass(frozen=True, slots=True)
+class NoiseAnalysis:
+    schema_version: int
+    sample_rate: int
+    sample_count: int
+    sample_sha256: str
+    frame_size: int
+    hop_size: int
+    lower_quantile: float
+    silence_threshold: float
+    minimum_noise_rms: float
+    frames: tuple[NoiseFrameAnalysis, ...]
+    signal_rms: float
+    signal_rms_dbfs: float | None
+    noise_floor_rms: float
+    noise_floor_dbfs: float | None
+    snr_db: float | None
+    periodic_residual_frame_count: int
+    lower_quantile_frame_count: int
+    noise_stationarity: float
+    noise_class: NoiseClass
+    classification_reason: str
+
+    def __post_init__(self) -> None:
+        if self.schema_version != 1:
+            raise ValueError("Unsupported noise-analysis schema version")
+        if self.sample_rate <= 0 or self.sample_count <= 0:
+            raise ValueError("sample_rate and sample_count must be positive")
+        if len(self.sample_sha256) != 64 or any(
+            character not in "0123456789abcdef" for character in self.sample_sha256
+        ):
+            raise ValueError("sample_sha256 must be a lowercase SHA-256 digest")
+        if self.frame_size <= 0 or self.hop_size <= 0:
+            raise ValueError("frame_size and hop_size must be positive")
+        lower = _require_finite(self.lower_quantile, name="lower_quantile")
+        if not 0.0 < lower <= 1.0:
+            raise ValueError("lower_quantile must be in (0, 1]")
+        for name in ("silence_threshold", "minimum_noise_rms"):
+            value = _require_finite(getattr(self, name), name=name)
+            if value < 0.0:
+                raise ValueError(f"{name} must not be negative")
+        if not self.frames:
+            raise ValueError("noise frames must not be empty")
+        if tuple(frame.frame_index for frame in self.frames) != tuple(range(len(self.frames))):
+            raise ValueError("noise frame indexes must be contiguous from zero")
+        if tuple(sorted(frame.start_sample for frame in self.frames)) != tuple(
+            frame.start_sample for frame in self.frames
+        ):
+            raise ValueError("noise frame starts must be sorted")
+        for name in ("signal_rms", "noise_floor_rms"):
+            value = _require_finite(getattr(self, name), name=name)
+            if value < 0.0:
+                raise ValueError(f"{name} must not be negative")
+        _optional_finite(self.signal_rms_dbfs, name="signal_rms_dbfs")
+        _optional_finite(self.noise_floor_dbfs, name="noise_floor_dbfs")
+        snr = _optional_finite(self.snr_db, name="snr_db")
+        if snr is not None and snr < 0.0:
+            raise ValueError("snr_db must not be negative")
+        if not 0 <= self.periodic_residual_frame_count <= len(self.frames):
+            raise ValueError("periodic_residual_frame_count is outside frame range")
+        if self.periodic_residual_frame_count != sum(
+            frame.voiced_periodic for frame in self.frames
+        ):
+            raise ValueError("periodic_residual_frame_count is inconsistent")
+        if not 1 <= self.lower_quantile_frame_count <= len(self.frames):
+            raise ValueError("lower_quantile_frame_count is outside frame range")
+        _require_ratio(self.noise_stationarity, name="noise_stationarity")
+        if not isinstance(self.noise_class, NoiseClass):
+            raise ValueError("noise_class must be a NoiseClass")
+        if not self.classification_reason:
+            raise ValueError("classification_reason must not be empty")
+
+    @property
+    def frame_count(self) -> int:
+        return len(self.frames)
+
+    def _content_dict(self) -> dict[str, Any]:
+        return {
+            "schema_version": self.schema_version,
+            "sample_rate": self.sample_rate,
+            "sample_count": self.sample_count,
+            "sample_sha256": self.sample_sha256,
+            "frame_size": self.frame_size,
+            "hop_size": self.hop_size,
+            "lower_quantile": self.lower_quantile,
+            "silence_threshold": self.silence_threshold,
+            "minimum_noise_rms": self.minimum_noise_rms,
+            "frame_count": self.frame_count,
+            "frames": [frame.to_dict() for frame in self.frames],
+            "signal_rms": self.signal_rms,
+            "signal_rms_dbfs": self.signal_rms_dbfs,
+            "noise_floor_rms": self.noise_floor_rms,
+            "noise_floor_dbfs": self.noise_floor_dbfs,
+            "snr_db": self.snr_db,
+            "periodic_residual_frame_count": self.periodic_residual_frame_count,
+            "lower_quantile_frame_count": self.lower_quantile_frame_count,
+            "noise_stationarity": self.noise_stationarity,
+            "noise_class": self.noise_class.value,
+            "classification_reason": self.classification_reason,
+        }
+
+    @property
+    def analysis_sha256(self) -> str:
+        rendered = json.dumps(
+            self._content_dict(),
+            sort_keys=True,
+            separators=(",", ":"),
+            ensure_ascii=False,
+            allow_nan=False,
+        ).encode("utf-8")
+        return sha256(rendered).hexdigest()
+
+    def to_dict(self) -> dict[str, Any]:
+        result = self._content_dict()
+        result["analysis_sha256"] = self.analysis_sha256
+        return result
+
+
+class TransientChangeClass(str, Enum):
+    SILENT = "silent"
+    STEADY = "steady"
+    SPARSE_TRANSIENTS = "sparse_transients"
+    TRANSIENT_RICH = "transient_rich"
+    CHANGING = "changing"
+
+
+@dataclass(frozen=True, slots=True)
+class TransientFrameAnalysis:
+    frame_index: int
+    start_sample: int
+    center_seconds: float
+    sample_count: int
+    rms: float
+    rms_dbfs: float | None
+    energy_change_db: float
+    spectral_flux: float
+    onset_strength: float
+
+    def __post_init__(self) -> None:
+        if self.frame_index < 0 or self.start_sample < 0:
+            raise ValueError("frame_index and start_sample must not be negative")
+        if self.sample_count <= 0:
+            raise ValueError("sample_count must be positive")
+        center = _require_finite(self.center_seconds, name="center_seconds")
+        if center < 0.0:
+            raise ValueError("center_seconds must not be negative")
+        rms = _require_finite(self.rms, name="rms")
+        if rms < 0.0:
+            raise ValueError("rms must not be negative")
+        _optional_finite(self.rms_dbfs, name="rms_dbfs")
+        _require_finite(self.energy_change_db, name="energy_change_db")
+        flux = _require_finite(self.spectral_flux, name="spectral_flux")
+        onset = _require_finite(self.onset_strength, name="onset_strength")
+        if flux < 0.0 or onset < 0.0:
+            raise ValueError("spectral_flux and onset_strength must not be negative")
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "frame_index": self.frame_index,
+            "start_sample": self.start_sample,
+            "center_seconds": self.center_seconds,
+            "sample_count": self.sample_count,
+            "rms": self.rms,
+            "rms_dbfs": self.rms_dbfs,
+            "energy_change_db": self.energy_change_db,
+            "spectral_flux": self.spectral_flux,
+            "onset_strength": self.onset_strength,
+        }
+
+
+@dataclass(frozen=True, slots=True)
+class TransientEvent:
+    frame_index: int
+    sample_index: int
+    time_seconds: float
+    strength: float
+    energy_change_db: float
+    spectral_flux: float
+
+    def __post_init__(self) -> None:
+        if self.frame_index < 0 or self.sample_index < 0:
+            raise ValueError("transient indexes must not be negative")
+        time = _require_finite(self.time_seconds, name="time_seconds")
+        if time < 0.0:
+            raise ValueError("time_seconds must not be negative")
+        for name in ("strength", "spectral_flux"):
+            value = _require_finite(getattr(self, name), name=name)
+            if value < 0.0:
+                raise ValueError(f"{name} must not be negative")
+        _require_finite(self.energy_change_db, name="energy_change_db")
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "frame_index": self.frame_index,
+            "sample_index": self.sample_index,
+            "time_seconds": self.time_seconds,
+            "strength": self.strength,
+            "energy_change_db": self.energy_change_db,
+            "spectral_flux": self.spectral_flux,
+        }
+
+
+@dataclass(frozen=True, slots=True)
+class ChangePointEvent:
+    frame_index: int
+    sample_index: int
+    time_seconds: float
+    score: float
+    energy_change_db: float
+    spectral_flux: float
+    kind: str
+
+    def __post_init__(self) -> None:
+        if self.frame_index < 0 or self.sample_index < 0:
+            raise ValueError("change-point indexes must not be negative")
+        time = _require_finite(self.time_seconds, name="time_seconds")
+        if time < 0.0:
+            raise ValueError("time_seconds must not be negative")
+        score = _require_finite(self.score, name="score")
+        flux = _require_finite(self.spectral_flux, name="spectral_flux")
+        if score < 0.0 or flux < 0.0:
+            raise ValueError("score and spectral_flux must not be negative")
+        _require_finite(self.energy_change_db, name="energy_change_db")
+        if self.kind not in {"energy", "spectral", "energy_and_spectral"}:
+            raise ValueError("change-point kind is unsupported")
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "frame_index": self.frame_index,
+            "sample_index": self.sample_index,
+            "time_seconds": self.time_seconds,
+            "score": self.score,
+            "energy_change_db": self.energy_change_db,
+            "spectral_flux": self.spectral_flux,
+            "kind": self.kind,
+        }
+
+
+@dataclass(frozen=True, slots=True)
+class TransientChangeAnalysis:
+    schema_version: int
+    sample_rate: int
+    sample_count: int
+    sample_sha256: str
+    frame_size: int
+    hop_size: int
+    sensitivity: float
+    minimum_onset_strength: float
+    change_energy_threshold_db: float
+    change_spectral_flux_threshold: float
+    minimum_event_separation_ms: float
+    frames: tuple[TransientFrameAnalysis, ...]
+    adaptive_onset_threshold: float
+    transients: tuple[TransientEvent, ...]
+    change_points: tuple[ChangePointEvent, ...]
+    transient_count: int
+    change_point_count: int
+    transient_density_per_second: float
+    median_transient_interval_seconds: float | None
+    maximum_onset_strength: float
+    change_ratio: float
+    transient_change_class: TransientChangeClass
+    classification_reason: str
+
+    def __post_init__(self) -> None:
+        if self.schema_version != 1:
+            raise ValueError("Unsupported transient-change schema version")
+        if self.sample_rate <= 0 or self.sample_count <= 0:
+            raise ValueError("sample_rate and sample_count must be positive")
+        if len(self.sample_sha256) != 64 or any(
+            character not in "0123456789abcdef" for character in self.sample_sha256
+        ):
+            raise ValueError("sample_sha256 must be a lowercase SHA-256 digest")
+        if self.frame_size <= 0 or self.hop_size <= 0:
+            raise ValueError("frame_size and hop_size must be positive")
+        for name in (
+            "sensitivity",
+            "minimum_onset_strength",
+            "change_energy_threshold_db",
+            "change_spectral_flux_threshold",
+            "minimum_event_separation_ms",
+        ):
+            value = _require_finite(getattr(self, name), name=name)
+            if value < 0.0:
+                raise ValueError(f"{name} must not be negative")
+        if self.sensitivity <= 0.0 or self.change_energy_threshold_db <= 0.0:
+            raise ValueError("sensitivity and change_energy_threshold_db must be positive")
+        if self.change_spectral_flux_threshold > 1.0:
+            raise ValueError("change_spectral_flux_threshold must not exceed one")
+        if not self.frames:
+            raise ValueError("transient frames must not be empty")
+        if tuple(frame.frame_index for frame in self.frames) != tuple(range(len(self.frames))):
+            raise ValueError("transient frame indexes must be contiguous from zero")
+        if self.transient_count != len(self.transients):
+            raise ValueError("transient_count is inconsistent")
+        if self.change_point_count != len(self.change_points):
+            raise ValueError("change_point_count is inconsistent")
+        for name in (
+            "adaptive_onset_threshold",
+            "transient_density_per_second",
+            "maximum_onset_strength",
+        ):
+            value = _require_finite(getattr(self, name), name=name)
+            if value < 0.0:
+                raise ValueError(f"{name} must not be negative")
+        interval = _optional_finite(
+            self.median_transient_interval_seconds,
+            name="median_transient_interval_seconds",
+        )
+        if interval is not None and interval <= 0.0:
+            raise ValueError("median_transient_interval_seconds must be positive")
+        _require_ratio(self.change_ratio, name="change_ratio")
+        if not isinstance(self.transient_change_class, TransientChangeClass):
+            raise ValueError("transient_change_class must be a TransientChangeClass")
+        if not self.classification_reason:
+            raise ValueError("classification_reason must not be empty")
+
+    @property
+    def frame_count(self) -> int:
+        return len(self.frames)
+
+    def _content_dict(self) -> dict[str, Any]:
+        return {
+            "schema_version": self.schema_version,
+            "sample_rate": self.sample_rate,
+            "sample_count": self.sample_count,
+            "sample_sha256": self.sample_sha256,
+            "frame_size": self.frame_size,
+            "hop_size": self.hop_size,
+            "sensitivity": self.sensitivity,
+            "minimum_onset_strength": self.minimum_onset_strength,
+            "change_energy_threshold_db": self.change_energy_threshold_db,
+            "change_spectral_flux_threshold": self.change_spectral_flux_threshold,
+            "minimum_event_separation_ms": self.minimum_event_separation_ms,
+            "frame_count": self.frame_count,
+            "frames": [frame.to_dict() for frame in self.frames],
+            "adaptive_onset_threshold": self.adaptive_onset_threshold,
+            "transients": [event.to_dict() for event in self.transients],
+            "change_points": [event.to_dict() for event in self.change_points],
+            "transient_count": self.transient_count,
+            "change_point_count": self.change_point_count,
+            "transient_density_per_second": self.transient_density_per_second,
+            "median_transient_interval_seconds": self.median_transient_interval_seconds,
+            "maximum_onset_strength": self.maximum_onset_strength,
+            "change_ratio": self.change_ratio,
+            "transient_change_class": self.transient_change_class.value,
+            "classification_reason": self.classification_reason,
+        }
+
+    @property
+    def analysis_sha256(self) -> str:
+        rendered = json.dumps(
+            self._content_dict(),
+            sort_keys=True,
+            separators=(",", ":"),
+            ensure_ascii=False,
+            allow_nan=False,
+        ).encode("utf-8")
+        return sha256(rendered).hexdigest()
+
+    def to_dict(self) -> dict[str, Any]:
+        result = self._content_dict()
+        result["analysis_sha256"] = self.analysis_sha256
+        return result
