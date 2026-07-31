@@ -16,6 +16,7 @@ from .hardware_validation import (
 from .identity import IdentityReply
 from .audio import InvalidSamplePolicy, MonoPolicy, import_audio
 from .analysis import (
+    AttackPolicy,
     WorkingPitchPolicy,
     analyze_audio_source_code_v5,
     analyze_audio_source_pitch_periodicity,
@@ -25,6 +26,7 @@ from .analysis import (
     classify_source,
     decide_wavetable_readiness,
     plan_working_pitch,
+    segment_source,
 )
 from .project import SourceValidationPolicy, open_project, save_project
 
@@ -288,6 +290,43 @@ def _build_parser() -> argparse.ArgumentParser:
         "--minimum-score-improvement", type=float, default=0.10
     )
     working_pitch_parser.add_argument("--report", type=Path)
+
+
+    segmentation_parser = sub.add_parser(
+        "segment-audio",
+        help="Create a deterministic CODE V6-B source segmentation and attack plan",
+    )
+    segmentation_parser.add_argument("file", type=Path)
+    segmentation_parser.add_argument(
+        "--mono-policy",
+        choices=[policy.value for policy in MonoPolicy],
+        default=MonoPolicy.AUTO.value,
+    )
+    segmentation_parser.add_argument(
+        "--invalid-sample-policy",
+        choices=[policy.value for policy in InvalidSamplePolicy],
+        default=InvalidSamplePolicy.REJECT.value,
+    )
+    segmentation_parser.add_argument(
+        "--pitch-policy",
+        choices=[policy.value for policy in WorkingPitchPolicy],
+        default=WorkingPitchPolicy.AUTO.value,
+    )
+    segmentation_parser.add_argument("--locked-frequency", type=float)
+    segmentation_parser.add_argument(
+        "--attack-policy",
+        choices=[policy.value for policy in AttackPolicy],
+        default=AttackPolicy.AUTO.value,
+    )
+    segmentation_parser.add_argument("--minimum-segment-ms", type=float, default=40.0)
+    segmentation_parser.add_argument("--boundary-merge-ms", type=float, default=20.0)
+    segmentation_parser.add_argument("--attack-window-ms", type=float, default=120.0)
+    segmentation_parser.add_argument("--maximum-attack-ms", type=float, default=250.0)
+    segmentation_parser.add_argument("--minimum-attack-strength", type=float, default=1.0)
+    segmentation_parser.add_argument("--minimum-steady-ms", type=float, default=80.0)
+    segmentation_parser.add_argument("--silence-rms-threshold", type=float, default=1.0e-6)
+    segmentation_parser.add_argument("--transition-flux-threshold", type=float, default=0.20)
+    segmentation_parser.add_argument("--report", type=Path)
 
 
     project_create_parser = sub.add_parser(
@@ -712,6 +751,49 @@ def main(argv: list[str] | None = None) -> int:
                     "audio": source.to_summary(),
                     "pitch_periodicity_analysis": pitch_analysis.to_dict(),
                     "working_pitch_plan": working_pitch_plan.to_dict(),
+                },
+                indent=2,
+                ensure_ascii=False,
+                sort_keys=True,
+            )
+            print(rendered)
+            if args.report is not None:
+                args.report.parent.mkdir(parents=True, exist_ok=True)
+                args.report.write_text(rendered + "\n", encoding="utf-8", newline="\n")
+            return 0
+
+
+        if args.command == "segment-audio":
+            source = import_audio(
+                args.file,
+                mono_policy=args.mono_policy,
+                invalid_sample_policy=args.invalid_sample_policy,
+            )
+            signal_analysis = analyze_audio_source_signal(source)
+            working_pitch_plan = plan_working_pitch(
+                signal_analysis.pitch_periodicity_analysis,
+                policy=args.pitch_policy,
+                locked_frequency_hz=args.locked_frequency,
+            )
+            segmentation_analysis = segment_source(
+                signal_analysis,
+                working_pitch_plan,
+                attack_policy=args.attack_policy,
+                minimum_segment_duration_ms=args.minimum_segment_ms,
+                boundary_merge_window_ms=args.boundary_merge_ms,
+                attack_window_ms=args.attack_window_ms,
+                maximum_attack_duration_ms=args.maximum_attack_ms,
+                minimum_attack_strength=args.minimum_attack_strength,
+                minimum_steady_duration_ms=args.minimum_steady_ms,
+                silence_rms_threshold=args.silence_rms_threshold,
+                transition_flux_threshold=args.transition_flux_threshold,
+            )
+            rendered = json.dumps(
+                {
+                    "audio": source.to_summary(),
+                    "signal_analysis": signal_analysis.to_dict(),
+                    "working_pitch_plan": working_pitch_plan.to_dict(),
+                    "segmentation_analysis": segmentation_analysis.to_dict(),
                 },
                 indent=2,
                 ensure_ascii=False,

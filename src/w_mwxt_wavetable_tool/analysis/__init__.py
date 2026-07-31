@@ -46,6 +46,15 @@ from .repitch import (
     analyze_audio_source_working_pitch,
     plan_working_pitch,
 )
+from .segmentation import (
+    AttackDecision,
+    AttackPolicy,
+    SegmentKind,
+    SegmentationAnalysis,
+    SourceSegment,
+    analyze_audio_source_segmentation,
+    segment_source,
+)
 from .signal import SignalAnalysis, analyze_audio_source_signal, analyze_signal
 from .classification import (
     ClassificationFeature,
@@ -110,6 +119,11 @@ __all__ = [
     "WorkingPitchDecision",
     "WorkingPitchPlan",
     "WorkingPitchPolicy",
+    "AttackDecision",
+    "AttackPolicy",
+    "SegmentKind",
+    "SegmentationAnalysis",
+    "SourceSegment",
     "SignalAnalysis",
     "SourceClass",
     "SourceClassScore",
@@ -132,6 +146,7 @@ __all__ = [
     "analyze_audio_source_pitch_periodicity",
     "analyze_audio_source_transients",
     "analyze_audio_source_working_pitch",
+    "analyze_audio_source_segmentation",
     "analyze_envelope",
     "analyze_levels",
     "analyze_noise",
@@ -139,6 +154,7 @@ __all__ = [
     "analyze_pitch_periodicity",
     "generate_working_pitch_candidates",
     "plan_working_pitch",
+    "segment_source",
     "analyze_signal",
     "assemble_code_v5_analysis",
     "classify_source",
