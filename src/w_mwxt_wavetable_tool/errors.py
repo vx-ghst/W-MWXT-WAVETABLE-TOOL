@@ -39,3 +39,19 @@ class PackageBuildError(ProtocolError):
 
 class HardwareValidationError(ProtocolError):
     """Raised when a hardware preflight or read-back comparison is unsafe or invalid."""
+
+
+class AudioImportError(ValueError):
+    """Base error for unsupported, unreadable, or inconsistent audio sources."""
+
+
+class UnsupportedAudioFormatError(AudioImportError):
+    """Raised when a decoded source is not WAV, AIFF, or FLAC."""
+
+
+class InvalidAudioDataError(AudioImportError):
+    """Raised when decoded audio has an invalid shape or sample value."""
+
+
+class SourceChangedError(AudioImportError):
+    """Raised when a source file changes during deterministic import."""

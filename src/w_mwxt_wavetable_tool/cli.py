@@ -14,6 +14,7 @@ from .hardware_validation import (
     prepare_hardware_validation,
 )
 from .identity import IdentityReply
+from .audio import InvalidSamplePolicy, MonoPolicy, import_audio
 
 PROGRAM_NAME = "W-MWXT-WAVETABLE-TOOL"
 
@@ -48,6 +49,23 @@ def _build_parser() -> argparse.ArgumentParser:
         "hex_bytes",
         help="Example: 'F0 7E 06 02 3E 0E 00 03 00 32 2E 33 33 F7'",
     )
+
+    audio_parser = sub.add_parser(
+        "audio-inspect",
+        help="Import WAV, AIFF, or FLAC and print a deterministic mono JSON report",
+    )
+    audio_parser.add_argument("file", type=Path)
+    audio_parser.add_argument(
+        "--mono-policy",
+        choices=[policy.value for policy in MonoPolicy],
+        default=MonoPolicy.AUTO.value,
+    )
+    audio_parser.add_argument(
+        "--invalid-sample-policy",
+        choices=[policy.value for policy in InvalidSamplePolicy],
+        default=InvalidSamplePolicy.REJECT.value,
+    )
+    audio_parser.add_argument("--report", type=Path)
 
 
     build_test_parser = sub.add_parser(
@@ -171,6 +189,21 @@ def main(argv: list[str] | None = None) -> int:
                     indent=2,
                 )
             )
+            return 0
+
+        if args.command == "audio-inspect":
+            source = import_audio(
+                args.file,
+                mono_policy=args.mono_policy,
+                invalid_sample_policy=args.invalid_sample_policy,
+            )
+            rendered = json.dumps(
+                source.to_summary(), indent=2, ensure_ascii=False, sort_keys=True
+            )
+            print(rendered)
+            if args.report is not None:
+                args.report.parent.mkdir(parents=True, exist_ok=True)
+                args.report.write_text(rendered + "\n", encoding="utf-8", newline="\n")
             return 0
 
 

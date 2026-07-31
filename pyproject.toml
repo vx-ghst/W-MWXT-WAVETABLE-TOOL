@@ -8,6 +8,10 @@ version = "0.2.0"
 description = "wave and wavetable engineering toolkit for the Waldorf Microwave XT."
 readme = "README.md"
 requires-python = ">=3.11"
+dependencies = [
+  "numpy>=1.26,<3",
+  "soundfile>=0.13,<1",
+]
 authors = [{name = "R-MiT"}]
 license = {text = "Private project"}
 keywords = [
