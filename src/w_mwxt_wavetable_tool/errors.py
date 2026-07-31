@@ -31,3 +31,7 @@ class AllocationError(ProtocolError):
 
 class SafetyError(ProtocolError):
     """Raised when an overwrite plan contains unresolved collisions."""
+
+
+class PackageBuildError(ProtocolError):
+    """Raised when a safe deterministic package cannot be built."""
