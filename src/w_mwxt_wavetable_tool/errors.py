@@ -35,3 +35,7 @@ class SafetyError(ProtocolError):
 
 class PackageBuildError(ProtocolError):
     """Raised when a safe deterministic package cannot be built."""
+
+
+class HardwareValidationError(ProtocolError):
+    """Raised when a hardware preflight or read-back comparison is unsafe or invalid."""

@@ -11,6 +11,23 @@ from .destinations import (
     encode_sound_name,
 )
 from .dump import DumpFile, split_sysex_stream
+from .hardware_test import (
+    HardwareTestBuild,
+    HardwareTestBuildOutputPaths,
+    build_hardware_test_from_backup,
+)
+from .hardware_validation import (
+    ComparisonStatus,
+    HardwarePackageProfile,
+    HardwarePreparation,
+    HardwarePreflightReport,
+    HardwareReadbackReport,
+    HardwareReadbackResult,
+    HardwareValidationStatus,
+    compare_hardware_readback,
+    inspect_hardware_package,
+    prepare_hardware_validation,
+)
 from .identity import IdentityReply
 from .manifest import PackageManifest
 from .message import SysExMessage
@@ -38,9 +55,18 @@ from .safety import (
     analyze_collisions,
 )
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 __all__ = [
+    "HardwareTestBuild",
+    "HardwareTestBuildOutputPaths",
+    "HardwareValidationStatus",
+    "HardwareReadbackResult",
+    "HardwareReadbackReport",
+    "HardwarePreflightReport",
+    "HardwarePreparation",
+    "HardwarePackageProfile",
+    "ComparisonStatus",
     "CollisionReport",
     "DeviceAddress",
     "DumpFile",
@@ -69,6 +95,10 @@ __all__ = [
     "allocate_user_waves",
     "analyze_collisions",
     "build_package",
+    "prepare_hardware_validation",
+    "inspect_hardware_package",
+    "build_hardware_test_from_backup",
+    "compare_hardware_readback",
     "decode_typed",
     "encode_sound_name",
     "plan_package",
