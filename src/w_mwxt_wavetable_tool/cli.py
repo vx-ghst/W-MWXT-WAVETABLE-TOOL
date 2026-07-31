@@ -15,6 +15,7 @@ from .hardware_validation import (
 )
 from .identity import IdentityReply
 from .audio import InvalidSamplePolicy, MonoPolicy, import_audio
+from .analysis import analyze_audio_source_signal
 from .project import SourceValidationPolicy, open_project, save_project
 
 PROGRAM_NAME = "W-MWXT-WAVETABLE-TOOL"
@@ -67,6 +68,48 @@ def _build_parser() -> argparse.ArgumentParser:
         default=InvalidSamplePolicy.REJECT.value,
     )
     audio_parser.add_argument("--report", type=Path)
+
+
+    signal_parser = sub.add_parser(
+        "signal-analyze",
+        help="Import audio and print deterministic CODE V4 time-domain measurements",
+    )
+    signal_parser.add_argument("file", type=Path)
+    signal_parser.add_argument(
+        "--mono-policy",
+        choices=[policy.value for policy in MonoPolicy],
+        default=MonoPolicy.AUTO.value,
+    )
+    signal_parser.add_argument(
+        "--invalid-sample-policy",
+        choices=[policy.value for policy in InvalidSamplePolicy],
+        default=InvalidSamplePolicy.REJECT.value,
+    )
+    signal_parser.add_argument("--frame-size", type=int, default=2048)
+    signal_parser.add_argument("--hop-size", type=int, default=512)
+    signal_parser.add_argument("--pitch-frame-size", type=int, default=4096)
+    signal_parser.add_argument("--pitch-hop-size", type=int, default=1024)
+    signal_parser.add_argument("--minimum-frequency", type=float, default=40.0)
+    signal_parser.add_argument("--maximum-frequency", type=float, default=2000.0)
+    signal_parser.add_argument("--pitch-confidence", type=float, default=0.60)
+    signal_parser.add_argument("--reference-a4", type=float, default=440.0)
+    signal_parser.add_argument(
+        "--phase-discontinuity-degrees", type=float, default=60.0
+    )
+    signal_parser.add_argument("--stable-pitch-cents", type=float, default=15.0)
+    signal_parser.add_argument(
+        "--glide-slope-cents-per-second", type=float, default=25.0
+    )
+    signal_parser.add_argument("--stepped-pitch-cents", type=float, default=100.0)
+    signal_parser.add_argument("--noise-lower-quantile", type=float, default=0.20)
+    signal_parser.add_argument("--transient-frame-size", type=int, default=1024)
+    signal_parser.add_argument("--transient-hop-size", type=int, default=256)
+    signal_parser.add_argument("--transient-sensitivity", type=float, default=6.0)
+    signal_parser.add_argument("--minimum-onset-strength", type=float, default=1.0)
+    signal_parser.add_argument("--change-energy-db", type=float, default=6.0)
+    signal_parser.add_argument("--change-spectral-flux", type=float, default=0.35)
+    signal_parser.add_argument("--minimum-event-separation-ms", type=float, default=20.0)
+    signal_parser.add_argument("--report", type=Path)
 
 
     project_create_parser = sub.add_parser(
@@ -231,6 +274,55 @@ def main(argv: list[str] | None = None) -> int:
             )
             rendered = json.dumps(
                 source.to_summary(), indent=2, ensure_ascii=False, sort_keys=True
+            )
+            print(rendered)
+            if args.report is not None:
+                args.report.parent.mkdir(parents=True, exist_ok=True)
+                args.report.write_text(rendered + "\n", encoding="utf-8", newline="\n")
+            return 0
+
+
+        if args.command == "signal-analyze":
+            source = import_audio(
+                args.file,
+                mono_policy=args.mono_policy,
+                invalid_sample_policy=args.invalid_sample_policy,
+            )
+            signal_analysis = analyze_audio_source_signal(
+                source,
+                time_frame_size=args.frame_size,
+                time_hop_size=args.hop_size,
+                pitch_frame_size=args.pitch_frame_size,
+                pitch_hop_size=args.pitch_hop_size,
+                minimum_frequency_hz=args.minimum_frequency,
+                maximum_frequency_hz=args.maximum_frequency,
+                confidence_threshold=args.pitch_confidence,
+                reference_a4_hz=args.reference_a4,
+                phase_discontinuity_threshold_degrees=(
+                    args.phase_discontinuity_degrees
+                ),
+                stable_pitch_threshold_cents=args.stable_pitch_cents,
+                glide_slope_threshold_cents_per_second=(
+                    args.glide_slope_cents_per_second
+                ),
+                stepped_pitch_threshold_cents=args.stepped_pitch_cents,
+                noise_lower_quantile=args.noise_lower_quantile,
+                transient_frame_size=args.transient_frame_size,
+                transient_hop_size=args.transient_hop_size,
+                transient_sensitivity=args.transient_sensitivity,
+                minimum_onset_strength=args.minimum_onset_strength,
+                change_energy_threshold_db=args.change_energy_db,
+                change_spectral_flux_threshold=args.change_spectral_flux,
+                minimum_event_separation_ms=args.minimum_event_separation_ms,
+            )
+            rendered = json.dumps(
+                {
+                    "audio": source.to_summary(),
+                    **signal_analysis.to_dict(),
+                },
+                indent=2,
+                ensure_ascii=False,
+                sort_keys=True,
             )
             print(rendered)
             if args.report is not None:

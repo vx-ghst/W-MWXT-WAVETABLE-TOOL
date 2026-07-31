@@ -2,6 +2,31 @@
 
 All notable changes to **W-MWXT-WAVETABLE-TOOL** are documented here.
 
+## 0.4.0 — CODE V4
+
+### Deterministic signal analysis
+
+- Added global level, clipping, DC, asymmetry, saturation, and envelope analysis.
+- Added deterministic fundamental-pitch, note, cents-deviation, periodicity, and pitch-stability analysis.
+- Added phase-continuity, cycle-discontinuity, and pitch-motion analysis.
+- Added deterministic noise-floor, SNR, and noise-stationarity estimates.
+- Added transient, onset, and energy/spectral change-point detection.
+- Added the immutable aggregate `SignalAnalysis` contract with shared sample identity.
+- Added component SHA-256 fingerprints and one aggregate analysis SHA-256.
+- Consolidated the `signal-analyze` CLI around the aggregate contract while preserving accepted component keys.
+
+### Validation
+
+- CODE V4-A targeted suite: 37 passed.
+- CODE V4-B targeted suite: 46 passed.
+- CODE V4-C targeted suite: 32 passed.
+- CODE V4-D targeted suite: 44 passed.
+- V4-A public/private gates: 244 passed, 4 skipped / 248 passed.
+- V4-B public/private gates: 290 passed, 4 skipped / 294 passed.
+- V4-C public/private gates: 322 passed, 4 skipped / 326 passed.
+- V4-D public/private gates: 366 passed, 4 skipped / 370 passed.
+- Manual real-audio determinism gates passed for pitch/periodicity, phase/motion, noise, and transient/change analysis.
+
 ## 0.3.0 — CODE V3
 
 ### Audio import

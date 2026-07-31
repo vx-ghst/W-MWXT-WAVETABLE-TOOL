@@ -2,13 +2,13 @@
 
 **W-MWXT-WAVETABLE-TOOL** is a deterministic Python toolkit for wave, wavetable, audio-source, and SysEx engineering for the **Waldorf Microwave XT**.
 
-> **Current release:** `0.3.0` — CODE V3  
+> **Current release:** `0.4.0` — CODE V4  
 > **Distribution and CLI:** `W-MWXT-WAVETABLE-TOOL`  
 > **Python package:** `w_mwxt_wavetable_tool`  
 > **Primary platform:** Windows 11  
 > **Python:** 3.11 or newer
 
-The project is developed through controlled, testable stages. CODE V1 established the strict SysEx core, CODE V2 added safe deterministic package construction and hardware read-back validation, and CODE V3 adds deterministic audio import and minimal project persistence.
+The project is developed through controlled, testable stages. CODE V1 established the strict SysEx core, CODE V2 added safe deterministic package construction and hardware read-back validation, CODE V3 added deterministic audio import and minimal project persistence, and CODE V4 adds the complete deterministic time-domain signal-analysis contract.
 
 ## Current capabilities
 
@@ -52,6 +52,16 @@ The tool does **not** transmit MIDI automatically. Hardware transmission remains
 - detect unchanged, changed, missing, or ignored external sources;
 - allow an explicit embedded-data fallback when the source is unavailable.
 
+### CODE V4 — deterministic signal analysis
+
+- global level, clipping, DC, asymmetry, saturation, and envelope measurements;
+- fundamental pitch, note, cents deviation, periodicity, and pitch stability;
+- phase continuity, cycle-discontinuity, and pitch-motion analysis;
+- deterministic noise-floor, SNR, and noise-stationarity estimates;
+- transient, onset, and energy/spectral change-point detection;
+- immutable `SignalAnalysis` aggregate with one sample identity and component hashes;
+- deterministic `signal-analyze` JSON reports with a complete aggregate SHA-256.
+
 ## Installation on Windows 11
 
 Open PowerShell in the repository root:
@@ -73,7 +83,7 @@ python -c "import w_mwxt_wavetable_tool as tool; print(tool.__version__)"
 Both commands must report:
 
 ```text
-0.3.0
+0.4.0
 ```
 
 ## Command-line usage
@@ -111,6 +121,16 @@ W-MWXT-WAVETABLE-TOOL audio-inspect `
 ```
 
 The JSON report includes format metadata, source SHA-256, mono policy and explanation, measurements, sample SHA-256, and imported-state SHA-256.
+
+### Analyze a complete signal
+
+```powershell
+W-MWXT-WAVETABLE-TOOL signal-analyze `
+  "D:\Audio\source.wav" `
+  --report "D:\Reports\source.signal.json"
+```
+
+The report preserves the accepted component keys and adds the CODE V4 aggregate schema, tool version, canonical sample identity, component hashes, and overall `analysis_sha256`.
 
 ### Create a minimal project
 
@@ -189,7 +209,7 @@ The project follows two rules:
 1. identical source data and configuration must produce identical outputs;
 2. automatic decisions must be accompanied by measurements, policies, and explicit explanations.
 
-CODE V3 records source, sample, state, content, and archive fingerprints so project state can be audited and reproduced.
+CODE V4 preserves the CODE V3 source and project fingerprints and adds component-level and aggregate signal-analysis fingerprints.
 
 ## Safety
 
@@ -213,10 +233,10 @@ Completed:
 - [x] CODE V1 — deterministic SysEx core
 - [x] CODE V2 — safe package builder and hardware validation
 - [x] CODE V3 — audio import, mono conversion, and minimal project persistence
+- [x] CODE V4 — time-domain DSP, pitch, periodicity, phase, levels, noise, transients, and change points
 
 Next:
 
-- [ ] CODE V4 — time-domain DSP, pitch, periodicity, phase, levels, noise, transients, and change points
 - [ ] CODE V5 — spectral, perceptual, classification, and decision engine
 - [ ] CODE V6 — segmentation, cycle ranking, and reconstruction
 - [ ] CODE V7 — XT-native optimization, quantization, and Auto Repair

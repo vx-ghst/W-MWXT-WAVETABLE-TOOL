@@ -75,3 +75,7 @@ class ProjectSourceError(ProjectError):
 
 class ProjectExistsError(ProjectError):
     """Raised when a project save would overwrite an existing file without opt-in."""
+
+
+class AnalysisError(ValueError):
+    """Raised when deterministic DSP analysis cannot be completed safely."""
