@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from enum import Enum
 from hashlib import sha256
 from typing import Any
 import json
@@ -287,3 +288,237 @@ class TimeDomainAnalysis:
         result = self._content_dict()
         result["analysis_sha256"] = self.analysis_sha256
         return result
+
+class PeriodicityClass(str, Enum):
+    SILENT = "silent"
+    APERIODIC = "aperiodic"
+    INTERMITTENT_PERIODIC = "intermittent_periodic"
+    STABLE_PERIODIC = "stable_periodic"
+    QUASI_PERIODIC = "quasi_periodic"
+    UNSTABLE_PERIODIC = "unstable_periodic"
+
+
+@dataclass(frozen=True, slots=True)
+class PitchFrameAnalysis:
+    start_sample: int
+    center_seconds: float
+    sample_count: int
+    rms: float
+    active: bool
+    period_lag_samples: float | None
+    frequency_hz: float | None
+    periodicity_score: float
+    voiced: bool
+
+    def __post_init__(self) -> None:
+        if self.start_sample < 0:
+            raise ValueError("start_sample must not be negative")
+        if self.sample_count <= 0:
+            raise ValueError("sample_count must be positive")
+        center = _require_finite(self.center_seconds, name="center_seconds")
+        if center < 0.0:
+            raise ValueError("center_seconds must not be negative")
+        rms = _require_finite(self.rms, name="rms")
+        if rms < 0.0:
+            raise ValueError("rms must not be negative")
+        _require_ratio(self.periodicity_score, name="periodicity_score")
+        lag = _optional_finite(self.period_lag_samples, name="period_lag_samples")
+        frequency = _optional_finite(self.frequency_hz, name="frequency_hz")
+        if lag is not None and lag <= 0.0:
+            raise ValueError("period_lag_samples must be positive when defined")
+        if frequency is not None and frequency <= 0.0:
+            raise ValueError("frequency_hz must be positive when defined")
+        if self.voiced and (lag is None or frequency is None or not self.active):
+            raise ValueError("voiced frames require active samples, lag, and frequency")
+        if not self.voiced and (lag is not None or frequency is not None):
+            raise ValueError("unvoiced frames must not expose lag or frequency")
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "start_sample": self.start_sample,
+            "center_seconds": self.center_seconds,
+            "sample_count": self.sample_count,
+            "rms": self.rms,
+            "active": self.active,
+            "period_lag_samples": self.period_lag_samples,
+            "frequency_hz": self.frequency_hz,
+            "periodicity_score": self.periodicity_score,
+            "voiced": self.voiced,
+        }
+
+
+@dataclass(frozen=True, slots=True)
+class PitchPeriodicityAnalysis:
+    schema_version: int
+    sample_rate: int
+    sample_count: int
+    sample_sha256: str
+    frame_size: int
+    hop_size: int
+    minimum_frequency_hz: float
+    maximum_frequency_hz: float
+    active_rms_threshold: float
+    confidence_threshold: float
+    reference_a4_hz: float
+    frames: tuple[PitchFrameAnalysis, ...]
+    active_frame_count: int
+    active_frame_ratio: float
+    voiced_frame_count: int
+    voiced_frame_ratio: float
+    voiced_active_ratio: float
+    frequency_hz: float | None
+    midi_note: float | None
+    nearest_midi_note: int | None
+    note_name: str | None
+    cents_deviation: float | None
+    periodicity_score: float
+    pitch_spread_cents: float | None
+    pitch_stability: float
+    quasi_periodicity_score: float
+    periodicity_class: PeriodicityClass
+    classification_reason: str
+
+    def __post_init__(self) -> None:
+        if self.schema_version != 1:
+            raise ValueError("Unsupported pitch-periodicity schema version")
+        if self.sample_rate <= 0 or self.sample_count <= 0:
+            raise ValueError("sample_rate and sample_count must be positive")
+        if len(self.sample_sha256) != 64 or any(
+            character not in "0123456789abcdef" for character in self.sample_sha256
+        ):
+            raise ValueError("sample_sha256 must be a lowercase SHA-256 digest")
+        if self.frame_size <= 0 or self.hop_size <= 0:
+            raise ValueError("frame_size and hop_size must be positive")
+        minimum = _require_finite(
+            self.minimum_frequency_hz, name="minimum_frequency_hz"
+        )
+        maximum = _require_finite(
+            self.maximum_frequency_hz, name="maximum_frequency_hz"
+        )
+        if minimum <= 0.0 or maximum <= minimum:
+            raise ValueError("frequency bounds are invalid")
+        if maximum >= self.sample_rate / 2.0:
+            raise ValueError("maximum_frequency_hz must be below Nyquist")
+        active_threshold = _require_finite(
+            self.active_rms_threshold, name="active_rms_threshold"
+        )
+        if active_threshold < 0.0:
+            raise ValueError("active_rms_threshold must not be negative")
+        _require_ratio(self.confidence_threshold, name="confidence_threshold")
+        reference = _require_finite(self.reference_a4_hz, name="reference_a4_hz")
+        if reference <= 0.0:
+            raise ValueError("reference_a4_hz must be positive")
+        if not self.frames:
+            raise ValueError("frames must not be empty")
+        starts = tuple(frame.start_sample for frame in self.frames)
+        if tuple(sorted(starts)) != starts:
+            raise ValueError("frame starts must be sorted")
+        if any(start >= self.sample_count for start in starts):
+            raise ValueError("frame start is outside the signal")
+        if not 0 <= self.active_frame_count <= len(self.frames):
+            raise ValueError("active_frame_count is outside the frame range")
+        if not 0 <= self.voiced_frame_count <= self.active_frame_count:
+            raise ValueError("voiced_frame_count is outside the active-frame range")
+        if self.active_frame_count != sum(frame.active for frame in self.frames):
+            raise ValueError("active_frame_count is inconsistent")
+        if self.voiced_frame_count != sum(frame.voiced for frame in self.frames):
+            raise ValueError("voiced_frame_count is inconsistent")
+        for name in (
+            "active_frame_ratio",
+            "voiced_frame_ratio",
+            "voiced_active_ratio",
+            "periodicity_score",
+            "pitch_stability",
+            "quasi_periodicity_score",
+        ):
+            _require_ratio(getattr(self, name), name=name)
+        optional_values = (
+            (self.frequency_hz, "frequency_hz"),
+            (self.midi_note, "midi_note"),
+            (self.cents_deviation, "cents_deviation"),
+            (self.pitch_spread_cents, "pitch_spread_cents"),
+        )
+        for value, name in optional_values:
+            checked = _optional_finite(value, name=name)
+            if name in {"frequency_hz", "pitch_spread_cents"} and checked is not None and checked < 0.0:
+                raise ValueError(f"{name} must not be negative")
+        pitch_fields = (
+            self.frequency_hz,
+            self.midi_note,
+            self.nearest_midi_note,
+            self.note_name,
+            self.cents_deviation,
+            self.pitch_spread_cents,
+        )
+        if self.voiced_frame_count == 0:
+            if any(value is not None for value in pitch_fields):
+                raise ValueError("unvoiced analysis must not expose pitch fields")
+        else:
+            if any(value is None for value in pitch_fields):
+                raise ValueError("voiced analysis requires all pitch fields")
+            if self.frequency_hz is not None and not (
+                self.minimum_frequency_hz <= self.frequency_hz <= self.maximum_frequency_hz
+            ):
+                raise ValueError("frequency_hz is outside the configured range")
+            if self.cents_deviation is not None and not -50.0 <= self.cents_deviation <= 50.0:
+                raise ValueError("cents_deviation must be between -50 and 50")
+            if not self.note_name:
+                raise ValueError("note_name must not be empty")
+        if not isinstance(self.periodicity_class, PeriodicityClass):
+            raise ValueError("periodicity_class must be a PeriodicityClass")
+        if not self.classification_reason:
+            raise ValueError("classification_reason must not be empty")
+
+    @property
+    def frame_count(self) -> int:
+        return len(self.frames)
+
+    def _content_dict(self) -> dict[str, Any]:
+        return {
+            "schema_version": self.schema_version,
+            "sample_rate": self.sample_rate,
+            "sample_count": self.sample_count,
+            "sample_sha256": self.sample_sha256,
+            "frame_size": self.frame_size,
+            "hop_size": self.hop_size,
+            "minimum_frequency_hz": self.minimum_frequency_hz,
+            "maximum_frequency_hz": self.maximum_frequency_hz,
+            "active_rms_threshold": self.active_rms_threshold,
+            "confidence_threshold": self.confidence_threshold,
+            "reference_a4_hz": self.reference_a4_hz,
+            "frame_count": self.frame_count,
+            "frames": [frame.to_dict() for frame in self.frames],
+            "active_frame_count": self.active_frame_count,
+            "active_frame_ratio": self.active_frame_ratio,
+            "voiced_frame_count": self.voiced_frame_count,
+            "voiced_frame_ratio": self.voiced_frame_ratio,
+            "voiced_active_ratio": self.voiced_active_ratio,
+            "frequency_hz": self.frequency_hz,
+            "midi_note": self.midi_note,
+            "nearest_midi_note": self.nearest_midi_note,
+            "note_name": self.note_name,
+            "cents_deviation": self.cents_deviation,
+            "periodicity_score": self.periodicity_score,
+            "pitch_spread_cents": self.pitch_spread_cents,
+            "pitch_stability": self.pitch_stability,
+            "quasi_periodicity_score": self.quasi_periodicity_score,
+            "periodicity_class": self.periodicity_class.value,
+            "classification_reason": self.classification_reason,
+        }
+
+    @property
+    def analysis_sha256(self) -> str:
+        rendered = json.dumps(
+            self._content_dict(),
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+            allow_nan=False,
+        ).encode("utf-8")
+        return sha256(rendered).hexdigest()
+
+    def to_dict(self) -> dict[str, Any]:
+        result = self._content_dict()
+        result["analysis_sha256"] = self.analysis_sha256
+        return result
+

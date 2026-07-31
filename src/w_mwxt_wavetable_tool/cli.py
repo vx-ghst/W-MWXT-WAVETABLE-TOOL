@@ -15,7 +15,10 @@ from .hardware_validation import (
 )
 from .identity import IdentityReply
 from .audio import InvalidSamplePolicy, MonoPolicy, import_audio
-from .analysis import analyze_audio_source
+from .analysis import (
+    analyze_audio_source,
+    analyze_audio_source_pitch_periodicity,
+)
 from .project import SourceValidationPolicy, open_project, save_project
 
 PROGRAM_NAME = "W-MWXT-WAVETABLE-TOOL"
@@ -87,6 +90,12 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     signal_parser.add_argument("--frame-size", type=int, default=2048)
     signal_parser.add_argument("--hop-size", type=int, default=512)
+    signal_parser.add_argument("--pitch-frame-size", type=int, default=4096)
+    signal_parser.add_argument("--pitch-hop-size", type=int, default=1024)
+    signal_parser.add_argument("--minimum-frequency", type=float, default=40.0)
+    signal_parser.add_argument("--maximum-frequency", type=float, default=2000.0)
+    signal_parser.add_argument("--pitch-confidence", type=float, default=0.60)
+    signal_parser.add_argument("--reference-a4", type=float, default=440.0)
     signal_parser.add_argument("--report", type=Path)
 
 
@@ -271,10 +280,20 @@ def main(argv: list[str] | None = None) -> int:
                 frame_size=args.frame_size,
                 hop_size=args.hop_size,
             )
+            pitch_periodicity = analyze_audio_source_pitch_periodicity(
+                source,
+                frame_size=args.pitch_frame_size,
+                hop_size=args.pitch_hop_size,
+                minimum_frequency_hz=args.minimum_frequency,
+                maximum_frequency_hz=args.maximum_frequency,
+                confidence_threshold=args.pitch_confidence,
+                reference_a4_hz=args.reference_a4,
+            )
             rendered = json.dumps(
                 {
                     "audio": source.to_summary(),
                     "time_domain_analysis": analysis.to_dict(),
+                    "pitch_periodicity_analysis": pitch_periodicity.to_dict(),
                 },
                 indent=2,
                 ensure_ascii=False,
