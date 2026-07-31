@@ -55,6 +55,13 @@ from .segmentation import (
     analyze_audio_source_segmentation,
     segment_source,
 )
+from .cycle_detection import (
+    CycleCandidate,
+    CycleCandidateStatus,
+    CycleDiscoveryAnalysis,
+    analyze_audio_source_cycles,
+    discover_cycles,
+)
 from .signal import SignalAnalysis, analyze_audio_source_signal, analyze_signal
 from .classification import (
     ClassificationFeature,
@@ -124,6 +131,9 @@ __all__ = [
     "SegmentKind",
     "SegmentationAnalysis",
     "SourceSegment",
+    "CycleCandidate",
+    "CycleCandidateStatus",
+    "CycleDiscoveryAnalysis",
     "SignalAnalysis",
     "SourceClass",
     "SourceClassScore",
@@ -147,6 +157,7 @@ __all__ = [
     "analyze_audio_source_transients",
     "analyze_audio_source_working_pitch",
     "analyze_audio_source_segmentation",
+    "analyze_audio_source_cycles",
     "analyze_envelope",
     "analyze_levels",
     "analyze_noise",
@@ -155,6 +166,7 @@ __all__ = [
     "generate_working_pitch_candidates",
     "plan_working_pitch",
     "segment_source",
+    "discover_cycles",
     "analyze_signal",
     "assemble_code_v5_analysis",
     "classify_source",

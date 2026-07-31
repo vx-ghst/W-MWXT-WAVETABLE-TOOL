@@ -25,6 +25,7 @@ from .analysis import (
     analyze_harmonic_perceptual,
     classify_source,
     decide_wavetable_readiness,
+    discover_cycles,
     plan_working_pitch,
     segment_source,
 )
@@ -327,6 +328,54 @@ def _build_parser() -> argparse.ArgumentParser:
     segmentation_parser.add_argument("--silence-rms-threshold", type=float, default=1.0e-6)
     segmentation_parser.add_argument("--transition-flux-threshold", type=float, default=0.20)
     segmentation_parser.add_argument("--report", type=Path)
+
+
+    cycle_parser = sub.add_parser(
+        "discover-cycles",
+        help="Discover deterministic CODE V6-C source-domain cycles and metrics",
+    )
+    cycle_parser.add_argument("file", type=Path)
+    cycle_parser.add_argument(
+        "--mono-policy",
+        choices=[policy.value for policy in MonoPolicy],
+        default=MonoPolicy.AUTO.value,
+    )
+    cycle_parser.add_argument(
+        "--invalid-sample-policy",
+        choices=[policy.value for policy in InvalidSamplePolicy],
+        default=InvalidSamplePolicy.REJECT.value,
+    )
+    cycle_parser.add_argument(
+        "--pitch-policy",
+        choices=[policy.value for policy in WorkingPitchPolicy],
+        default=WorkingPitchPolicy.AUTO.value,
+    )
+    cycle_parser.add_argument("--locked-frequency", type=float)
+    cycle_parser.add_argument(
+        "--attack-policy",
+        choices=[policy.value for policy in AttackPolicy],
+        default=AttackPolicy.AUTO.value,
+    )
+    cycle_parser.add_argument(
+        "--period-search-radius-ratio", type=float, default=0.125
+    )
+    cycle_parser.add_argument(
+        "--boundary-search-radius-samples", type=int, default=4
+    )
+    cycle_parser.add_argument(
+        "--maximum-cycles-per-segment", type=int, default=64
+    )
+    cycle_parser.add_argument(
+        "--minimum-periodicity-score", type=float, default=0.75
+    )
+    cycle_parser.add_argument("--minimum-seam-score", type=float, default=0.45)
+    cycle_parser.add_argument(
+        "--minimum-energy-consistency-score", type=float, default=0.50
+    )
+    cycle_parser.add_argument(
+        "--minimum-spectral-consistency-score", type=float, default=0.70
+    )
+    cycle_parser.add_argument("--report", type=Path)
 
 
     project_create_parser = sub.add_parser(
@@ -794,6 +843,58 @@ def main(argv: list[str] | None = None) -> int:
                     "signal_analysis": signal_analysis.to_dict(),
                     "working_pitch_plan": working_pitch_plan.to_dict(),
                     "segmentation_analysis": segmentation_analysis.to_dict(),
+                },
+                indent=2,
+                ensure_ascii=False,
+                sort_keys=True,
+            )
+            print(rendered)
+            if args.report is not None:
+                args.report.parent.mkdir(parents=True, exist_ok=True)
+                args.report.write_text(rendered + "\n", encoding="utf-8", newline="\n")
+            return 0
+
+
+        if args.command == "discover-cycles":
+            source = import_audio(
+                args.file,
+                mono_policy=args.mono_policy,
+                invalid_sample_policy=args.invalid_sample_policy,
+            )
+            signal_analysis = analyze_audio_source_signal(source)
+            working_pitch_plan = plan_working_pitch(
+                signal_analysis.pitch_periodicity_analysis,
+                policy=args.pitch_policy,
+                locked_frequency_hz=args.locked_frequency,
+            )
+            segmentation_analysis = segment_source(
+                signal_analysis,
+                working_pitch_plan,
+                attack_policy=args.attack_policy,
+            )
+            cycle_discovery_analysis = discover_cycles(
+                source.mono_samples,
+                segmentation_analysis,
+                working_pitch_plan,
+                period_search_radius_ratio=args.period_search_radius_ratio,
+                boundary_search_radius_samples=args.boundary_search_radius_samples,
+                maximum_cycles_per_segment=args.maximum_cycles_per_segment,
+                minimum_periodicity_score=args.minimum_periodicity_score,
+                minimum_seam_score=args.minimum_seam_score,
+                minimum_energy_consistency_score=(
+                    args.minimum_energy_consistency_score
+                ),
+                minimum_spectral_consistency_score=(
+                    args.minimum_spectral_consistency_score
+                ),
+            )
+            rendered = json.dumps(
+                {
+                    "audio": source.to_summary(),
+                    "signal_analysis": signal_analysis.to_dict(),
+                    "working_pitch_plan": working_pitch_plan.to_dict(),
+                    "segmentation_analysis": segmentation_analysis.to_dict(),
+                    "cycle_discovery_analysis": cycle_discovery_analysis.to_dict(),
                 },
                 indent=2,
                 ensure_ascii=False,
