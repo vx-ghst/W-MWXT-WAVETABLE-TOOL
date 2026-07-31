@@ -41,6 +41,14 @@ from .classification import (
     SourceClassification,
     classify_source,
 )
+from .decisions import (
+    DecisionStatus,
+    EngineeringDecision,
+    EngineeringRecommendation,
+    RecommendationCode,
+    RecommendationPriority,
+    decide_wavetable_readiness,
+)
 from .harmonic_perceptual import (
     HarmonicPeak,
     HarmonicPerceptualAnalysis,
@@ -59,6 +67,9 @@ from .transients import analyze_audio_source_transients, analyze_transients
 __all__ = [
     "ChangePointEvent",
     "ClassificationFeature",
+    "DecisionStatus",
+    "EngineeringDecision",
+    "EngineeringRecommendation",
     "EnvelopeAnalysis",
     "HarmonicPeak",
     "HarmonicPerceptualAnalysis",
@@ -78,6 +89,8 @@ __all__ = [
     "SourceClass",
     "SourceClassScore",
     "SourceClassification",
+    "RecommendationCode",
+    "RecommendationPriority",
     "SpectralAnalysis",
     "SpectralFrameAnalysis",
     "TimeDomainAnalysis",
@@ -99,6 +112,7 @@ __all__ = [
     "analyze_pitch_periodicity",
     "analyze_signal",
     "classify_source",
+    "decide_wavetable_readiness",
     "analyze_harmonic_perceptual",
     "analyze_spectral",
     "analyze_audio_source_spectral",
