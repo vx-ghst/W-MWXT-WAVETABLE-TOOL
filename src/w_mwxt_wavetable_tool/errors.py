@@ -39,3 +39,39 @@ class PackageBuildError(ProtocolError):
 
 class HardwareValidationError(ProtocolError):
     """Raised when a hardware preflight or read-back comparison is unsafe or invalid."""
+
+
+class AudioImportError(ValueError):
+    """Base error for unsupported, unreadable, or inconsistent audio sources."""
+
+
+class UnsupportedAudioFormatError(AudioImportError):
+    """Raised when a decoded source is not WAV, AIFF, or FLAC."""
+
+
+class InvalidAudioDataError(AudioImportError):
+    """Raised when decoded audio has an invalid shape or sample value."""
+
+
+class SourceChangedError(AudioImportError):
+    """Raised when a source file changes during deterministic import."""
+
+
+class ProjectError(ValueError):
+    """Base error for minimal project schema and persistence failures."""
+
+
+class ProjectFormatError(ProjectError):
+    """Raised when a project container or manifest has an invalid structure."""
+
+
+class ProjectIntegrityError(ProjectError):
+    """Raised when project content does not match its recorded hashes or lengths."""
+
+
+class ProjectSourceError(ProjectError):
+    """Raised when strict source validation finds a missing or changed source."""
+
+
+class ProjectExistsError(ProjectError):
+    """Raised when a project save would overwrite an existing file without opt-in."""

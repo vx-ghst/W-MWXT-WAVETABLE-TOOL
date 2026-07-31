@@ -14,6 +14,8 @@ from .hardware_validation import (
     prepare_hardware_validation,
 )
 from .identity import IdentityReply
+from .audio import InvalidSamplePolicy, MonoPolicy, import_audio
+from .project import SourceValidationPolicy, open_project, save_project
 
 PROGRAM_NAME = "W-MWXT-WAVETABLE-TOOL"
 
@@ -49,6 +51,54 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Example: 'F0 7E 06 02 3E 0E 00 03 00 32 2E 33 33 F7'",
     )
 
+    audio_parser = sub.add_parser(
+        "audio-inspect",
+        help="Import WAV, AIFF, or FLAC and print a deterministic mono JSON report",
+    )
+    audio_parser.add_argument("file", type=Path)
+    audio_parser.add_argument(
+        "--mono-policy",
+        choices=[policy.value for policy in MonoPolicy],
+        default=MonoPolicy.AUTO.value,
+    )
+    audio_parser.add_argument(
+        "--invalid-sample-policy",
+        choices=[policy.value for policy in InvalidSamplePolicy],
+        default=InvalidSamplePolicy.REJECT.value,
+    )
+    audio_parser.add_argument("--report", type=Path)
+
+
+    project_create_parser = sub.add_parser(
+        "project-create",
+        help="Import audio and save a deterministic minimal project",
+    )
+    project_create_parser.add_argument("source", type=Path)
+    project_create_parser.add_argument("project", type=Path)
+    project_create_parser.add_argument("--name")
+    project_create_parser.add_argument(
+        "--mono-policy",
+        choices=[policy.value for policy in MonoPolicy],
+        default=MonoPolicy.AUTO.value,
+    )
+    project_create_parser.add_argument(
+        "--invalid-sample-policy",
+        choices=[policy.value for policy in InvalidSamplePolicy],
+        default=InvalidSamplePolicy.REJECT.value,
+    )
+    project_create_parser.add_argument("--overwrite", action="store_true")
+
+    project_open_parser = sub.add_parser(
+        "project-open",
+        help="Open, verify, and report a deterministic minimal project",
+    )
+    project_open_parser.add_argument("project", type=Path)
+    project_open_parser.add_argument(
+        "--source-policy",
+        choices=[policy.value for policy in SourceValidationPolicy],
+        default=SourceValidationPolicy.REQUIRE_UNCHANGED.value,
+    )
+    project_open_parser.add_argument("--report", type=Path)
 
     build_test_parser = sub.add_parser(
         "hardware-build-test",
@@ -173,6 +223,51 @@ def main(argv: list[str] | None = None) -> int:
             )
             return 0
 
+        if args.command == "audio-inspect":
+            source = import_audio(
+                args.file,
+                mono_policy=args.mono_policy,
+                invalid_sample_policy=args.invalid_sample_policy,
+            )
+            rendered = json.dumps(
+                source.to_summary(), indent=2, ensure_ascii=False, sort_keys=True
+            )
+            print(rendered)
+            if args.report is not None:
+                args.report.parent.mkdir(parents=True, exist_ok=True)
+                args.report.write_text(rendered + "\n", encoding="utf-8", newline="\n")
+            return 0
+
+
+        if args.command == "project-create":
+            source = import_audio(
+                args.source,
+                mono_policy=args.mono_policy,
+                invalid_sample_policy=args.invalid_sample_policy,
+            )
+            result = save_project(
+                source,
+                args.project,
+                project_name=args.name,
+                overwrite=args.overwrite,
+                tool_version=__version__,
+            )
+            print(json.dumps(result.to_dict(), indent=2, ensure_ascii=False, sort_keys=True))
+            return 0
+
+        if args.command == "project-open":
+            project = open_project(
+                args.project,
+                source_policy=args.source_policy,
+            )
+            rendered = json.dumps(
+                project.to_summary(), indent=2, ensure_ascii=False, sort_keys=True
+            )
+            print(rendered)
+            if args.report is not None:
+                args.report.parent.mkdir(parents=True, exist_ok=True)
+                args.report.write_text(rendered + "\n", encoding="utf-8", newline="\n")
+            return 0
 
         if args.command == "hardware-build-test":
             baseline = DumpFile.from_bytes(args.baseline.read_bytes())
