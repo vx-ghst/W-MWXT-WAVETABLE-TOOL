@@ -34,6 +34,12 @@ from .pitch import (
     nearest_midi_note,
 )
 from .signal import SignalAnalysis, analyze_audio_source_signal, analyze_signal
+from .spectral import (
+    SpectralAnalysis,
+    SpectralFrameAnalysis,
+    analyze_audio_source_spectral,
+    analyze_spectral,
+)
 from .time_domain import analyze_audio_source, analyze_time_domain
 from .transients import analyze_audio_source_transients, analyze_transients
 
@@ -53,6 +59,8 @@ __all__ = [
     "PitchFrameAnalysis",
     "PitchPeriodicityAnalysis",
     "SignalAnalysis",
+    "SpectralAnalysis",
+    "SpectralFrameAnalysis",
     "TimeDomainAnalysis",
     "TransientChangeAnalysis",
     "TransientChangeClass",
@@ -70,6 +78,8 @@ __all__ = [
     "analyze_phase_motion",
     "analyze_pitch_periodicity",
     "analyze_signal",
+    "analyze_spectral",
+    "analyze_audio_source_spectral",
     "analyze_time_domain",
     "analyze_transients",
     "describe_frequency",

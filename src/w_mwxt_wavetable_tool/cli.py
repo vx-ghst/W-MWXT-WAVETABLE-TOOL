@@ -15,7 +15,7 @@ from .hardware_validation import (
 )
 from .identity import IdentityReply
 from .audio import InvalidSamplePolicy, MonoPolicy, import_audio
-from .analysis import analyze_audio_source_signal
+from .analysis import analyze_audio_source_signal, analyze_audio_source_spectral
 from .project import SourceValidationPolicy, open_project, save_project
 
 PROGRAM_NAME = "W-MWXT-WAVETABLE-TOOL"
@@ -110,6 +110,30 @@ def _build_parser() -> argparse.ArgumentParser:
     signal_parser.add_argument("--change-spectral-flux", type=float, default=0.35)
     signal_parser.add_argument("--minimum-event-separation-ms", type=float, default=20.0)
     signal_parser.add_argument("--report", type=Path)
+
+    spectral_parser = sub.add_parser(
+        "spectral-analyze",
+        help="Import audio and print deterministic CODE V5 spectral measurements",
+    )
+    spectral_parser.add_argument("file", type=Path)
+    spectral_parser.add_argument(
+        "--mono-policy",
+        choices=[policy.value for policy in MonoPolicy],
+        default=MonoPolicy.AUTO.value,
+    )
+    spectral_parser.add_argument(
+        "--invalid-sample-policy",
+        choices=[policy.value for policy in InvalidSamplePolicy],
+        default=InvalidSamplePolicy.REJECT.value,
+    )
+    spectral_parser.add_argument("--frame-size", type=int, default=4096)
+    spectral_parser.add_argument("--hop-size", type=int, default=1024)
+    spectral_parser.add_argument("--fft-size", type=int)
+    spectral_parser.add_argument("--active-rms-threshold", type=float, default=1.0e-8)
+    spectral_parser.add_argument("--low-band-max", type=float, default=250.0)
+    spectral_parser.add_argument("--mid-band-max", type=float, default=4000.0)
+    spectral_parser.add_argument("--keep-dc", action="store_true")
+    spectral_parser.add_argument("--report", type=Path)
 
 
     project_create_parser = sub.add_parser(
@@ -319,6 +343,38 @@ def main(argv: list[str] | None = None) -> int:
                 {
                     "audio": source.to_summary(),
                     **signal_analysis.to_dict(),
+                },
+                indent=2,
+                ensure_ascii=False,
+                sort_keys=True,
+            )
+            print(rendered)
+            if args.report is not None:
+                args.report.parent.mkdir(parents=True, exist_ok=True)
+                args.report.write_text(rendered + "\n", encoding="utf-8", newline="\n")
+            return 0
+
+
+        if args.command == "spectral-analyze":
+            source = import_audio(
+                args.file,
+                mono_policy=args.mono_policy,
+                invalid_sample_policy=args.invalid_sample_policy,
+            )
+            spectral_analysis = analyze_audio_source_spectral(
+                source,
+                frame_size=args.frame_size,
+                hop_size=args.hop_size,
+                fft_size=args.fft_size,
+                remove_dc=not args.keep_dc,
+                active_rms_threshold=args.active_rms_threshold,
+                low_band_max_hz=args.low_band_max,
+                mid_band_max_hz=args.mid_band_max,
+            )
+            rendered = json.dumps(
+                {
+                    "audio": source.to_summary(),
+                    "spectral_analysis": spectral_analysis.to_dict(),
                 },
                 indent=2,
                 ensure_ascii=False,
