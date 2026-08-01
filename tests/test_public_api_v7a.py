@@ -3,7 +3,7 @@ from __future__ import annotations
 import w_mwxt_wavetable_tool.xt as xt
 
 
-def test_code_v7_a_public_subpackage_contract() -> None:
+def test_code_v7_a1_public_subpackage_contract() -> None:
     expected = {
         "XtGateAnalysis",
         "XtGateBuild",

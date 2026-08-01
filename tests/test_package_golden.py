@@ -42,7 +42,7 @@ def test_complete_golden_package_shape_and_hash() -> None:
         "USER_WAVETABLE": 1,
     }
     assert len(result.package_bytes) == 8887
-    assert sha256(result.package_bytes).hexdigest() == "e9a6294b78ef41ec85db24850270dfe85228f3a2ea622e33a70bd6df04858caa"
+    assert sha256(result.package_bytes).hexdigest() == "c2693b7a5203fec1f4c3b0a0a02cd2331507bc1d74b49c50e14771dfc45ae058"
 
 
 def test_complete_golden_package_is_deterministic() -> None:

@@ -1,237 +1,227 @@
-# CODE V7-A Validation — XT Reconstruction and Symmetry Hardware Gate
+# CODE V7-A.1 Validation - Documented XT User Wave Coding and Reconstruction
 
 ## Stage identity
 
 ```text
 Project : W-MWXT-WAVETABLE-TOOL
-Stage   : CODE V7-A
+Stage   : CODE V7-A.1
 Branch  : code-v7-xt-native-optimization
 Version : 0.6.0 (unchanged until CODE V7-F)
 ```
 
-## Purpose
+## Reason for the corrective patch
 
-CODE V7-A prevents the XT-native optimizer from freezing an unverified 64/128-point reconstruction model.
+The first CODE V7-A harness correctly separated WAVD storage evidence from an
+independent 128-point observation, but it still inherited two provisional CODE V1
+assumptions:
 
-The established wire fact is:
+1. User Wave sample bytes were interpreted as two's-complement int8;
+2. the 64-to-128 reconstruction architecture was treated as wholly unknown.
+
+The Microwave II/XT manual's SysEx appendix resolves both points:
 
 ```text
-one WAVD payload = 128 MIDI-safe nibbles = 64 signed int8 stored samples
+wire sample coding : offset binary; flip the most-significant bit to obtain signed int8
+stored points      : 64
+logical points     : 128
+second half        : negative values of the first half in reverse order
 ```
 
-A WAVD redump can prove that these 64 values survived transmission and storage. It cannot, by itself, expose the oscillator's internal samples 64–127. CODE V7-A therefore separates two gates that earlier wording risked conflating:
+Canonical reconstruction for `n = 0..63`:
 
 ```text
-Gate 1 — protocol/storage gate
-    send WAVD → redump WAVD → compare 64 stored values
-
-Gate 2 — reconstruction gate
-    obtain an independent phase-aligned 128-sample observation
-    → compare every supported reconstruction hypothesis
-    → require one unique exact match
+full[64 + n] = -full[63 - n]
 ```
 
-No nearest-match heuristic is allowed to decide the architecture.
+The remaining unresolved edge is the negation of signed full-scale `-128`, whose
+mathematical result is `+128` and does not fit signed int8.
 
-## Delivered contract
+## Central codec correction
 
-Public subpackage:
+New codec functions:
 
 ```text
-w_mwxt_wavetable_tool.xt
+decode_offset_binary_i8
+encode_offset_binary_i8
 ```
 
-Models and functions:
+Golden mapping:
+
+| WAVD raw byte | Signed sample |
+|---:|---:|
+| `00h` | `-128` |
+| `01h` | `-127` |
+| `7Fh` | `-1` |
+| `80h` | `0` |
+| `81h` | `+1` |
+| `FEh` | `+126` |
+| `FFh` | `+127` |
+
+`UserWave.from_message()` now decodes this mapping. `UserWave.payload` applies the
+inverse mapping before nibble encoding.
+
+This changes the logical interpretation of real WAVD samples while preserving exact
+byte round-trips:
 
 ```text
-XtGatePattern
-XtReconstructionHypothesis
-XtProbeStorageStatus
-XtGateStatus
-XtGateVerdict
-XtGateProbe
-XtReconstructionGatePlan
-XtGateBuild
-XtProbeReadbackEvidence
-XtHypothesisScore
-XtGateAnalysis
-XtGateAnalysisResult
-generate_xt_gate_probes
-build_xt_reconstruction_gate
-analyze_xt_reconstruction_gate
-verify_xt_reconstruction_gate_restore
-parse_observation_document
-reconstruct_probe
+raw WAVD -> corrected logical samples -> raw WAVD
 ```
 
-Focused CLI:
+must remain byte-identical.
+
+## Documented reconstruction contract
+
+`UserWave.reconstruct()` now defaults to `documented` and implements:
 
 ```text
-W-MWXT-XT-GATE
+stored[0..63] + (-reverse(stored))[0..63]
 ```
 
-Commands:
+Explicit diagnostic policies remain available for the `-128` edge:
 
 ```text
-build
-analyze
-verify-restore
+documented / mathematical : preserve mathematical +128
+wrap_i8                    : +128 wraps to -128
+saturate_i8                : +128 clamps to +127
+```
+
+No normal V7 optimizer may generate `-128` until this edge is characterized on the
+physical XT. The temporary safe generation range is:
+
+```text
+-127..+127
+```
+
+## Gate schema 2
+
+All CODE V7-A.1 gate manifests use schema version `2`. Schema-1 manifests are rejected
+with an instruction to rebuild the package because their sample interpretation and
+architecture contract are obsolete.
+
+The schema records:
+
+```text
+wire_sample_encoding          : offset_binary_msb_flipped
+documented_reconstruction_law : second_half[n] = -first_half[63 - n]
+safe_optimizer_sample_range   : [-127, 127]
+negative_full_scale_behavior  : pending_hardware_characterization
 ```
 
 ## Diagnostic probes
 
-Three deterministic probes are used on three consecutive User Wave destinations:
+Three deterministic probes use three consecutive User Wave destinations:
 
-1. `indexed_asymmetric` — distinguishes direct, mirror, repeat, and sign transforms;
-2. `edge_extremes` — includes `-128` and `+127` to distinguish mathematical, wrapped-int8, and saturated negation;
-3. `seeded_random` — reduces accidental agreement with a simple unmodeled transform.
+1. `indexed_asymmetric` - ordered, non-palindromic safe-range storage pattern;
+2. `offset_binary_golden` - repeats the exact raw-byte golden vector;
+3. `negative_full_scale_edge` - places `-128` at three known positions.
 
-Each probe records both:
-
-```text
-stored_samples          : 64 values actually encoded in WAVD
-requested_full_samples  : 128-value intentionally asymmetric diagnostic source
-```
-
-The generated manifest is hashed and preserves the exact probes, destinations, baseline identity, package identity, restore identity, and evidence boundary.
-
-## Supported reconstruction hypotheses
-
-```text
-preserve_requested_128
-zero_fill_second_half
-repeat_first_half
-mirror_first_half
-negate_first_half
-reverse_negate_mathematical
-reverse_negate_wrap_i8
-reverse_negate_saturate_i8
-```
-
-The `edge_extremes` probe makes the three reversed-antisymmetry edge policies distinguishable at `-128`.
+A WAVD redump validates the 64 transmitted/stored values exactly. The documentation
+already establishes the reverse-negate architecture. An optional independent digital
+128-point observation is now used only to characterize the `-128` edge.
 
 ## Gate outcomes
 
-### Storage exact, no independent observation
-
-```text
-status  : pending_observation
-verdict : protocol_storage_confirmed_reconstruction_unresolved
-action  : do_not_freeze_symmetry_optimizer
-```
-
-### One unique hypothesis
+### Exact WAVD readback, no 128-point observation
 
 ```text
 status  : pass
-verdict : hypothesis-specific hardware verdict
-action  : V7-B may freeze the corresponding representation
+verdict : documented_reconstruction_storage_confirmed_edge_unresolved
+V7-B    : allowed only with generated samples constrained to -127..+127
 ```
 
-### Multiple or zero hypotheses
+### Unique documented edge policy
+
+```text
+status  : pass
+verdict : documented reconstruction plus mathematical/wrap/saturate edge confirmed
+```
+
+### Observation conflict
 
 ```text
 status  : inconclusive
-action  : improve measurement or add a tested hypothesis
+V7-B    : blocked pending measurement review
 ```
 
-### WAVD read-back mismatch
+### WAVD mismatch
 
 ```text
 status  : fail
-verdict : readback_failed
-action  : resolve transmission, addressing, protocol, or decoder mismatch first
+V7-B    : blocked
 ```
 
-## Safe hardware workflow
+## Golden package update
 
-Build the gate from a verified pre-write Everything backup:
-
-```powershell
-W-MWXT-XT-GATE build `
-  "D:\W-MWXT-PRIVATE-DUMPS\everything-before.syx" `
-  --target-wave-start 1247 `
-  --output-dir "D:\W-MWXT-V7A-GATE"
-```
-
-The command generates:
+Correct offset-binary encoding changes the synthetic CODE V2 golden package bytes.
+The package length and structure remain unchanged.
 
 ```text
-CODE_V7_A_XT_RECONSTRUCTION_GATE.probe.syx
-CODE_V7_A_XT_RECONSTRUCTION_GATE.restore.syx
-CODE_V7_A_XT_RECONSTRUCTION_GATE.manifest.json
-CODE_V7_A_XT_RECONSTRUCTION_GATE.manifest.md
-CODE_V7_A_XT_RECONSTRUCTION_GATE.observation-template.json
+old SHA-256 : e9a6294b78ef41ec85db24850270dfe85228f3a2ea622e33a70bd6df04858caa
+new SHA-256 : c2693b7a5203fec1f4c3b0a0a02cd2331507bc1d74b49c50e14771dfc45ae058
+bytes       : 8887
+messages    : 63
 ```
 
-After manual transmission and a fresh redump:
+The new hash was independently reproduced from the documented message framing,
+offset-binary sample conversion, nibble packing, addresses, checksums, WCTD references,
+and SNDD payload.
+
+## Focused automated validation
+
+```text
+offset-binary codec and UserWave tests : 5
+CODE V7-A.1 gate core tests            : 10
+focused CLI tests                      : 3
+public XT subpackage API test          : 1
+targeted total                         : 19
+```
+
+Targeted result during patch construction:
+
+```text
+19 passed
+```
+
+## Required repository validation after application
+
+Public suite:
 
 ```powershell
-W-MWXT-XT-GATE analyze `
-  "D:\W-MWXT-V7A-GATE\CODE_V7_A_XT_RECONSTRUCTION_GATE.probe.syx" `
-  "D:\W-MWXT-V7A-GATE\readback-after-probe.syx" `
-  "D:\W-MWXT-V7A-GATE\CODE_V7_A_XT_RECONSTRUCTION_GATE.manifest.json" `
-  --output-dir "D:\W-MWXT-V7A-GATE"
+Remove-Item Env:W_MWXT_DUMP_DIR -ErrorAction SilentlyContinue
+& ".\.venv\Scripts\python.exe" -m pytest -q
 ```
 
-Without an independent 128-point observation, the expected correct result is `pending_observation`, not `pass`.
-
-When a valid observation document exists:
+Private suite:
 
 ```powershell
-W-MWXT-XT-GATE analyze `
-  "D:\W-MWXT-V7A-GATE\CODE_V7_A_XT_RECONSTRUCTION_GATE.probe.syx" `
-  "D:\W-MWXT-V7A-GATE\readback-after-probe.syx" `
-  "D:\W-MWXT-V7A-GATE\CODE_V7_A_XT_RECONSTRUCTION_GATE.manifest.json" `
-  --observations "D:\W-MWXT-V7A-GATE\observed-128.json" `
-  --output-dir "D:\W-MWXT-V7A-GATE"
+$env:W_MWXT_DUMP_DIR = "D:\W-MWXT-PRIVATE-DUMPS"
+& ".\.venv\Scripts\python.exe" -m pytest -q
 ```
 
-Restore immediately after the experiment, redump the targets, then verify:
+Private acceptance requires all four real dumps to remain byte-identical after decode
+and re-encode. This is the critical proof that correcting the logical amplitude meaning
+did not alter archival SysEx bytes.
 
-```powershell
-W-MWXT-XT-GATE verify-restore `
-  "D:\W-MWXT-V7A-GATE\CODE_V7_A_XT_RECONSTRUCTION_GATE.restore.syx" `
-  "D:\W-MWXT-V7A-GATE\readback-after-restore.syx" `
-  "D:\W-MWXT-V7A-GATE\CODE_V7_A_XT_RECONSTRUCTION_GATE.manifest.json" `
-  --output-dir "D:\W-MWXT-V7A-GATE"
-```
+## Hardware workflow after software validation
+
+1. rebuild a schema-2 gate package from a fresh pre-write Everything backup;
+2. transmit the three WAVD probes manually;
+3. redump the three destinations or All Wavetables & Waves;
+4. run `W-MWXT-XT-GATE analyze`;
+5. require exact storage evidence;
+6. restore the generated bundle;
+7. redump again and run `verify-restore`;
+8. keep `-128` excluded from V7-B until its edge behavior is measured.
 
 ## Safety boundary
 
-CODE V7-A:
+CODE V7-A.1:
 
 - never transmits MIDI automatically;
-- never selects destinations without an explicit target range;
-- requires an existing baseline copy of all three targets;
-- creates an exact restore bundle before transmission;
-- refuses a probe payload that equals its baseline target;
-- verifies strict SysEx round-trips;
-- refuses to infer oscillator reconstruction from WAVD read-back alone;
-- does not quantize V6 reconstructed waves;
-- does not implement the V7-B symmetry optimizer.
-
-## Automated validation
-
-```text
-Core gate, manifest, hypothesis, read-back, and restore tests : 10
-Focused CLI tests                                           : 3
-Public subpackage API test                                  : 1
-Targeted total                                              : 14
-```
-
-## Current acceptance state
-
-```text
-Software harness       : PASS
-Deterministic probes   : PASS
-Storage analyzer       : PASS
-Hypothesis comparator  : PASS
-Restore verification   : PASS
-Physical XT write      : PENDING
-Physical WAVD redump   : PENDING
-Independent 128 points : PENDING
-Final hardware verdict : PENDING
-```
-
-CODE V7-A is not hardware-closed until the physical test produces a unique, independently supported reconstruction verdict and the restore read-back passes exactly. CODE V7-B must remain blocked until that point.
+- never reuses a schema-1 manifest;
+- requires a baseline copy of all overwritten User Waves;
+- creates a restore bundle before transmission;
+- validates offset-binary storage by exact readback;
+- uses the documented reverse-negate law;
+- does not implement the V7-B optimizer;
+- does not permit normal generation of `-128`.
