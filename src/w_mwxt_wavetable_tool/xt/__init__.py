@@ -45,6 +45,21 @@ from .projection import (
     project_wave_xt_native,
     reconstruct_xt_native,
 )
+from .trajectory import (
+    DEFAULT_STEM as TRAJECTORY_DEFAULT_STEM,
+    DEFAULT_TARGET_SLOT_COUNT,
+    TRAJECTORY_SCHEMA_VERSION,
+    XtInterpolationCurve,
+    XtPhasePathPolicy,
+    XtTrajectoryAnchor,
+    XtTrajectoryConfig,
+    XtTrajectorySlot,
+    XtTrajectorySlotKind,
+    XtTrajectoryTransition,
+    XtWavetableTrajectory,
+    build_xt_wavetable_trajectory_document,
+    load_and_build_xt_wavetable_trajectory,
+)
 from .reconstruction_gate import (
     XtGateAnalysis,
     XtGateAnalysisOutputPaths,
@@ -69,6 +84,17 @@ from .reconstruction_gate import (
 )
 
 __all__ = [
+    "TRAJECTORY_DEFAULT_STEM",
+    "DEFAULT_TARGET_SLOT_COUNT",
+    "TRAJECTORY_SCHEMA_VERSION",
+    "XtInterpolationCurve",
+    "XtPhasePathPolicy",
+    "XtTrajectoryAnchor",
+    "XtTrajectoryConfig",
+    "XtTrajectorySlot",
+    "XtTrajectorySlotKind",
+    "XtTrajectoryTransition",
+    "XtWavetableTrajectory",
     "PROJECTION_DEFAULT_STEM",
     "PROJECTION_SCHEMA_VERSION",
     "SOURCE_SAMPLE_COUNT",
@@ -123,6 +149,8 @@ __all__ = [
     "reconstruct_probe",
     "verify_xt_audio_gate_restore",
     "verify_xt_audio_gate_setup",
+    "build_xt_wavetable_trajectory_document",
+    "load_and_build_xt_wavetable_trajectory",
     "load_and_project_code_v6_json",
     "project_code_v6_analysis_xt_native",
     "project_code_v6_document_xt_native",
