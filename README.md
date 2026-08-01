@@ -2,13 +2,13 @@
 
 **W-MWXT-WAVETABLE-TOOL** is a deterministic Python toolkit for wave, wavetable, audio-source, and SysEx engineering for the **Waldorf Microwave XT**.
 
-> **Current release:** `0.5.0` — CODE V5<br>
+> **Current release:** `0.6.0` — CODE V6<br>
 > **Distribution and CLI:** `W-MWXT-WAVETABLE-TOOL`  
 > **Python package:** `w_mwxt_wavetable_tool`  
 > **Primary platform:** Windows 11  
 > **Python:** 3.11 or newer
 
-The project is developed through controlled, testable stages. CODE V1 established the strict SysEx core, CODE V2 added safe deterministic package construction and hardware read-back validation, CODE V3 added deterministic audio import and minimal project persistence, CODE V4 added the complete deterministic time-domain signal-analysis contract, and CODE V5 adds spectral and perceptual analysis, explainable source classification, auditable engineering decisions, and one aggregate analysis contract.
+The project is developed through controlled, testable stages. CODE V1 established the strict SysEx core, CODE V2 added safe deterministic package construction and hardware read-back validation, CODE V3 added deterministic audio import and minimal project persistence, CODE V4 added time-domain signal analysis, CODE V5 added spectral/perceptual decisions, and CODE V6 adds working-pitch planning, segmentation, deterministic cycle discovery, representative top-N selection, waveform reconstruction, and one final aggregate contract.
 
 ## Current capabilities
 
@@ -72,6 +72,19 @@ The tool does **not** transmit MIDI automatically. Hardware transmission remains
 - immutable `CodeV5Analysis` aggregate with one canonical sample identity and one final aggregate SHA-256;
 - deterministic `analyze-audio` JSON reports containing the complete accepted analysis chain.
 
+### CODE V6 — working pitch, segmentation, cycle selection, and reconstruction
+
+- octave-preserving working-pitch candidates with automatic, locked, and no-repitch policies;
+- deterministic attack-aware source segmentation with complete source coverage;
+- source-domain cycle discovery with periodicity, seam, energy, spectral, and composite metrics;
+- deterministic representative ranking, temporal/segment novelty, top-N selection, and explicit forced-cycle override;
+- spectral, dominant-partial, and hybrid 128-point float-domain reconstruction;
+- strict SHA-256 links from the accepted CODE V5 analysis through every V6 component;
+- immutable `CodeV6Analysis` aggregate with one final analysis SHA-256;
+- final `analyze-code-v6` JSON report containing the complete accepted CODE V5 + V6 chain.
+
+CODE V6 remains non-destructive: it does not quantize XT values, allocate synth memory, build SysEx, or transmit MIDI. Those operations remain gated by later stages.
+
 ## Installation on Windows 11
 
 Open PowerShell in the repository root:
@@ -93,7 +106,7 @@ python -c "import w_mwxt_wavetable_tool as tool; print(tool.__version__)"
 Both commands must report:
 
 ```text
-0.5.0
+0.6.0
 ```
 
 ## Command-line usage
@@ -153,6 +166,24 @@ W-MWXT-WAVETABLE-TOOL analyze-audio `
 The report contains the imported-audio summary plus one `code_v5_analysis` object. That aggregate preserves the complete signal, spectral, harmonic/perceptual, classification, and engineering-decision reports, validates every component link, and adds the final CODE V5 `analysis_sha256`.
 
 The component commands `spectral-analyze`, `perceptual-analyze`, `classify-audio`, and `recommend-audio` remain available for focused inspection.
+
+### Analyze the complete CODE V6 chain
+
+```powershell
+W-MWXT-WAVETABLE-TOOL analyze-code-v6 `
+  "D:\Audio\source.wav" `
+  --pitch-policy auto `
+  --attack-policy auto `
+  --selection-policy auto `
+  --top-n 16 `
+  --reconstruction-strategy auto `
+  --target-sample-count 128 `
+  --report "D:\Reports\source.code-v6.json"
+```
+
+The report contains the imported-audio summary plus one `code_v6_analysis` object. It embeds the accepted CODE V5 aggregate, the working-pitch plan, source segmentation, cycle discovery, representative selection, reconstructed float waves, exact component links, and one final `analysis_sha256`.
+
+The focused V6 commands `pitch-plan`, `segment-audio`, `discover-cycles`, `select-cycles`, and `reconstruct-waves` remain available. The existing `analyze-audio` command remains the stable CODE V5 aggregate command.
 
 ### Create a minimal project
 
@@ -231,7 +262,7 @@ The project follows two rules:
 1. identical source data and configuration must produce identical outputs;
 2. automatic decisions must be accompanied by measurements, policies, and explicit explanations.
 
-CODE V5 preserves the CODE V3 source and project fingerprints, the CODE V4 time-domain analysis hashes, every V5 component hash, and one final aggregate analysis fingerprint.
+CODE V6 preserves the CODE V3 source identity, the complete CODE V4/V5 aggregate, every working-pitch, segmentation, cycle, ranking, source-cycle, and reconstruction hash, and one final aggregate analysis fingerprint.
 
 ## Safety
 
@@ -257,10 +288,10 @@ Completed:
 - [x] CODE V3 — audio import, mono conversion, and minimal project persistence
 - [x] CODE V4 — time-domain DSP, pitch, periodicity, phase, levels, noise, transients, and change points
 - [x] CODE V5 — spectral, perceptual, classification, decisions, and aggregate analysis
+- [x] CODE V6 — working pitch, segmentation, cycle ranking, selection, reconstruction, and aggregate analysis
 
 Next:
 
-- [ ] CODE V6 — segmentation, cycle ranking, and reconstruction
 - [ ] CODE V7 — XT-native optimization, quantization, and Auto Repair
 - [ ] CODE V8 — complete 61-position wavetable generation and transitions
 - [ ] CODE V9+ — complete project export, preview, transport, and graphical interface

@@ -2,6 +2,32 @@
 
 All notable changes to **W-MWXT-WAVETABLE-TOOL** are documented here.
 
+## 0.6.0 — CODE V6
+
+### Working pitch and source segmentation
+
+- Added deterministic octave-preserving working-pitch candidates, automatic repitch planning, explicit pitch lock, and no-repitch policy.
+- Added deterministic attack-aware segmentation with complete source coverage, usable-segment selection, and traceable boundary/classification reasons.
+
+### Cycle discovery, ranking, and reconstruction
+
+- Added source-domain cycle discovery with periodicity, seam, energy, spectral, period-error, and composite quality metrics.
+- Added deterministic representative ranking, temporal and segment novelty, top-N selection up to 61 candidates, and explicit forced-cycle override.
+- Added spectral, dominant-partial, and hybrid float-domain reconstruction with 128-point defaults, DC control, peak normalization, seam metrics, and spectral-similarity evidence.
+
+### Aggregate, CLI, and release
+
+- Added the immutable `CodeV6Analysis` aggregate with strict CODE V5 → V6 component links and one final SHA-256.
+- Added the final `analyze-code-v6` command while preserving all focused V6 commands and the stable CODE V5 `analyze-audio` command.
+- Updated public API exports, README, roadmap, validation evidence, release notes, package metadata, and version to `0.6.0`.
+
+### Validation
+
+- CODE V6-A through V6-E targeted suites: 58 passed at every intermediate stage.
+- CODE V6-E public/private baselines before release closure: 900 passed, 4 skipped / 904 passed.
+- Real-audio gates passed for working pitch, segmentation, cycle discovery, representative selection, and reconstruction with byte-identical reports and unchanged source audio.
+- CODE V6-F final aggregate, complete-suite, and release gates are recorded in `docs/validation/CODE_V6_F_VALIDATION.md`.
+
 ## 0.5.0 — CODE V5
 
 ### Spectral and perceptual analysis
