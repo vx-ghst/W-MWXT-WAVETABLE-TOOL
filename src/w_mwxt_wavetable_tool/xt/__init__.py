@@ -1,5 +1,17 @@
 """XT-native hardware gates and later optimization components."""
 
+from .hardware_package import (
+    DEFAULT_STEM as HARDWARE_PACKAGE_DEFAULT_STEM,
+    HARDWARE_PACKAGE_SCHEMA_VERSION,
+    XtHardwareArtifact,
+    XtHardwarePackageAnalysis,
+    XtHardwarePackageBuild,
+    XtHardwarePackageOutputPaths,
+    XtHardwarePackageStatus,
+    XtHardwareTargetEvidence,
+    build_xt_hardware_package_documents,
+    load_and_build_xt_hardware_package,
+)
 from .audio_gate import (
     AUDIO_GATE_SCHEMA_VERSION,
     DEFAULT_STEM as AUDIO_GATE_DEFAULT_STEM,
@@ -99,6 +111,14 @@ from .reconstruction_gate import (
 )
 
 __all__ = [
+    "HARDWARE_PACKAGE_DEFAULT_STEM",
+    "HARDWARE_PACKAGE_SCHEMA_VERSION",
+    "XtHardwareArtifact",
+    "XtHardwarePackageAnalysis",
+    "XtHardwarePackageBuild",
+    "XtHardwarePackageOutputPaths",
+    "XtHardwarePackageStatus",
+    "XtHardwareTargetEvidence",
     "TRAJECTORY_QC_DEFAULT_STEM",
     "TRAJECTORY_QC_SCHEMA_VERSION",
     "XtAdjacentSlotAudit",
@@ -162,6 +182,8 @@ __all__ = [
     "XtProbeStorageStatus",
     "XtReconstructionGatePlan",
     "XtReconstructionHypothesis",
+    "build_xt_hardware_package_documents",
+    "load_and_build_xt_hardware_package",
     "analyze_xt_audio_gate",
     "analyze_xt_reconstruction_gate",
     "build_controlled_audio_sound",
