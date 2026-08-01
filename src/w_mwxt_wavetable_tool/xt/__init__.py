@@ -60,6 +60,21 @@ from .trajectory import (
     build_xt_wavetable_trajectory_document,
     load_and_build_xt_wavetable_trajectory,
 )
+from .trajectory_qc import (
+    DEFAULT_STEM as TRAJECTORY_QC_DEFAULT_STEM,
+    TRAJECTORY_QC_SCHEMA_VERSION,
+    XtAdjacentSlotAudit,
+    XtBaselineComparison,
+    XtCurvatureAudit,
+    XtPhaseNeighborhoodAudit,
+    XtPreviewArtifact,
+    XtTrajectoryQcAnalysis,
+    XtTrajectoryQcBuild,
+    XtTrajectoryQcConfig,
+    XtTrajectoryQcStatus,
+    analyze_xt_trajectory_qc_documents,
+    load_and_analyze_xt_trajectory_qc,
+)
 from .reconstruction_gate import (
     XtGateAnalysis,
     XtGateAnalysisOutputPaths,
@@ -84,6 +99,17 @@ from .reconstruction_gate import (
 )
 
 __all__ = [
+    "TRAJECTORY_QC_DEFAULT_STEM",
+    "TRAJECTORY_QC_SCHEMA_VERSION",
+    "XtAdjacentSlotAudit",
+    "XtBaselineComparison",
+    "XtCurvatureAudit",
+    "XtPhaseNeighborhoodAudit",
+    "XtPreviewArtifact",
+    "XtTrajectoryQcAnalysis",
+    "XtTrajectoryQcBuild",
+    "XtTrajectoryQcConfig",
+    "XtTrajectoryQcStatus",
     "TRAJECTORY_DEFAULT_STEM",
     "DEFAULT_TARGET_SLOT_COUNT",
     "TRAJECTORY_SCHEMA_VERSION",
@@ -157,5 +183,7 @@ __all__ = [
     "project_reconstructed_wave_set_xt_native",
     "project_wave_xt_native",
     "reconstruct_xt_native",
+    "analyze_xt_trajectory_qc_documents",
+    "load_and_analyze_xt_trajectory_qc",
     "verify_xt_reconstruction_gate_restore",
 ]
