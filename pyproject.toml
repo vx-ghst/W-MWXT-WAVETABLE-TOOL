@@ -37,6 +37,7 @@ dev = ["pytest>=8.0"]
 
 [project.scripts]
 W-MWXT-WAVETABLE-TOOL = "w_mwxt_wavetable_tool.cli:main"
+W-MWXT-XT-GATE = "w_mwxt_wavetable_tool.xt_gate_cli:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
