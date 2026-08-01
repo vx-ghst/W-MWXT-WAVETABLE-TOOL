@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import replace
 import json
 from pathlib import Path
 
@@ -97,6 +98,14 @@ def test_audio_gate_build_is_deterministic_and_complete(tmp_path: Path) -> None:
     assert raw_contract[108] == 0
     assert raw_contract[109] == 0
     assert raw_contract[110] == 64
+    required = [capture for capture in first.plan.captures if capture.required]
+    assert len(required) == 16
+    assert {capture.filename for capture in required} >= {
+        "offset_MIDI60_take01.wav",
+        "negfs_MIDI60_take01.wav",
+        "negfs_MIDI60_take02.wav",
+        "negfs_MIDI60_take03.wav",
+    }
 
 
 def test_controlled_sound_targets_b128_and_neutralizes_documented_paths() -> None:
@@ -241,6 +250,9 @@ def test_audio_analysis_supports_documented_law_and_positive_edge(tmp_path: Path
     assert analysis.negative_full_scale_status.startswith("positive_edge_compatible")
     safe = [take for take in analysis.takes if take.role is XtAudioWaveRole.SAFE]
     assert all(take.winner is XtAudioHypothesis.DOCUMENTED_REVERSE_NEGATE for take in safe)
+    assert analysis.required_capture_count == 16
+    assert analysis.present_capture_count == 16
+    assert len(analysis.takes) == 15
 
 
 def test_audio_analysis_can_rank_wrap_edge(tmp_path: Path) -> None:
@@ -257,3 +269,40 @@ def test_audio_analysis_reports_missing_captures(tmp_path: Path) -> None:
     assert result.analysis.status is XtAudioGateStatus.INCOMPLETE
     assert result.analysis.verdict is XtAudioGateVerdict.CAPTURES_INCOMPLETE
     assert "silence_5s.wav" in result.analysis.missing_captures
+
+
+def test_legacy_twelve_capture_manifest_is_expanded_to_sixteen(tmp_path: Path) -> None:
+    build = _write_capture_corpus(tmp_path, positive_edge=True)
+    legacy_captures = tuple(
+        capture
+        for capture in build.plan.captures
+        if not (
+            capture.midi_note == 60
+            and capture.role
+            in {
+                XtAudioWaveRole.OFFSET_BINARY_EDGE,
+                XtAudioWaveRole.NEGATIVE_FULL_SCALE_EDGE,
+            }
+        )
+    )
+    assert len(legacy_captures) == 12
+    legacy_plan = replace(build.plan, captures=legacy_captures)
+    analysis = analyze_xt_audio_gate(tmp_path, legacy_plan).analysis
+    assert analysis.status is XtAudioGateStatus.PASS
+    assert analysis.required_capture_count == 16
+    assert analysis.present_capture_count == 16
+    assert len(analysis.takes) == 15
+    assert any(
+        "Legacy 12-capture V7-A.2 manifest expanded" in warning
+        for warning in analysis.warnings
+    )
+
+
+def test_midi60_edge_capture_is_required(tmp_path: Path) -> None:
+    build = _write_capture_corpus(tmp_path, positive_edge=True)
+    (tmp_path / "negfs_MIDI60_take03.wav").unlink()
+    analysis = analyze_xt_audio_gate(tmp_path, build.plan).analysis
+    assert analysis.status is XtAudioGateStatus.INCOMPLETE
+    assert "negfs_MIDI60_take03.wav" in analysis.missing_captures
+    assert analysis.required_capture_count == 16
+    assert analysis.present_capture_count == 15

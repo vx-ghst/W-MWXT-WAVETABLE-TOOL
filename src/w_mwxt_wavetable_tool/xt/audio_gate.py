@@ -545,7 +545,7 @@ def default_capture_plan(stem: str = DEFAULT_STEM) -> tuple[XtAudioCaptureSpec, 
             3,
         ),
     ):
-        for midi_note in (36, 48):
+        for midi_note in (36, 48, 60):
             note_token = _NOTE_TOKENS[midi_note]
             note_name = _NOTE_LABELS[midi_note]
             for take in range(1, repeats + 1):
@@ -567,6 +567,109 @@ def default_capture_plan(stem: str = DEFAULT_STEM) -> tuple[XtAudioCaptureSpec, 
                     )
                 )
     return tuple(specs)
+
+
+def _expanded_analysis_capture_plan(
+    captures: Sequence[XtAudioCaptureSpec],
+) -> tuple[XtAudioCaptureSpec, ...]:
+    """Return the canonical 16-capture plan, upgrading legacy 12-capture manifests.
+
+    Early V7-A.2 manifests omitted MIDI 60 for the two edge roles. The setup
+    packages are otherwise identical, so analysis can safely add those four
+    exact filenames without rebuilding or retransmitting the hardware setup.
+    """
+
+    expanded = list(captures)
+    existing = {
+        (capture.role, capture.midi_note, capture.take)
+        for capture in expanded
+    }
+    selector_by_role = {
+        capture.role: capture.selector_filename
+        for capture in expanded
+        if capture.role is not None and capture.selector_filename is not None
+    }
+    for role, role_stem, repeats in (
+        (XtAudioWaveRole.OFFSET_BINARY_EDGE, "offset", 1),
+        (XtAudioWaveRole.NEGATIVE_FULL_SCALE_EDGE, "negfs", 3),
+    ):
+        selector = selector_by_role.get(role)
+        if selector is None:
+            suffix = (
+                "select-offset-binary.syx"
+                if role is XtAudioWaveRole.OFFSET_BINARY_EDGE
+                else "select-negative-full-scale.syx"
+            )
+            selector = f"{DEFAULT_STEM}.{suffix}"
+        midi_note = 60
+        note_token = _NOTE_TOKENS[midi_note]
+        note_name = _NOTE_LABELS[midi_note]
+        for take in range(1, repeats + 1):
+            key = (role, midi_note, take)
+            if key in existing:
+                continue
+            expanded.append(
+                XtAudioCaptureSpec(
+                    capture_id=f"{role_stem}_{note_token}_take{take:02d}",
+                    role=role,
+                    selector_filename=selector,
+                    midi_note=midi_note,
+                    note_name=note_name,
+                    take=take,
+                    filename=f"{role_stem}_{note_token}_take{take:02d}.wav",
+                    required=True,
+                    instruction=(
+                        f"Send {Path(selector).name}, play MIDI note {midi_note} "
+                        f"({note_name}) with the supplied four-second MIDI clip, "
+                        "and record mono without changing gain."
+                    ),
+                )
+            )
+            existing.add(key)
+    return tuple(expanded)
+
+
+def _balanced_edge_score_means(
+    edge_takes: Sequence["XtAudioTakeAnalysis"],
+    hypotheses: Sequence[XtAudioHypothesis],
+) -> dict[XtAudioHypothesis, float]:
+    """Average repetitions, then notes, then edge roles with equal weight.
+
+    This prevents the three NEGFS repetitions from giving that role three
+    times the influence of the one-take OFFSET role while still using every
+    one of the 12 edge captures.
+    """
+
+    roles = (
+        XtAudioWaveRole.OFFSET_BINARY_EDGE,
+        XtAudioWaveRole.NEGATIVE_FULL_SCALE_EDGE,
+    )
+    result: dict[XtAudioHypothesis, float] = {}
+    for hypothesis in hypotheses:
+        role_means: list[float] = []
+        for role in roles:
+            role_takes = [take for take in edge_takes if take.role is role]
+            note_means: list[float] = []
+            for midi_note in sorted({take.midi_note for take in role_takes}):
+                note_scores = [
+                    next(
+                        score.combined_score
+                        for score in take.scores
+                        if score.hypothesis is hypothesis
+                    )
+                    for take in role_takes
+                    if take.midi_note == midi_note
+                ]
+                if note_scores:
+                    note_means.append(float(np.mean(note_scores)))
+            if note_means:
+                role_means.append(float(np.mean(note_means)))
+        if len(role_means) != len(roles):
+            raise HardwareValidationError(
+                "edge analysis requires OFFSET and NEGFS captures"
+            )
+        result[hypothesis] = float(np.mean(role_means))
+    return result
 
 
 @dataclass(frozen=True, slots=True)
@@ -1653,7 +1756,9 @@ def analyze_xt_audio_gate(
     plan: XtAudioGatePlan,
 ) -> XtAudioGateAnalysisResult:
     directory = Path(captures_directory)
-    required = tuple(capture for capture in plan.captures if capture.required)
+    analysis_captures = _expanded_analysis_capture_plan(plan.captures)
+    legacy_plan_expanded = len(analysis_captures) != len(plan.captures)
+    required = tuple(capture for capture in analysis_captures if capture.required)
     missing = tuple(
         capture.filename
         for capture in required
@@ -1759,21 +1864,9 @@ def analyze_xt_audio_gate(
         XtAudioHypothesis.ZERO_NEGATIVE_FULL_SCALE,
         XtAudioHypothesis.REPEAT_FIRST_HALF,
     )
-    aggregate_edge_scores = {
-        hypothesis: float(
-            np.mean(
-                [
-                    next(
-                        score.combined_score
-                        for score in take.scores
-                        if score.hypothesis is hypothesis
-                    )
-                    for take in edge_takes
-                ]
-            )
-        )
-        for hypothesis in edge_hypotheses
-    }
+    aggregate_edge_scores = _balanced_edge_score_means(
+        edge_takes, edge_hypotheses
+    )
     ranked_edge = tuple(
         sorted(
             aggregate_edge_scores.items(),
@@ -1794,6 +1887,11 @@ def analyze_xt_audio_gate(
         )
 
     warnings: list[str] = []
+    if legacy_plan_expanded:
+        warnings.append(
+            "Legacy 12-capture V7-A.2 manifest expanded to the canonical "
+            "16-capture analysis plan by adding OFFSET MIDI60 and three NEGFS MIDI60 takes"
+        )
     if silence_rms > 0:
         for take in takes:
             if take.rms <= silence_rms * 10.0:
