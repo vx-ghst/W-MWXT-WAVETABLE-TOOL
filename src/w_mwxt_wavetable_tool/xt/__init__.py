@@ -26,6 +26,25 @@ from .audio_gate import (
     verify_xt_audio_gate_restore,
     verify_xt_audio_gate_setup,
 )
+from .projection import (
+    DEFAULT_STEM as PROJECTION_DEFAULT_STEM,
+    PROJECTION_SCHEMA_VERSION,
+    SOURCE_SAMPLE_COUNT,
+    STORED_SAMPLE_COUNT,
+    XT_SAMPLE_MAX,
+    XT_SAMPLE_MIN,
+    XtPhaseEvaluation,
+    XtProjectedWave,
+    XtProjectionMetrics,
+    XtProjectionSet,
+    XtProjectionWeights,
+    load_and_project_code_v6_json,
+    project_code_v6_analysis_xt_native,
+    project_code_v6_document_xt_native,
+    project_reconstructed_wave_set_xt_native,
+    project_wave_xt_native,
+    reconstruct_xt_native,
+)
 from .reconstruction_gate import (
     XtGateAnalysis,
     XtGateAnalysisOutputPaths,
@@ -50,6 +69,17 @@ from .reconstruction_gate import (
 )
 
 __all__ = [
+    "PROJECTION_DEFAULT_STEM",
+    "PROJECTION_SCHEMA_VERSION",
+    "SOURCE_SAMPLE_COUNT",
+    "STORED_SAMPLE_COUNT",
+    "XT_SAMPLE_MAX",
+    "XT_SAMPLE_MIN",
+    "XtPhaseEvaluation",
+    "XtProjectedWave",
+    "XtProjectionMetrics",
+    "XtProjectionSet",
+    "XtProjectionWeights",
     "AUDIO_GATE_DEFAULT_STEM",
     "AUDIO_GATE_SCHEMA_VERSION",
     "XtAudioCaptureSpec",
@@ -93,5 +123,11 @@ __all__ = [
     "reconstruct_probe",
     "verify_xt_audio_gate_restore",
     "verify_xt_audio_gate_setup",
+    "load_and_project_code_v6_json",
+    "project_code_v6_analysis_xt_native",
+    "project_code_v6_document_xt_native",
+    "project_reconstructed_wave_set_xt_native",
+    "project_wave_xt_native",
+    "reconstruct_xt_native",
     "verify_xt_reconstruction_gate_restore",
 ]
