@@ -62,6 +62,14 @@ from .cycle_detection import (
     analyze_audio_source_cycles,
     discover_cycles,
 )
+from .cycle_selection import (
+    CycleSelectionDecision,
+    CycleSelectionPolicy,
+    RankedCycleCandidate,
+    SelectedCycleSet,
+    analyze_audio_source_cycle_selection,
+    select_representative_cycles,
+)
 from .signal import SignalAnalysis, analyze_audio_source_signal, analyze_signal
 from .classification import (
     ClassificationFeature,
@@ -134,6 +142,10 @@ __all__ = [
     "CycleCandidate",
     "CycleCandidateStatus",
     "CycleDiscoveryAnalysis",
+    "CycleSelectionDecision",
+    "CycleSelectionPolicy",
+    "RankedCycleCandidate",
+    "SelectedCycleSet",
     "SignalAnalysis",
     "SourceClass",
     "SourceClassScore",
@@ -158,6 +170,7 @@ __all__ = [
     "analyze_audio_source_working_pitch",
     "analyze_audio_source_segmentation",
     "analyze_audio_source_cycles",
+    "analyze_audio_source_cycle_selection",
     "analyze_envelope",
     "analyze_levels",
     "analyze_noise",
@@ -167,6 +180,7 @@ __all__ = [
     "plan_working_pitch",
     "segment_source",
     "discover_cycles",
+    "select_representative_cycles",
     "analyze_signal",
     "assemble_code_v5_analysis",
     "classify_source",

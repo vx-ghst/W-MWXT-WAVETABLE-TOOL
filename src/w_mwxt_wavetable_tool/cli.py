@@ -17,6 +17,7 @@ from .identity import IdentityReply
 from .audio import InvalidSamplePolicy, MonoPolicy, import_audio
 from .analysis import (
     AttackPolicy,
+    CycleSelectionPolicy,
     WorkingPitchPolicy,
     analyze_audio_source_code_v5,
     analyze_audio_source_pitch_periodicity,
@@ -28,6 +29,7 @@ from .analysis import (
     discover_cycles,
     plan_working_pitch,
     segment_source,
+    select_representative_cycles,
 )
 from .project import SourceValidationPolicy, open_project, save_project
 
@@ -376,6 +378,75 @@ def _build_parser() -> argparse.ArgumentParser:
         "--minimum-spectral-consistency-score", type=float, default=0.70
     )
     cycle_parser.add_argument("--report", type=Path)
+
+
+    selection_parser = sub.add_parser(
+        "select-cycles",
+        help="Rank CODE V6-C candidates and select a deterministic CODE V6-D representative top-N set",
+    )
+    selection_parser.add_argument("file", type=Path)
+    selection_parser.add_argument(
+        "--mono-policy",
+        choices=[policy.value for policy in MonoPolicy],
+        default=MonoPolicy.AUTO.value,
+    )
+    selection_parser.add_argument(
+        "--invalid-sample-policy",
+        choices=[policy.value for policy in InvalidSamplePolicy],
+        default=InvalidSamplePolicy.REJECT.value,
+    )
+    selection_parser.add_argument(
+        "--pitch-policy",
+        choices=[policy.value for policy in WorkingPitchPolicy],
+        default=WorkingPitchPolicy.AUTO.value,
+    )
+    selection_parser.add_argument("--locked-frequency", type=float)
+    selection_parser.add_argument(
+        "--attack-policy",
+        choices=[policy.value for policy in AttackPolicy],
+        default=AttackPolicy.AUTO.value,
+    )
+    selection_parser.add_argument(
+        "--period-search-radius-ratio", type=float, default=0.125
+    )
+    selection_parser.add_argument(
+        "--boundary-search-radius-samples", type=int, default=4
+    )
+    selection_parser.add_argument(
+        "--maximum-cycles-per-segment", type=int, default=64
+    )
+    selection_parser.add_argument(
+        "--minimum-periodicity-score", type=float, default=0.75
+    )
+    selection_parser.add_argument("--minimum-seam-score", type=float, default=0.45)
+    selection_parser.add_argument(
+        "--minimum-energy-consistency-score", type=float, default=0.50
+    )
+    selection_parser.add_argument(
+        "--minimum-spectral-consistency-score", type=float, default=0.70
+    )
+    selection_parser.add_argument(
+        "--selection-policy",
+        choices=[policy.value for policy in CycleSelectionPolicy],
+        default=CycleSelectionPolicy.AUTO.value,
+    )
+    selection_parser.add_argument("--top-n", type=int, default=16)
+    selection_parser.add_argument("--forced-candidate-index", type=int)
+    selection_parser.add_argument(
+        "--allow-rejected-forced-candidate",
+        action="store_true",
+    )
+    selection_parser.add_argument("--quality-weight", type=float, default=0.70)
+    selection_parser.add_argument(
+        "--temporal-novelty-weight", type=float, default=0.20
+    )
+    selection_parser.add_argument(
+        "--segment-novelty-weight", type=float, default=0.10
+    )
+    selection_parser.add_argument(
+        "--minimum-temporal-separation-periods", type=float, default=1.0
+    )
+    selection_parser.add_argument("--report", type=Path)
 
 
     project_create_parser = sub.add_parser(
@@ -895,6 +966,74 @@ def main(argv: list[str] | None = None) -> int:
                     "working_pitch_plan": working_pitch_plan.to_dict(),
                     "segmentation_analysis": segmentation_analysis.to_dict(),
                     "cycle_discovery_analysis": cycle_discovery_analysis.to_dict(),
+                },
+                indent=2,
+                ensure_ascii=False,
+                sort_keys=True,
+            )
+            print(rendered)
+            if args.report is not None:
+                args.report.parent.mkdir(parents=True, exist_ok=True)
+                args.report.write_text(rendered + "\n", encoding="utf-8", newline="\n")
+            return 0
+
+
+        if args.command == "select-cycles":
+            source = import_audio(
+                args.file,
+                mono_policy=args.mono_policy,
+                invalid_sample_policy=args.invalid_sample_policy,
+            )
+            signal_analysis = analyze_audio_source_signal(source)
+            working_pitch_plan = plan_working_pitch(
+                signal_analysis.pitch_periodicity_analysis,
+                policy=args.pitch_policy,
+                locked_frequency_hz=args.locked_frequency,
+            )
+            segmentation_analysis = segment_source(
+                signal_analysis,
+                working_pitch_plan,
+                attack_policy=args.attack_policy,
+            )
+            cycle_discovery_analysis = discover_cycles(
+                source.mono_samples,
+                segmentation_analysis,
+                working_pitch_plan,
+                period_search_radius_ratio=args.period_search_radius_ratio,
+                boundary_search_radius_samples=args.boundary_search_radius_samples,
+                maximum_cycles_per_segment=args.maximum_cycles_per_segment,
+                minimum_periodicity_score=args.minimum_periodicity_score,
+                minimum_seam_score=args.minimum_seam_score,
+                minimum_energy_consistency_score=(
+                    args.minimum_energy_consistency_score
+                ),
+                minimum_spectral_consistency_score=(
+                    args.minimum_spectral_consistency_score
+                ),
+            )
+            selected_cycle_set = select_representative_cycles(
+                cycle_discovery_analysis,
+                policy=args.selection_policy,
+                top_n=args.top_n,
+                forced_candidate_index=args.forced_candidate_index,
+                allow_rejected_forced_candidate=(
+                    args.allow_rejected_forced_candidate
+                ),
+                quality_weight=args.quality_weight,
+                temporal_novelty_weight=args.temporal_novelty_weight,
+                segment_novelty_weight=args.segment_novelty_weight,
+                minimum_temporal_separation_periods=(
+                    args.minimum_temporal_separation_periods
+                ),
+            )
+            rendered = json.dumps(
+                {
+                    "audio": source.to_summary(),
+                    "signal_analysis": signal_analysis.to_dict(),
+                    "working_pitch_plan": working_pitch_plan.to_dict(),
+                    "segmentation_analysis": segmentation_analysis.to_dict(),
+                    "cycle_discovery_analysis": cycle_discovery_analysis.to_dict(),
+                    "selected_cycle_set": selected_cycle_set.to_dict(),
                 },
                 indent=2,
                 ensure_ascii=False,
