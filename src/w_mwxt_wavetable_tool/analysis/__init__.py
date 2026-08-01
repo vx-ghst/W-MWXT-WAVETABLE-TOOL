@@ -70,6 +70,14 @@ from .cycle_selection import (
     analyze_audio_source_cycle_selection,
     select_representative_cycles,
 )
+from .reconstruction import (
+    ReconstructionDecision,
+    ReconstructionStrategy,
+    ReconstructedWave,
+    ReconstructedWaveSet,
+    analyze_audio_source_reconstruction,
+    reconstruct_selected_cycles,
+)
 from .signal import SignalAnalysis, analyze_audio_source_signal, analyze_signal
 from .classification import (
     ClassificationFeature,
@@ -146,6 +154,10 @@ __all__ = [
     "CycleSelectionPolicy",
     "RankedCycleCandidate",
     "SelectedCycleSet",
+    "ReconstructionDecision",
+    "ReconstructionStrategy",
+    "ReconstructedWave",
+    "ReconstructedWaveSet",
     "SignalAnalysis",
     "SourceClass",
     "SourceClassScore",
@@ -171,6 +183,7 @@ __all__ = [
     "analyze_audio_source_segmentation",
     "analyze_audio_source_cycles",
     "analyze_audio_source_cycle_selection",
+    "analyze_audio_source_reconstruction",
     "analyze_envelope",
     "analyze_levels",
     "analyze_noise",
@@ -181,6 +194,7 @@ __all__ = [
     "segment_source",
     "discover_cycles",
     "select_representative_cycles",
+    "reconstruct_selected_cycles",
     "analyze_signal",
     "assemble_code_v5_analysis",
     "classify_source",

@@ -18,6 +18,7 @@ from .audio import InvalidSamplePolicy, MonoPolicy, import_audio
 from .analysis import (
     AttackPolicy,
     CycleSelectionPolicy,
+    ReconstructionStrategy,
     WorkingPitchPolicy,
     analyze_audio_source_code_v5,
     analyze_audio_source_pitch_periodicity,
@@ -30,6 +31,7 @@ from .analysis import (
     plan_working_pitch,
     segment_source,
     select_representative_cycles,
+    reconstruct_selected_cycles,
 )
 from .project import SourceValidationPolicy, open_project, save_project
 
@@ -447,6 +449,89 @@ def _build_parser() -> argparse.ArgumentParser:
         "--minimum-temporal-separation-periods", type=float, default=1.0
     )
     selection_parser.add_argument("--report", type=Path)
+
+
+    reconstruction_parser = sub.add_parser(
+        "reconstruct-waves",
+        help="Reconstruct deterministic CODE V6-E spectral, partial, or hybrid waves",
+    )
+    reconstruction_parser.add_argument("file", type=Path)
+    reconstruction_parser.add_argument(
+        "--mono-policy",
+        choices=[policy.value for policy in MonoPolicy],
+        default=MonoPolicy.AUTO.value,
+    )
+    reconstruction_parser.add_argument(
+        "--invalid-sample-policy",
+        choices=[policy.value for policy in InvalidSamplePolicy],
+        default=InvalidSamplePolicy.REJECT.value,
+    )
+    reconstruction_parser.add_argument(
+        "--pitch-policy",
+        choices=[policy.value for policy in WorkingPitchPolicy],
+        default=WorkingPitchPolicy.AUTO.value,
+    )
+    reconstruction_parser.add_argument("--locked-frequency", type=float)
+    reconstruction_parser.add_argument(
+        "--attack-policy",
+        choices=[policy.value for policy in AttackPolicy],
+        default=AttackPolicy.AUTO.value,
+    )
+    reconstruction_parser.add_argument(
+        "--period-search-radius-ratio", type=float, default=0.125
+    )
+    reconstruction_parser.add_argument(
+        "--boundary-search-radius-samples", type=int, default=4
+    )
+    reconstruction_parser.add_argument(
+        "--maximum-cycles-per-segment", type=int, default=64
+    )
+    reconstruction_parser.add_argument(
+        "--minimum-periodicity-score", type=float, default=0.75
+    )
+    reconstruction_parser.add_argument("--minimum-seam-score", type=float, default=0.45)
+    reconstruction_parser.add_argument(
+        "--minimum-energy-consistency-score", type=float, default=0.50
+    )
+    reconstruction_parser.add_argument(
+        "--minimum-spectral-consistency-score", type=float, default=0.70
+    )
+    reconstruction_parser.add_argument(
+        "--selection-policy",
+        choices=[policy.value for policy in CycleSelectionPolicy],
+        default=CycleSelectionPolicy.AUTO.value,
+    )
+    reconstruction_parser.add_argument("--top-n", type=int, default=16)
+    reconstruction_parser.add_argument("--forced-candidate-index", type=int)
+    reconstruction_parser.add_argument(
+        "--allow-rejected-forced-candidate",
+        action="store_true",
+    )
+    reconstruction_parser.add_argument("--quality-weight", type=float, default=0.70)
+    reconstruction_parser.add_argument(
+        "--temporal-novelty-weight", type=float, default=0.20
+    )
+    reconstruction_parser.add_argument(
+        "--segment-novelty-weight", type=float, default=0.10
+    )
+    reconstruction_parser.add_argument(
+        "--minimum-temporal-separation-periods", type=float, default=1.0
+    )
+    reconstruction_parser.add_argument(
+        "--reconstruction-strategy",
+        choices=[strategy.value for strategy in ReconstructionStrategy],
+        default=ReconstructionStrategy.AUTO.value,
+    )
+    reconstruction_parser.add_argument("--target-sample-count", type=int, default=128)
+    reconstruction_parser.add_argument("--maximum-partials", type=int, default=32)
+    reconstruction_parser.add_argument(
+        "--hybrid-time-weight", type=float, default=0.35
+    )
+    reconstruction_parser.add_argument(
+        "--normalization-peak", type=float, default=0.98
+    )
+    reconstruction_parser.add_argument("--keep-dc", action="store_true")
+    reconstruction_parser.add_argument("--report", type=Path)
 
 
     project_create_parser = sub.add_parser(
@@ -1034,6 +1119,86 @@ def main(argv: list[str] | None = None) -> int:
                     "segmentation_analysis": segmentation_analysis.to_dict(),
                     "cycle_discovery_analysis": cycle_discovery_analysis.to_dict(),
                     "selected_cycle_set": selected_cycle_set.to_dict(),
+                },
+                indent=2,
+                ensure_ascii=False,
+                sort_keys=True,
+            )
+            print(rendered)
+            if args.report is not None:
+                args.report.parent.mkdir(parents=True, exist_ok=True)
+                args.report.write_text(rendered + "\n", encoding="utf-8", newline="\n")
+            return 0
+
+
+        if args.command == "reconstruct-waves":
+            source = import_audio(
+                args.file,
+                mono_policy=args.mono_policy,
+                invalid_sample_policy=args.invalid_sample_policy,
+            )
+            signal_analysis = analyze_audio_source_signal(source)
+            working_pitch_plan = plan_working_pitch(
+                signal_analysis.pitch_periodicity_analysis,
+                policy=args.pitch_policy,
+                locked_frequency_hz=args.locked_frequency,
+            )
+            segmentation_analysis = segment_source(
+                signal_analysis,
+                working_pitch_plan,
+                attack_policy=args.attack_policy,
+            )
+            cycle_discovery_analysis = discover_cycles(
+                source.mono_samples,
+                segmentation_analysis,
+                working_pitch_plan,
+                period_search_radius_ratio=args.period_search_radius_ratio,
+                boundary_search_radius_samples=args.boundary_search_radius_samples,
+                maximum_cycles_per_segment=args.maximum_cycles_per_segment,
+                minimum_periodicity_score=args.minimum_periodicity_score,
+                minimum_seam_score=args.minimum_seam_score,
+                minimum_energy_consistency_score=(
+                    args.minimum_energy_consistency_score
+                ),
+                minimum_spectral_consistency_score=(
+                    args.minimum_spectral_consistency_score
+                ),
+            )
+            selected_cycle_set = select_representative_cycles(
+                cycle_discovery_analysis,
+                policy=args.selection_policy,
+                top_n=args.top_n,
+                forced_candidate_index=args.forced_candidate_index,
+                allow_rejected_forced_candidate=(
+                    args.allow_rejected_forced_candidate
+                ),
+                quality_weight=args.quality_weight,
+                temporal_novelty_weight=args.temporal_novelty_weight,
+                segment_novelty_weight=args.segment_novelty_weight,
+                minimum_temporal_separation_periods=(
+                    args.minimum_temporal_separation_periods
+                ),
+            )
+            reconstructed_wave_set = reconstruct_selected_cycles(
+                source.mono_samples,
+                cycle_discovery_analysis,
+                selected_cycle_set,
+                strategy=args.reconstruction_strategy,
+                target_sample_count=args.target_sample_count,
+                maximum_partials=args.maximum_partials,
+                hybrid_time_weight=args.hybrid_time_weight,
+                normalization_peak=args.normalization_peak,
+                remove_dc=not args.keep_dc,
+            )
+            rendered = json.dumps(
+                {
+                    "audio": source.to_summary(),
+                    "signal_analysis": signal_analysis.to_dict(),
+                    "working_pitch_plan": working_pitch_plan.to_dict(),
+                    "segmentation_analysis": segmentation_analysis.to_dict(),
+                    "cycle_discovery_analysis": cycle_discovery_analysis.to_dict(),
+                    "selected_cycle_set": selected_cycle_set.to_dict(),
+                    "reconstructed_wave_set": reconstructed_wave_set.to_dict(),
                 },
                 indent=2,
                 ensure_ascii=False,
