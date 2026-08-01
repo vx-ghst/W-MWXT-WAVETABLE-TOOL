@@ -21,6 +21,7 @@ from .analysis import (
     ReconstructionStrategy,
     WorkingPitchPolicy,
     analyze_audio_source_code_v5,
+    analyze_audio_source_code_v6,
     analyze_audio_source_pitch_periodicity,
     analyze_audio_source_signal,
     analyze_audio_source_spectral,
@@ -532,6 +533,79 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     reconstruction_parser.add_argument("--keep-dc", action="store_true")
     reconstruction_parser.add_argument("--report", type=Path)
+
+
+    code_v6_parser = sub.add_parser(
+        "analyze-code-v6",
+        help="Run the complete deterministic CODE V6 analysis and reconstruction chain",
+    )
+    code_v6_parser.add_argument("file", type=Path)
+    code_v6_parser.add_argument(
+        "--mono-policy",
+        choices=[policy.value for policy in MonoPolicy],
+        default=MonoPolicy.AUTO.value,
+    )
+    code_v6_parser.add_argument(
+        "--invalid-sample-policy",
+        choices=[policy.value for policy in InvalidSamplePolicy],
+        default=InvalidSamplePolicy.REJECT.value,
+    )
+    code_v6_parser.add_argument(
+        "--pitch-policy",
+        choices=[policy.value for policy in WorkingPitchPolicy],
+        default=WorkingPitchPolicy.AUTO.value,
+    )
+    code_v6_parser.add_argument("--locked-frequency", type=float)
+    code_v6_parser.add_argument(
+        "--attack-policy",
+        choices=[policy.value for policy in AttackPolicy],
+        default=AttackPolicy.AUTO.value,
+    )
+    code_v6_parser.add_argument("--preferred-period-samples", type=float, default=128.0)
+    code_v6_parser.add_argument("--minimum-period-samples", type=float, default=64.0)
+    code_v6_parser.add_argument("--maximum-period-samples", type=float, default=256.0)
+    code_v6_parser.add_argument("--maximum-octave-shift", type=int, default=4)
+    code_v6_parser.add_argument("--minimum-repitch-periodicity", type=float, default=0.60)
+    code_v6_parser.add_argument("--minimum-pitch-stability", type=float, default=0.25)
+    code_v6_parser.add_argument("--minimum-score-improvement", type=float, default=0.10)
+    code_v6_parser.add_argument("--minimum-segment-ms", type=float, default=40.0)
+    code_v6_parser.add_argument("--boundary-merge-ms", type=float, default=20.0)
+    code_v6_parser.add_argument("--attack-window-ms", type=float, default=120.0)
+    code_v6_parser.add_argument("--maximum-attack-ms", type=float, default=250.0)
+    code_v6_parser.add_argument("--minimum-attack-strength", type=float, default=1.0)
+    code_v6_parser.add_argument("--minimum-steady-ms", type=float, default=80.0)
+    code_v6_parser.add_argument("--silence-rms-threshold", type=float, default=1.0e-6)
+    code_v6_parser.add_argument("--transition-flux-threshold", type=float, default=0.20)
+    code_v6_parser.add_argument("--period-search-radius-ratio", type=float, default=0.125)
+    code_v6_parser.add_argument("--boundary-search-radius-samples", type=int, default=4)
+    code_v6_parser.add_argument("--maximum-cycles-per-segment", type=int, default=64)
+    code_v6_parser.add_argument("--minimum-periodicity-score", type=float, default=0.75)
+    code_v6_parser.add_argument("--minimum-seam-score", type=float, default=0.45)
+    code_v6_parser.add_argument("--minimum-energy-consistency-score", type=float, default=0.50)
+    code_v6_parser.add_argument("--minimum-spectral-consistency-score", type=float, default=0.70)
+    code_v6_parser.add_argument(
+        "--selection-policy",
+        choices=[policy.value for policy in CycleSelectionPolicy],
+        default=CycleSelectionPolicy.AUTO.value,
+    )
+    code_v6_parser.add_argument("--top-n", type=int, default=16)
+    code_v6_parser.add_argument("--forced-candidate-index", type=int)
+    code_v6_parser.add_argument("--allow-rejected-forced-candidate", action="store_true")
+    code_v6_parser.add_argument("--quality-weight", type=float, default=0.70)
+    code_v6_parser.add_argument("--temporal-novelty-weight", type=float, default=0.20)
+    code_v6_parser.add_argument("--segment-novelty-weight", type=float, default=0.10)
+    code_v6_parser.add_argument("--minimum-temporal-separation-periods", type=float, default=1.0)
+    code_v6_parser.add_argument(
+        "--reconstruction-strategy",
+        choices=[strategy.value for strategy in ReconstructionStrategy],
+        default=ReconstructionStrategy.AUTO.value,
+    )
+    code_v6_parser.add_argument("--target-sample-count", type=int, default=128)
+    code_v6_parser.add_argument("--maximum-partials", type=int, default=32)
+    code_v6_parser.add_argument("--hybrid-time-weight", type=float, default=0.35)
+    code_v6_parser.add_argument("--normalization-peak", type=float, default=0.98)
+    code_v6_parser.add_argument("--keep-dc", action="store_true")
+    code_v6_parser.add_argument("--report", type=Path)
 
 
     project_create_parser = sub.add_parser(
@@ -1199,6 +1273,88 @@ def main(argv: list[str] | None = None) -> int:
                     "cycle_discovery_analysis": cycle_discovery_analysis.to_dict(),
                     "selected_cycle_set": selected_cycle_set.to_dict(),
                     "reconstructed_wave_set": reconstructed_wave_set.to_dict(),
+                },
+                indent=2,
+                ensure_ascii=False,
+                sort_keys=True,
+            )
+            print(rendered)
+            if args.report is not None:
+                args.report.parent.mkdir(parents=True, exist_ok=True)
+                args.report.write_text(rendered + "\n", encoding="utf-8", newline="\n")
+            return 0
+
+
+        if args.command == "analyze-code-v6":
+            source = import_audio(
+                args.file,
+                mono_policy=args.mono_policy,
+                invalid_sample_policy=args.invalid_sample_policy,
+            )
+            code_v6_analysis = analyze_audio_source_code_v6(
+                source,
+                working_pitch_policy=args.pitch_policy,
+                locked_frequency_hz=args.locked_frequency,
+                attack_policy=args.attack_policy,
+                selection_policy=args.selection_policy,
+                top_n=args.top_n,
+                forced_candidate_index=args.forced_candidate_index,
+                allow_rejected_forced_candidate=(
+                    args.allow_rejected_forced_candidate
+                ),
+                reconstruction_strategy=args.reconstruction_strategy,
+                working_pitch_kwargs={
+                    "preferred_period_samples": args.preferred_period_samples,
+                    "minimum_period_samples": args.minimum_period_samples,
+                    "maximum_period_samples": args.maximum_period_samples,
+                    "maximum_octave_shift": args.maximum_octave_shift,
+                    "minimum_periodicity_score": args.minimum_repitch_periodicity,
+                    "minimum_pitch_stability": args.minimum_pitch_stability,
+                    "minimum_score_improvement": args.minimum_score_improvement,
+                },
+                segmentation_kwargs={
+                    "minimum_segment_duration_ms": args.minimum_segment_ms,
+                    "boundary_merge_window_ms": args.boundary_merge_ms,
+                    "attack_window_ms": args.attack_window_ms,
+                    "maximum_attack_duration_ms": args.maximum_attack_ms,
+                    "minimum_attack_strength": args.minimum_attack_strength,
+                    "minimum_steady_duration_ms": args.minimum_steady_ms,
+                    "silence_rms_threshold": args.silence_rms_threshold,
+                    "transition_flux_threshold": args.transition_flux_threshold,
+                },
+                cycle_discovery_kwargs={
+                    "period_search_radius_ratio": args.period_search_radius_ratio,
+                    "boundary_search_radius_samples": args.boundary_search_radius_samples,
+                    "maximum_cycles_per_segment": args.maximum_cycles_per_segment,
+                    "minimum_periodicity_score": args.minimum_periodicity_score,
+                    "minimum_seam_score": args.minimum_seam_score,
+                    "minimum_energy_consistency_score": (
+                        args.minimum_energy_consistency_score
+                    ),
+                    "minimum_spectral_consistency_score": (
+                        args.minimum_spectral_consistency_score
+                    ),
+                },
+                selection_kwargs={
+                    "quality_weight": args.quality_weight,
+                    "temporal_novelty_weight": args.temporal_novelty_weight,
+                    "segment_novelty_weight": args.segment_novelty_weight,
+                    "minimum_temporal_separation_periods": (
+                        args.minimum_temporal_separation_periods
+                    ),
+                },
+                reconstruction_kwargs={
+                    "target_sample_count": args.target_sample_count,
+                    "maximum_partials": args.maximum_partials,
+                    "hybrid_time_weight": args.hybrid_time_weight,
+                    "normalization_peak": args.normalization_peak,
+                    "remove_dc": not args.keep_dc,
+                },
+            )
+            rendered = json.dumps(
+                {
+                    "audio": source.to_summary(),
+                    "code_v6_analysis": code_v6_analysis.to_dict(),
                 },
                 indent=2,
                 ensure_ascii=False,

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "W-MWXT-WAVETABLE-TOOL"
-version = "0.5.0"
+version = "0.6.0"
 description = "wave and wavetable engineering toolkit for the Waldorf Microwave XT."
 readme = "README.md"
 requires-python = ">=3.11"

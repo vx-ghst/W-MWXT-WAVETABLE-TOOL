@@ -73,7 +73,7 @@ def make_analysis() -> CodeV5Analysis:
 def test_valid_aggregate_identity() -> None:
     analysis = make_analysis()
     assert analysis.schema_version == 1
-    assert analysis.tool_version == "0.5.0"
+    assert analysis.tool_version == "0.6.0"
     assert analysis.sample_rate == 48000
     assert analysis.sample_count == 96000
     assert analysis.sample_sha256 == SAMPLE_HASH

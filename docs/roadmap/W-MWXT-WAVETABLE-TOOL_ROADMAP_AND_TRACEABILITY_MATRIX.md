@@ -4,8 +4,8 @@
 **Project:** W-MWXT-WAVETABLE-TOOL  
 **Owner:** R-MiT  
 **Document type:** public development roadmap and traceability register  
-**Document version:** 2.1-public<br>
-**Baseline:** CODE V5 / `v0.5.0`<br>
+**Document version:** 2.2-public<br>
+**Baseline:** CODE V6 / `v0.6.0`<br>
 **Target:** `v1.0.0-prototype`  
 **Primary platform:** Windows 11  
 **Status:** authoritative public execution order
@@ -477,57 +477,58 @@ NEXT: CODE V6
 
 # 9. CODE V6 — Working pitch, segmentation, cycle ranking, reconstruction
 
-## Objective
+## Status
 
-Select the most useful source states and produce valid cycle material for XT optimization.
+```text
+STATUS: COMPLETE
+RELEASE: v0.6.0
+FINAL AGGREGATE: CodeV6Analysis
+FINAL CLI: analyze-code-v6
+```
 
-## Scope
+## Delivered scope
 
-- candidate working pitches;
-- temporary repitch;
-- pitch lock;
-- no-repitch policy;
-- automatic segmentation;
-- attack keep/reject;
-- representative-state selection;
-- cycle discovery;
-- cycle metrics;
-- top-N candidates;
-- spectral cycle reconstruction;
-- hybrid reconstruction;
-- forced-cycle override.
+- octave-preserving working-pitch candidates;
+- automatic, locked, and no-repitch policies;
+- attack-aware deterministic segmentation;
+- source-domain cycle discovery and quality metrics;
+- representative ranking and deterministic top-N selection;
+- explicit forced-cycle override with rejected-candidate safety gate;
+- spectral, dominant-partial, and hybrid reconstruction;
+- deterministic 128-point float-domain waves;
+- complete CODE V5 → V6 hash-chain validation;
+- final immutable aggregate and release CLI.
 
-## Modules
+## Delivered modules
 
 ```text
 analysis/pitch_candidates.py
 analysis/repitch.py
 analysis/segmentation.py
 analysis/cycle_detection.py
-analysis/cycle_ranking.py
-reconstruction/spectral.py
-reconstruction/partials.py
-reconstruction/hybrid.py
-decision/cycle_selector.py
+analysis/cycle_selection.py
+analysis/reconstruction.py
+analysis/code_v6.py
 ```
 
-## Tests
+## Acceptance evidence
 
-- target working-pitch fixtures;
-- pitch lock;
-- stable cycles;
-- noisy cycles;
-- atypical first cycle;
-- attack useful/unusable;
-- long redundant plateau;
-- non-uniform evolution;
-- voice/noise/bell reconstruction;
-- hybrid source;
-- deterministic candidate ranking.
+```text
+V6-A targeted: 58 passed
+V6-B targeted: 58 passed
+V6-C targeted: 58 passed
+V6-D targeted: 58 passed
+V6-E targeted: 58 passed
+V6-E public baseline: 900 passed, 4 skipped
+V6-E private baseline: 904 passed
+Real-audio gates: PASS for V6-A through V6-E
+```
 
-## Acceptance
+The final V6-F validation records the aggregate, release-version, documentation, public/private full-suite, deterministic real-audio, commit, pull-request, merge, and tag gates.
 
-The stage shall output a `SelectedCycleSet` and an explained `DecisionPlan`. Every selected or rejected cycle must have traceable metrics and reasons.
+## Safety boundary
+
+CODE V6 does not quantize XT waves, allocate User Wave destinations, build SysEx, transmit MIDI, or mutate instrument memory. These remain gated by CODE V7 and later stages.
 
 ---
 

@@ -36,4 +36,4 @@ def test_package_all_contains_code_v6a_contract() -> None:
 
 
 def test_code_v6a_does_not_advance_release_version() -> None:
-    assert tool.__version__ == "0.5.0"
+    assert tool.__version__ == "0.6.0"

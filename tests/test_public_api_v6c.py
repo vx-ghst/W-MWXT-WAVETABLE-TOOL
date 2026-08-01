@@ -41,4 +41,4 @@ def test_package_all_contains_v6c_symbols() -> None:
 
 
 def test_intermediate_gate_keeps_release_version() -> None:
-    assert tool.__version__ == "0.5.0"
+    assert tool.__version__ == "0.6.0"

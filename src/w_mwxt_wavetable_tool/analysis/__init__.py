@@ -99,6 +99,11 @@ from .code_v5 import (
     analyze_audio_source_code_v5,
     assemble_code_v5_analysis,
 )
+from .code_v6 import (
+    CodeV6Analysis,
+    analyze_audio_source_code_v6,
+    assemble_code_v6_analysis,
+)
 from .harmonic_perceptual import (
     HarmonicPeak,
     HarmonicPerceptualAnalysis,
@@ -118,6 +123,7 @@ __all__ = [
     "ChangePointEvent",
     "ClassificationFeature",
     "CodeV5Analysis",
+    "CodeV6Analysis",
     "DecisionStatus",
     "EngineeringDecision",
     "EngineeringRecommendation",
@@ -173,6 +179,7 @@ __all__ = [
     "TransientFrameAnalysis",
     "analyze_audio_source",
     "analyze_audio_source_code_v5",
+    "analyze_audio_source_code_v6",
     "analyze_audio_source_harmonic_perceptual",
     "analyze_audio_source_signal",
     "analyze_audio_source_noise",
@@ -197,6 +204,7 @@ __all__ = [
     "reconstruct_selected_cycles",
     "analyze_signal",
     "assemble_code_v5_analysis",
+    "assemble_code_v6_analysis",
     "classify_source",
     "decide_wavetable_readiness",
     "analyze_harmonic_perceptual",

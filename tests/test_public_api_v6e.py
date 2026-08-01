@@ -43,4 +43,4 @@ def test_reconstruction_names_are_in_all_exports():
 
 
 def test_version_remains_0_5_0_until_v6_f():
-    assert tool.__version__ == "0.5.0"
+    assert tool.__version__ == "0.6.0"

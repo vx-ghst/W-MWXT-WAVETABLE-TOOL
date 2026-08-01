@@ -87,7 +87,7 @@ def make_analysis(
     hashes = tuple(("b" if index == 0 else "c") * 64 for index in used_segments)
     return CycleDiscoveryAnalysis(
         schema_version=1,
-        tool_version="0.5.0",
+        tool_version="0.6.0",
         sample_rate=1000,
         sample_count=2000,
         sample_sha256="a" * 64,
@@ -122,7 +122,7 @@ def test_default_identity_and_hash_link() -> None:
     analysis = make_analysis()
     selected = select_representative_cycles(analysis)
     assert selected.schema_version == 1
-    assert selected.tool_version == "0.5.0"
+    assert selected.tool_version == "0.6.0"
     assert selected.sample_sha256 == analysis.sample_sha256
     assert selected.cycle_discovery_analysis_sha256 == analysis.analysis_sha256
 
