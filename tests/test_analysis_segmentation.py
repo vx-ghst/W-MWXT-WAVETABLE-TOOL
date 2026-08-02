@@ -92,7 +92,7 @@ def make_analysis(**kwargs):
 def test_default_identity_and_links():
     result = make_analysis()
     assert result.schema_version == 1
-    assert result.tool_version == "0.6.0"
+    assert result.tool_version == "0.7.0"
     assert result.sample_sha256 == SAMPLE_HASH
     assert result.signal_analysis_sha256 == SIGNAL_HASH
     assert result.working_pitch_plan_sha256 == PLAN_HASH

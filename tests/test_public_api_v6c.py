@@ -40,5 +40,5 @@ def test_package_all_contains_v6c_symbols() -> None:
     assert expected <= set(tool.__all__)
 
 
-def test_intermediate_gate_keeps_release_version() -> None:
-    assert tool.__version__ == "0.6.0"
+def test_code_v6c_contract_survives_code_v7_release() -> None:
+    assert tool.__version__ == "0.7.0"

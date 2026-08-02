@@ -12,7 +12,7 @@ from w_mwxt_wavetable_tool.analysis.code_v6 import (
     assemble_code_v6_analysis,
 )
 
-VERSION = "0.6.0"
+VERSION = "0.7.0"
 SAMPLE = "a" * 64
 
 
@@ -131,7 +131,7 @@ def test_rejects_schema():
 
 def test_rejects_non_normalized_version():
     with pytest.raises(ValueError, match="tool_version"):
-        replace(make_analysis(), tool_version=" 0.6.0")
+        replace(make_analysis(), tool_version=" 0.7.0")
 
 
 @pytest.mark.parametrize("field", ["sample_rate", "sample_count", "sample_sha256"])

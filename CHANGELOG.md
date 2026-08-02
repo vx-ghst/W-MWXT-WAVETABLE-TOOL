@@ -2,6 +2,35 @@
 
 All notable changes to **W-MWXT-WAVETABLE-TOOL** are documented here.
 
+## 0.7.0 — CODE V7
+
+### XT-native representation and trajectory
+
+- Added documented offset-binary User Wave coding with byte-identical SysEx round trips.
+- Added documented 64-to-128 reverse-negate reconstruction and a safe generated range of `-127..127`.
+- Added deterministic 128-to-64 projection with exhaustive 128-phase evaluation and traceable quality metrics.
+- Added deterministic construction of exactly 61 editable positions with structural anchors and XT-domain interpolation.
+- Added deterministic QC for all 60 adjacent transitions and 59 interior curvature points.
+
+### Hardware package and acceptance
+
+- Added deterministic 61 `WAVD` + 1 `WCTD` + 1 `SNDD` package generation and an exact restore bundle.
+- Preserved the three fixed Wavetable tail references from the selected baseline.
+- Validated first installation, exact restoration, and final installation at `63/63` exact messages on a Waldorf Microwave XT running OS 2.33.
+- Completed fixed-note and manual Startwave `00` to `60` audio acceptance.
+- Kept all MIDI and SysEx transmission manual; no V7 command opens a MIDI port or writes hardware automatically.
+
+### Release validation
+
+- Pre-release public baseline: `1027 passed, 4 skipped`.
+- Pre-release private baseline: `1031 passed`.
+- Final public suite: `1035 passed, 4 skipped`.
+- Final private suite: `1039 passed`.
+- Targeted current-version migration suite: `292 passed`.
+- `pip check`, `compileall`, `git diff --check`, public/private leakage controls, and repository-integrity gates passed.
+- Package SHA-256: `82724d493c889afe27a44f0550355bce1764e0054621f4a35b373c9c8f08c425`.
+- Restore SHA-256: `a1ee24820a1dd77b5e283d3595d160cc8cbb8ee08a176f980eea9adf913861d6`.
+
 ## 0.6.0 — CODE V6
 
 ### Working pitch and source segmentation

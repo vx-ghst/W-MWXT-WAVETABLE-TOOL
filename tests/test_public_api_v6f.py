@@ -22,5 +22,5 @@ def test_code_v6_names_are_in_all_exports():
     assert names <= set(analysis.__all__)
 
 
-def test_code_v6_release_version():
-    assert tool.__version__ == "0.6.0"
+def test_code_v6_release_contract_survives_code_v7_release():
+    assert tool.__version__ == "0.7.0"
