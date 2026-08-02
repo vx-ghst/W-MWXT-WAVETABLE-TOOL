@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "W-MWXT-WAVETABLE-TOOL"
-version = "0.6.0"
+version = "0.7.0"
 description = "wave and wavetable engineering toolkit for the Waldorf Microwave XT."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -37,6 +37,12 @@ dev = ["pytest>=8.0"]
 
 [project.scripts]
 W-MWXT-WAVETABLE-TOOL = "w_mwxt_wavetable_tool.cli:main"
+W-MWXT-XT-GATE = "w_mwxt_wavetable_tool.xt_gate_cli:main"
+W-MWXT-XT-AUDIO-GATE = "w_mwxt_wavetable_tool.xt_audio_gate_cli:main"
+W-MWXT-XT-PROJECT = "w_mwxt_wavetable_tool.xt_projection_cli:main"
+W-MWXT-XT-TRAJECTORY = "w_mwxt_wavetable_tool.xt_trajectory_cli:main"
+W-MWXT-XT-QC = "w_mwxt_wavetable_tool.xt_trajectory_qc_cli:main"
+W-MWXT-XT-PACKAGE = "w_mwxt_wavetable_tool.xt_package_cli:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}

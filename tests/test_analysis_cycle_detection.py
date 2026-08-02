@@ -105,7 +105,7 @@ def test_identity_and_hash_links() -> None:
     samples = make_samples()
     result = make_analysis()
     assert result.schema_version == 1
-    assert result.tool_version == "0.6.0"
+    assert result.tool_version == "0.7.0"
     assert result.sample_sha256 == sample_hash(samples)
     assert result.segmentation_analysis_sha256 == "c" * 64
     assert result.working_pitch_plan_sha256 == "d" * 64

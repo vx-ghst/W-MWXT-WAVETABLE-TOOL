@@ -5,11 +5,12 @@ from typing import Literal
 
 from .codec import (
     bytes_to_nibbles,
+    decode_offset_binary_i8,
+    encode_offset_binary_i8,
     nibbles_to_bytes,
     pack_u16_nibbles,
     signed_i8,
     unpack_u16_nibbles,
-    unsigned_i8,
 )
 from .constants import (
     INTERPOLATED_WAVE_REFERENCE,
@@ -48,7 +49,9 @@ class SoundProgram:
 
     @property
     def display_location(self) -> str:
-        bank_name = chr(ord("A") + self.bank) if 0 <= self.bank <= 25 else f"B{self.bank}"
+        bank_name = (
+            chr(ord("A") + self.bank) if 0 <= self.bank <= 25 else f"B{self.bank}"
+        )
         return f"{bank_name}{self.slot + 1:03d}"
 
     @property
@@ -72,7 +75,9 @@ class SoundProgram:
 
     def to_message(self) -> SysExMessage:
         if not 0 <= self.bank <= 0x7F or not 0 <= self.slot <= 0x7F:
-            raise ProtocolError(f"Invalid sound location: bank={self.bank}, slot={self.slot}")
+            raise ProtocolError(
+                f"Invalid sound location: bank={self.bank}, slot={self.slot}"
+            )
         return SysExMessage(
             device_id=self.device_id,
             dump_type=DumpType.SOUND,
@@ -99,11 +104,16 @@ class MultiProgram:
 
 @dataclass(frozen=True, slots=True)
 class UserWave:
-    """One user wave as 64 stored signed 8-bit samples.
+    """One Microwave II/XT User Wave as 64 stored signed 8-bit samples.
 
-    The SysEx payload contains 128 MIDI-safe nibbles: two nibbles per stored
-    sample. Reconstruction of the second half is intentionally exposed with
-    selectable policies because V1 does not claim a bit-exact DSP emulation.
+    WAVD transports 128 MIDI-safe nibbles, representing 64 independent sample
+    bytes. Those bytes use offset-binary coding: the most-significant bit must
+    be flipped before interpreting the value as signed int8.
+
+    The documented logical cycle contains 128 points. Its second half is the
+    sign-inverted reverse of the stored half. Negating -128 produces +128,
+    which is intentionally preserved by the ``documented``/``mathematical``
+    policies until the XT's negative-full-scale edge behavior is measured.
     """
 
     device_id: int
@@ -115,7 +125,7 @@ class UserWave:
         _require_type(message, DumpType.USER_WAVE)
         _require_payload_length(message, 128)
         raw_samples = nibbles_to_bytes(message.payload)
-        samples = tuple(signed_i8(value) for value in raw_samples)
+        samples = tuple(decode_offset_binary_i8(value) for value in raw_samples)
         return cls(message.device_id, message.address, samples)
 
     def __post_init__(self) -> None:
@@ -131,19 +141,37 @@ class UserWave:
 
     @property
     def payload(self) -> bytes:
-        raw = bytes(unsigned_i8(sample) for sample in self.stored_samples)
+        raw = bytes(
+            encode_offset_binary_i8(sample) for sample in self.stored_samples
+        )
         return bytes_to_nibbles(raw)
+
+    @property
+    def has_negative_full_scale(self) -> bool:
+        """Whether the stored half contains -128, whose negation is +128."""
+        return -128 in self.stored_samples
 
     def reconstruct(
         self,
-        policy: Literal["mathematical", "wrap_i8", "saturate_i8"] = "mathematical",
+        policy: Literal[
+            "documented",
+            "mathematical",
+            "wrap_i8",
+            "saturate_i8",
+        ] = "documented",
     ) -> tuple[int, ...]:
+        """Reconstruct the documented 128-point logical cycle.
+
+        ``documented`` and ``mathematical`` implement the manual's rule without
+        silently forcing the result back into int8. ``wrap_i8`` and
+        ``saturate_i8`` are explicit diagnostic edge policies for -128 only.
+        """
         mirrored = [-sample for sample in reversed(self.stored_samples)]
         if policy == "wrap_i8":
             mirrored = [signed_i8(value & 0xFF) for value in mirrored]
         elif policy == "saturate_i8":
             mirrored = [max(-128, min(127, value)) for value in mirrored]
-        elif policy != "mathematical":
+        elif policy not in {"documented", "mathematical"}:
             raise ProtocolError(f"Unknown reconstruction policy: {policy}")
         return self.stored_samples + tuple(mirrored)
 
@@ -173,8 +201,14 @@ class UserWavetable:
         )
 
     def __post_init__(self) -> None:
-        if not USER_WAVETABLE_INTERNAL_FIRST <= self.internal_number <= USER_WAVETABLE_INTERNAL_LAST:
-            raise ProtocolError(f"User Wavetable internal number out of range: {self.internal_number}")
+        if not (
+            USER_WAVETABLE_INTERNAL_FIRST
+            <= self.internal_number
+            <= USER_WAVETABLE_INTERNAL_LAST
+        ):
+            raise ProtocolError(
+                f"User Wavetable internal number out of range: {self.internal_number}"
+            )
         if len(self.references) != 64:
             raise PayloadLengthError(
                 f"A User Wavetable must contain 64 references, got {len(self.references)}"
@@ -191,8 +225,14 @@ class UserWavetable:
     def from_display_number(
         cls, device_id: int, display_number: int, references: tuple[int, ...]
     ) -> "UserWavetable":
-        if not USER_WAVETABLE_DISPLAY_FIRST <= display_number <= USER_WAVETABLE_DISPLAY_LAST:
-            raise ProtocolError(f"User Wavetable display number out of range: {display_number}")
+        if not (
+            USER_WAVETABLE_DISPLAY_FIRST
+            <= display_number
+            <= USER_WAVETABLE_DISPLAY_LAST
+        ):
+            raise ProtocolError(
+                f"User Wavetable display number out of range: {display_number}"
+            )
         return cls(device_id, display_number - 1, references)
 
     @property
@@ -227,7 +267,16 @@ class GlobalParameters:
         return SysExMessage(self.device_id, DumpType.GLOBAL, 0, self.data)
 
 
-def decode_typed(message: SysExMessage) -> SoundProgram | MultiProgram | UserWave | UserWavetable | GlobalParameters | SysExMessage:
+def decode_typed(
+    message: SysExMessage,
+) -> (
+    SoundProgram
+    | MultiProgram
+    | UserWave
+    | UserWavetable
+    | GlobalParameters
+    | SysExMessage
+):
     try:
         dump_type = DumpType(int(message.dump_type))
     except ValueError:

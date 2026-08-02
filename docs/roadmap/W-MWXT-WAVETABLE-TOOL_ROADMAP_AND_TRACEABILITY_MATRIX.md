@@ -4,8 +4,8 @@
 **Project:** W-MWXT-WAVETABLE-TOOL  
 **Owner:** R-MiT  
 **Document type:** public development roadmap and traceability register  
-**Document version:** 2.2-public<br>
-**Baseline:** CODE V6 / `v0.6.0`<br>
+**Document version:** 2.3-public<br>
+**Baseline:** CODE V7 / `v0.7.0`<br>
 **Target:** `v1.0.0-prototype`  
 **Primary platform:** Windows 11  
 **Status:** authoritative public execution order
@@ -532,63 +532,54 @@ CODE V6 does not quantize XT waves, allocate User Wave destinations, build SysEx
 
 ---
 
-# 10. CODE V7 — XT-native optimization, resampling, quantization, Auto Repair
+# 10. CODE V7 — XT-native representation, trajectory, QC, and hardware acceptance
 
-## Objective
-
-Create the best validated XT-compatible representation for each selected or reconstructed wave.
-
-## Scope
-
-- 128-point working representation;
-- 64 transmitted samples;
-- reconstructed 128 points;
-- phase rotation;
-- polarity;
-- time reversal;
-- mirror candidate;
-- multiple half-wave candidates;
-- high-quality resampling;
-- anti-aliasing;
-- quantization;
-- extreme-value handling;
-- harmonic/perceptual error;
-- profile weighting;
-- Auto Repair detectors and policy;
-- before/after comparison.
-
-## Modules
+## Status
 
 ```text
-xt/reconstruction.py
-xt/symmetry.py
-xt/resampling.py
-xt/quantization.py
-xt/wave_optimizer.py
-xt/wave_metrics.py
-repair/detectors.py
-repair/actions.py
-repair/policy.py
-profiles/weights.py
+STATUS: COMPLETE
+RELEASE: v0.7.0
+BRANCH: code-v7-xt-native-optimization
+HARDWARE: WALDORF MICROWAVE XT OS 2.33
 ```
 
-## Critical hardware gate
+## Delivered scope
 
-Transmit an intentionally asymmetric 128-point test wave, redump WAVD, reconstruct the returned data, and determine whether the original second half survives or is replaced by the antisymmetric reconstruction.
+- documented offset-binary WAVD coding and byte-identical round trips;
+- documented 64-to-128 reverse-negate reconstruction;
+- safe generated integer range `-127..127`;
+- deterministic 128-to-64 XT-native projection;
+- exhaustive 128-phase evaluation;
+- deterministic global phase-path optimization;
+- complete 61-position editable trajectory;
+- deterministic QC of 60 transitions and 59 curvature points;
+- deterministic mathematical previews;
+- deterministic 61-WAVD + 1-WCTD + 1-SNDD package;
+- exact restore bundle;
+- manual write, restore, final installation, and audio acceptance.
 
-This gate decides the final architecture of the XT Symmetry Optimizer.
+## Acceptance evidence
 
-## Additional hardware tests
+```text
+Pre-release public suite  : 1027 passed, 4 skipped
+Pre-release private suite : 1031 passed
+Final public suite        : 1035 passed, 4 skipped
+Final private suite       : 1039 passed
+First installation        : 63/63 exact
+Restore                    : 63/63 exact
+Final installation        : 63/63 exact
+Hardware audio acceptance : PASS
+Package SHA-256            : 82724d493c889afe27a44f0550355bce1764e0054621f4a35b373c9c8f08c425
+Restore SHA-256            : a1ee24820a1dd77b5e283d3595d160cc8cbb8ee08a176f980eea9adf913861d6
+```
 
-- signed extremes;
-- amplitude limits;
-- quantization behavior;
-- invalid references where safe;
-- phase and polarity cases.
+## Scope sequencing note
 
-## Acceptance
+The broader provisional Auto Repair scope is not claimed by release `0.7.0`. It requires separate policies, tests, and acceptance gates.
 
-The hardware reconstruction rule must be confirmed or corrected and versioned. Every generated wave must contain complete source, transformation, 64-point, reconstruction, error, profile, and repair metadata.
+## Safety boundary
+
+CODE V7 never opens a MIDI port or writes the instrument automatically. Private dumps, audio captures, generated SysEx files, and private evidence remain outside Git.
 
 ---
 

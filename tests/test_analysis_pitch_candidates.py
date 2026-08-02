@@ -38,7 +38,7 @@ def pitch(
 def test_default_candidate_identity() -> None:
     result = generate_working_pitch_candidates(pitch())
     assert result.schema_version == 1
-    assert result.tool_version == "0.6.0"
+    assert result.tool_version == "0.7.0"
     assert result.sample_rate == 48000
     assert result.sample_count == 96000
     assert result.sample_sha256 == SAMPLE_HASH

@@ -12,7 +12,7 @@ from w_mwxt_wavetable_tool.cli import main
 from w_mwxt_wavetable_tool.project import open_project
 
 ROOT = Path(__file__).resolve().parents[1]
-CURRENT_VERSION = "0.6.0"
+CURRENT_VERSION = "0.7.0"
 
 
 def test_public_api_reports_current_release() -> None:

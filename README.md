@@ -2,13 +2,13 @@
 
 **W-MWXT-WAVETABLE-TOOL** is a deterministic Python toolkit for wave, wavetable, audio-source, and SysEx engineering for the **Waldorf Microwave XT**.
 
-> **Current release:** `0.6.0` — CODE V6<br>
+> **Current release:** `0.7.0` — CODE V7<br>
 > **Distribution and CLI:** `W-MWXT-WAVETABLE-TOOL`  
 > **Python package:** `w_mwxt_wavetable_tool`  
 > **Primary platform:** Windows 11  
 > **Python:** 3.11 or newer
 
-The project is developed through controlled, testable stages. CODE V1 established the strict SysEx core, CODE V2 added safe deterministic package construction and hardware read-back validation, CODE V3 added deterministic audio import and minimal project persistence, CODE V4 added time-domain signal analysis, CODE V5 added spectral/perceptual decisions, and CODE V6 adds working-pitch planning, segmentation, deterministic cycle discovery, representative top-N selection, waveform reconstruction, and one final aggregate contract.
+The project is developed through controlled, testable stages. CODE V1 established the strict SysEx core, CODE V2 added safe deterministic package construction and hardware read-back validation, CODE V3 added deterministic audio import and minimal project persistence, CODE V4 added time-domain signal analysis, CODE V5 added spectral/perceptual decisions, CODE V6 added working-pitch planning, segmentation, cycle discovery, representative selection, and waveform reconstruction, and CODE V7 adds documented XT coding, XT-native projection, a deterministic 61-position trajectory, trajectory QC, hardware-package generation, and physical instrument acceptance.
 
 ## Current capabilities
 
@@ -85,6 +85,19 @@ The tool does **not** transmit MIDI automatically. Hardware transmission remains
 
 CODE V6 remains non-destructive: it does not quantize XT values, allocate synth memory, build SysEx, or transmit MIDI. Those operations remain gated by later stages.
 
+### CODE V7 — XT-native projection, trajectory, QC, and hardware acceptance
+
+- documented offset-binary User Wave coding and reverse-negate reconstruction;
+- safe generated sample range `-127..127`, with `-128` excluded;
+- deterministic 128-to-64 projection with exhaustive phase evaluation;
+- complete 61-position XT-safe trajectory construction;
+- QC of 60 adjacent transitions and 59 interior curvature points;
+- deterministic mathematical audition WAV files;
+- deterministic 63-message package and exact restore bundle;
+- exact first-write, restore, and final-write hardware validation at `63/63` messages.
+
+CODE V7 never transmits MIDI automatically. Hardware writes remain deliberate manual actions followed by a fresh redump and exact comparison.
+
 ## Installation on Windows 11
 
 Open PowerShell in the repository root:
@@ -106,7 +119,7 @@ python -c "import w_mwxt_wavetable_tool as tool; print(tool.__version__)"
 Both commands must report:
 
 ```text
-0.6.0
+0.7.0
 ```
 
 ## Command-line usage
@@ -185,6 +198,19 @@ The report contains the imported-audio summary plus one `code_v6_analysis` objec
 
 The focused V6 commands `pitch-plan`, `segment-audio`, `discover-cycles`, `select-cycles`, and `reconstruct-waves` remain available. The existing `analyze-audio` command remains the stable CODE V5 aggregate command.
 
+### Run the CODE V7 XT-native stages
+
+```powershell
+W-MWXT-XT-GATE --help
+W-MWXT-XT-AUDIO-GATE --help
+W-MWXT-XT-PROJECT --help
+W-MWXT-XT-TRAJECTORY --help
+W-MWXT-XT-QC --help
+W-MWXT-XT-PACKAGE --help
+```
+
+Stage order: reconstruction gate -> controlled audio gate -> XT-native projection -> 61-position trajectory -> trajectory QC -> deterministic package -> manual transmission and exact read-back validation.
+
 ### Create a minimal project
 
 ```powershell
@@ -249,7 +275,7 @@ python -m pytest -v
 Private hardware-reference suite:
 
 ```powershell
-$env:W_MWXT_DUMP_DIR = "D:\W-MWXT-PRIVATE-DUMPS"
+$env:W_MWXT_DUMP_DIR = "D:\path\to\private-reference-dumps"
 python -m pytest -v
 ```
 
@@ -262,7 +288,7 @@ The project follows two rules:
 1. identical source data and configuration must produce identical outputs;
 2. automatic decisions must be accompanied by measurements, policies, and explicit explanations.
 
-CODE V6 preserves the CODE V3 source identity, the complete CODE V4/V5 aggregate, every working-pitch, segmentation, cycle, ranking, source-cycle, and reconstruction hash, and one final aggregate analysis fingerprint.
+CODE V7 preserves the complete CODE V6 lineage and adds deterministic hashes for XT projections, trajectory slots, QC reports, generated artifacts, hardware packages, restore bundles, and read-back comparisons.
 
 ## Safety
 
@@ -289,11 +315,11 @@ Completed:
 - [x] CODE V4 — time-domain DSP, pitch, periodicity, phase, levels, noise, transients, and change points
 - [x] CODE V5 — spectral, perceptual, classification, decisions, and aggregate analysis
 - [x] CODE V6 — working pitch, segmentation, cycle ranking, selection, reconstruction, and aggregate analysis
+- [x] CODE V7 — XT-native projection, 61-position trajectory, QC, package generation, and hardware acceptance
 
 Next:
 
-- [ ] CODE V7 — XT-native optimization, quantization, and Auto Repair
-- [ ] CODE V8 — complete 61-position wavetable generation and transitions
+- [ ] CODE V8 — complete wavetable-generation profiles, placement policies, and advanced transitions
 - [ ] CODE V9+ — complete project export, preview, transport, and graphical interface
 
 See `docs/roadmap/W-MWXT-WAVETABLE-TOOL_ROADMAP_AND_TRACEABILITY_MATRIX.md` for the full staged plan.

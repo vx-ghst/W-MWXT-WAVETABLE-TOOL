@@ -35,7 +35,9 @@ def bytes_to_nibbles(data: bytes | bytearray | memoryview | Iterable[int]) -> by
     return bytes(out)
 
 
-def nibbles_to_bytes(nibbles: bytes | bytearray | memoryview | Sequence[int]) -> bytes:
+def nibbles_to_bytes(
+    nibbles: bytes | bytearray | memoryview | Sequence[int],
+) -> bytes:
     """Decode high-nibble/low-nibble MIDI bytes into 8-bit bytes."""
     if len(nibbles) % 2:
         raise ProtocolError("Nibble payload length must be even")
@@ -59,10 +61,27 @@ def signed_i8(value: int) -> int:
 
 
 def unsigned_i8(value: int) -> int:
-    """Encode a signed int8 value as an unsigned byte."""
+    """Encode a signed int8 value as an unsigned two's-complement byte."""
     if not -128 <= value <= 127:
         raise ProtocolError(f"Signed int8 out of range: {value}")
     return value & 0xFF
+
+
+def decode_offset_binary_i8(value: int) -> int:
+    """Decode one Waldorf User Wave sample from 8-bit offset binary.
+
+    The Microwave II/XT SysEx specification states that User Wave samples are
+    not transmitted in two's-complement form. Flipping the most-significant bit
+    yields the conventional signed int8 representation.
+    """
+    if not 0 <= value <= 0xFF:
+        raise ProtocolError(f"8-bit offset-binary value out of range: {value}")
+    return signed_i8(value ^ 0x80)
+
+
+def encode_offset_binary_i8(value: int) -> int:
+    """Encode one signed int8 sample as Waldorf User Wave offset binary."""
+    return unsigned_i8(value) ^ 0x80
 
 
 def pack_u16_nibbles(values: Sequence[int]) -> bytes:
@@ -82,7 +101,9 @@ def pack_u16_nibbles(values: Sequence[int]) -> bytes:
     return bytes(out)
 
 
-def unpack_u16_nibbles(data: bytes | bytearray | memoryview | Sequence[int]) -> tuple[int, ...]:
+def unpack_u16_nibbles(
+    data: bytes | bytearray | memoryview | Sequence[int],
+) -> tuple[int, ...]:
     """Decode groups of four nibbles into 16-bit values."""
     if len(data) % 4:
         raise ProtocolError("16-bit nibble payload length must be divisible by four")
@@ -91,7 +112,9 @@ def unpack_u16_nibbles(data: bytes | bytearray | memoryview | Sequence[int]) -> 
         chunk = [int(x) for x in data[index : index + 4]]
         if any(not 0 <= x <= 0x0F for x in chunk):
             raise ProtocolError(f"Invalid 16-bit nibble group at byte {index}: {chunk}")
-        values.append((chunk[0] << 12) | (chunk[1] << 8) | (chunk[2] << 4) | chunk[3])
+        values.append(
+            (chunk[0] << 12) | (chunk[1] << 8) | (chunk[2] << 4) | chunk[3]
+        )
     return tuple(values)
 
 
