@@ -480,7 +480,7 @@ class XtHardwarePackageAnalysis:
             )
         lines.extend(["", "## Controlled Sound changes", "", "The Sound template is converted into the previously validated V7-A.2 controlled audition patch before the destination and name are encoded.", "", "| Byte | Before | After |", "|---:|---:|---:|"])
         for change in self.sound_parameter_changes:
-            lines.append(f"| {change["index"]} | {change["before"]} | {change["after"]} |")
+            lines.append(f"| {change['index']} | {change['before']} | {change['after']} |")
         lines.extend(["", "## Artifacts", "", "| File | Role | Bytes | SHA-256 |", "|---|---|---:|---|"])
         for artifact in self.artifacts:
             lines.append(
