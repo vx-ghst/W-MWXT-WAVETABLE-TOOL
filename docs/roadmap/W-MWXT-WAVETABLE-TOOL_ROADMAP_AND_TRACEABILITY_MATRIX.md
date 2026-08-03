@@ -8,7 +8,7 @@
 **Baseline:** CODE V7 / `v0.7.0`<br>
 **Target:** `v1.0.0-prototype`  
 **Primary platform:** Windows 11  
-**Status:** authoritative public execution order; CODE V8-0A through V8-0F closed, CODE V8-A through V8-D closed, CODE V8-E active
+**Status:** authoritative public execution order; CODE V8-0A through V8-0F closed, CODE V8-A through V8-E closed, CODE V8-F next
 
 ---
 
@@ -817,19 +817,31 @@ ordering, placement, locks, chronology and variants validated
 next stage: V8-E
 ```
 
-## CODE V8-E active scope
+## CODE V8-E completion gate
 
 ```text
-consume validated V8-D ordering and sparse placement variants
-fill open editable positions with deterministic transition waves
-support waveform, amplitude, phase-aware, spectral, harmonic and perceptual interpolation
-allocate adaptive transition density from interval complexity and continuity evidence
-protect fundamental, level, polarity and locked or essential keyframes
-produce explicit transition maps and continuity evidence without materializing WCTD
-defer Factory Style, WCTD materialization and hardware gates to V8-F
+V8-E formally closed
+interpolation families and adaptive transition density validated
+125 targeted tests passed
+2053 public tests passed, 4 private tests skipped
+2057 private tests passed
+12/12 implementation checks passed
+next stage: V8-F
 ```
 
-V8-E is the active stage. It must consume the immutable V8-A request, complete V8-B analysis, validated V8-C selection, and validated V8-D placement variants. It may generate transition waves, allocate adaptive transition density, and evaluate continuity, but it must not apply Factory Style, materialize WCTD, generate SysEx, open MIDI, or transmit MIDI.
+## CODE V8-F active scope
+
+```text
+consume validated complete V8-E 61-slot builds and continuity evidence
+apply deterministic Waldorf Factory Style policies without mutating protected keyframes
+materialize canonical WCTD reference models for 61 user positions plus three fixed tail positions
+preserve exact slot provenance, safe ranges and fixed-tail reference semantics
+define executable hardware gates for known references, positions 60-63, scans and read-back
+report unresolved hardware-dependent behavior explicitly without guessing
+defer final integration, compliance audit, documentation and release to V8-G
+```
+
+V8-F is the active stage. It must consume immutable V8-A through V8-E evidence. It may apply controlled Factory Style policies, materialize canonical WCTD models, and define hardware-gate fixtures and evidence contracts. It must not claim hardware acceptance without actual read-back evidence, generate or transmit SysEx, open MIDI, or complete the final release.
 
 ## Hardware gates
 
