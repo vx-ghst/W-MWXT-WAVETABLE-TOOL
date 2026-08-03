@@ -4,11 +4,11 @@
 **Project:** W-MWXT-WAVETABLE-TOOL  
 **Owner:** R-MiT  
 **Document type:** public development roadmap and traceability register  
-**Document version:** 2.4-public<br>
+**Document version:** 2.5-public<br>
 **Baseline:** CODE V7 / `v0.7.0`<br>
 **Target:** `v1.0.0-prototype`  
 **Primary platform:** Windows 11  
-**Status:** authoritative public execution order; CODE V8-0A active
+**Status:** authoritative public execution order; CODE V8-0A closed, CODE V8-0B active
 
 ---
 
@@ -610,6 +610,24 @@ Ubuntu and Windows CI on Python 3.11, 3.12 and 3.13
 ```
 
 V8-0A is a traceability and contract stage. It does not claim that partial or planned capabilities are already implemented. Their closure remains assigned to V8-0B through V8-0F or the later version recorded by each requirement.
+
+## V8-0B - import, signal, behavior, and regions
+
+V8-0B closes the incomplete import, signal, behavior, and region requirements without mutating the accepted V4-V6 aggregate schemas. It adds:
+
+```text
+complete mono policy and scored automatic selection
+rapid frequency-modulation analysis
+time-varying saturation and asymmetry analysis
+density and complexity analysis
+beating, unison and detune analysis
+eight explainable behavior classes
+eight named active region classes plus silence coverage
+useful-change and long-region redundancy scoring
+interest-weighted advisory allocation
+```
+
+The historical CODE V5 source classifier and CODE V6 segmentation remain available unchanged. New results are linked through `SignalExtensionAnalysis`, `BehaviorClassification`, and `RegionInterestAnalysis`. Final wave selection and placement remain assigned to later CODE V8 stages.
 
 ## Remaining V8-0 order
 

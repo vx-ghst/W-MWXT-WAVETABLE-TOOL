@@ -276,19 +276,37 @@ class ProjectAudioRecord:
         conversion_payload = _require_mapping(
             payload["mono_conversion"], label="audio.mono_conversion"
         )
-        _require_exact_keys(
-            conversion_payload,
-            expected={
-                "policy",
-                "strategy",
-                "source_channels",
-                "selected_channel",
-                "channel_rms",
-                "stereo_correlation",
-                "reason",
-            },
-            label="audio.mono_conversion",
-        )
+        legacy_conversion_fields = {
+            "policy",
+            "strategy",
+            "source_channels",
+            "selected_channel",
+            "channel_rms",
+            "stereo_correlation",
+            "reason",
+        }
+        extended_conversion_fields = legacy_conversion_fields | {
+            "selected_candidate",
+            "candidate_periodicity_scores",
+            "periodicity_margin",
+        }
+        conversion_fields = set(conversion_payload)
+        if conversion_fields not in (
+            legacy_conversion_fields,
+            extended_conversion_fields,
+        ):
+            expected = (
+                extended_conversion_fields
+                if conversion_fields & (
+                    extended_conversion_fields - legacy_conversion_fields
+                )
+                else legacy_conversion_fields
+            )
+            _require_exact_keys(
+                conversion_payload,
+                expected=expected,
+                label="audio.mono_conversion",
+            )
         try:
             policy = MonoPolicy(
                 _require_string(conversion_payload["policy"], label="audio.mono_conversion.policy")
@@ -323,6 +341,69 @@ class ProjectAudioRecord:
                 correlation_raw, label="audio.mono_conversion.stereo_correlation"
             )
         )
+        selected_candidate: str | None = None
+        candidate_periodicity_scores: tuple[tuple[str, float], ...] = ()
+        periodicity_margin: float | None = None
+        if conversion_fields == extended_conversion_fields:
+            selected_candidate_raw = conversion_payload["selected_candidate"]
+            selected_candidate = (
+                None
+                if selected_candidate_raw is None
+                else _require_string(
+                    selected_candidate_raw,
+                    label="audio.mono_conversion.selected_candidate",
+                )
+            )
+            score_payload = conversion_payload["candidate_periodicity_scores"]
+            if not isinstance(score_payload, list):
+                raise ProjectFormatError(
+                    "audio.mono_conversion.candidate_periodicity_scores must be an array"
+                )
+            parsed_scores: list[tuple[str, float]] = []
+            for index, item in enumerate(score_payload):
+                score_item = _require_mapping(
+                    item,
+                    label=(
+                        "audio.mono_conversion.candidate_periodicity_scores"
+                        f"[{index}]"
+                    ),
+                )
+                _require_exact_keys(
+                    score_item,
+                    expected={"name", "periodicity_score"},
+                    label=(
+                        "audio.mono_conversion.candidate_periodicity_scores"
+                        f"[{index}]"
+                    ),
+                )
+                parsed_scores.append(
+                    (
+                        _require_string(
+                            score_item["name"],
+                            label=(
+                                "audio.mono_conversion.candidate_periodicity_scores"
+                                f"[{index}].name"
+                            ),
+                        ),
+                        _require_float(
+                            score_item["periodicity_score"],
+                            label=(
+                                "audio.mono_conversion.candidate_periodicity_scores"
+                                f"[{index}].periodicity_score"
+                            ),
+                        ),
+                    )
+                )
+            candidate_periodicity_scores = tuple(parsed_scores)
+            margin_raw = conversion_payload["periodicity_margin"]
+            periodicity_margin = (
+                None
+                if margin_raw is None
+                else _require_float(
+                    margin_raw,
+                    label="audio.mono_conversion.periodicity_margin",
+                )
+            )
         mono_conversion = MonoConversionReport(
             policy=policy,
             strategy=strategy,
@@ -337,6 +418,9 @@ class ProjectAudioRecord:
             reason=_require_string(
                 conversion_payload["reason"], label="audio.mono_conversion.reason"
             ),
+            selected_candidate=selected_candidate,
+            candidate_periodicity_scores=candidate_periodicity_scores,
+            periodicity_margin=periodicity_margin,
         )
 
         measurements_payload = _require_mapping(

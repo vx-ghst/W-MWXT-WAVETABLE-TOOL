@@ -109,6 +109,17 @@ CODE V7 never transmits MIDI automatically. Hardware writes remain deliberate ma
 
 CODE V8-0A is a traceability contract, not a claim that partial or planned features are already implemented. Those requirements remain assigned to their recorded CODE stages.
 
+### CODE V8-0B - import, signal, behavior, and regions (development branch)
+
+- complete deterministic mono policies: sum, average, left, right, Mid, best periodicity, and automatic selection;
+- structured candidate scores and backward-compatible minimal-project parsing;
+- dedicated rapid-FM, saturation, asymmetry, density, complexity, beating, unison, and detune contracts;
+- eight explainable source-behavior classes without changing the historical CODE V5 classifier;
+- contiguous region-interest analysis for establishment, sustain, evolution, saturation, redundancy, disappearance, and noise;
+- deterministic interest-weighted advisory allocation without building or transmitting a wavetable.
+
+CODE V8-0B extends accepted V4-V6 results through linked schema-versioned aggregates. It does not mutate the frozen V7 XT path and never transmits MIDI or SysEx.
+
 ## Installation on Windows 11
 
 Open PowerShell in the repository root:
@@ -330,7 +341,7 @@ Completed:
 
 In progress:
 
-- [ ] CODE V8-0 — exhaustive post-V7 compliance closure; V8-0A executable registry implemented on the V8 branch
+- [ ] CODE V8-0 — exhaustive post-V7 compliance closure; V8-0A closed and V8-0B implemented locally pending remote/private gates
 
 Next:
 

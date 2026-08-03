@@ -84,8 +84,11 @@ def _autocorrelation_pitch(
     else:
         local_scores = scores[local_indices]
         best_local = float(np.max(local_scores))
-        strong = local_indices[local_scores >= best_local * 0.90]
-        selected_index = int(strong[0])
+        if best_local > 0.0:
+            strong = local_indices[local_scores >= best_local * 0.90]
+            selected_index = int(strong[0])
+        else:
+            selected_index = int(local_indices[int(np.argmax(local_scores))])
 
     selected_score = float(max(0.0, scores[selected_index]))
     selected_lag = float(lags[selected_index])

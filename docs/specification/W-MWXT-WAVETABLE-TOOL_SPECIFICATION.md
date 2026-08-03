@@ -1214,6 +1214,30 @@ Schema evolution shall be explicit. Current payloads shall be validated strictly
 
 The nine explicit exclusions shall have executable non-reintroduction gates. A documented exclusion is not considered forgotten functionality.
 
+## 33.2 Import, signal-extension, behavior, and region contract
+
+The implementation shall provide all mono policies required by the cahier des charges: arithmetic sum, arithmetic average, left, right, stereo Mid, best periodicity, and automatic deterministic selection. Compatibility policies may remain public, but automatic selection shall preserve mono, single-active-channel, identical-channel, and anti-phase safety gates before periodicity scoring. Scored decisions shall retain candidate scores, selected candidate, margin, and explanation.
+
+The accepted CODE V4 `SignalAnalysis` schema shall not be silently mutated. Additional V8-0B metrics shall be provided by a linked versioned aggregate containing rapid frequency modulation, time-varying saturation, asymmetry, density, complexity, beating, unison, and detune results. Every result shall contain finite bounded metrics, exact source identity, deterministic serialization, and a canonical hash.
+
+The behavioral classifier shall expose exactly these eight classes:
+
+```text
+periodic
+quasi_periodic
+evolving
+pitch_variable
+transient
+noisy
+non_periodic
+hybrid
+```
+
+Every classification shall contain all eight scores in canonical order, confidence, ambiguity, evidence, one explanation per score, a selected behavior, and a deterministic hash. Silence shall be represented explicitly through the eight-class contract rather than by adding an undocumented ninth behavior.
+
+The accepted CODE V6 segmentation schema shall remain readable. A linked region-interest layer shall map or refine complete source coverage into attack, establishment, sustain, evolution, saturation, redundancy, disappearance, and noise, with silence retained as a coverage state. Regions shall be contiguous and non-overlapping and shall expose useful-change, redundancy, saturation, complexity, interest, and allocation values. Long low-change regions shall be deprioritized, and advisory density shall be allocated by interest rather than uniform time. This advisory allocation shall not itself build a wavetable or transmit MIDI.
+
+Minimal-project parsing shall accept both the complete legacy mono report and the complete extended scored report. Partial mixed representations and unknown fields shall be rejected.
 
 # 34. Prototype acceptance
 

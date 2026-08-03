@@ -4,6 +4,15 @@ All notable changes to **W-MWXT-WAVETABLE-TOOL** are documented here.
 
 ## Unreleased — CODE V8 development
 
+### CODE V8-0B - import, signal, behavior, and regions
+
+- Added complete deterministic mono policies with structured periodicity evidence and legacy project compatibility.
+- Added linked rapid-FM, time-varying saturation, asymmetry, density, complexity, beating, unison, and detune analyses.
+- Added an explainable eight-behavior classifier while preserving the historical CODE V5 six-class contract.
+- Added contiguous region-interest analysis, long stable-region redundancy detection, and deterministic interest-weighted advisory allocation.
+- Fixed the sparse-transient autocorrelation edge case without changing positive-score pitch selection.
+- Preserved version `0.7.0` and the frozen V7 XT modules.
+
 ### CODE V8-0A — executable compliance registry
 
 - Added a strict schema-versioned registry containing all 206 cahier-des-charges requirements.
