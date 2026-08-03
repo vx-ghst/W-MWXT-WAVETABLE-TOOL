@@ -8,7 +8,7 @@ Stage   : CODE V8-0F
 Branch  : code-v8-wavetable-builder
 Base    : CODE V8-0E / 4db4ac6bc1ba5c7262cddef082fed6eb6294b6ce
 Version : 0.7.0 (unchanged until CODE V8-G)
-Status  : IMPLEMENTED LOCALLY - PRIVATE SUITE AND REMOTE CI PENDING
+Status  : VALIDATED - LOCAL, PRIVATE, WHEEL, ZERO-DEBT, AND REMOTE CI GATES PASSED
 ```
 
 ## Implemented contracts
@@ -43,56 +43,98 @@ version 0.7.0
 
 The historical V8-0A registry remains the audit of the `v0.7.0` baseline. V8-0F overlays current closure evidence rather than rewriting historical baseline support states.
 
-## Local design validation
+## Final validation evidence
 
 ```text
-compileall                              : PASS on reconstructed V8-0E source tree
-V8-0F targeted suite                   : 56 passed
-Complete public suite                  : 1522 passed, 4 skipped
-pre-V8 required requirement count      : 62 exact
-supported pre-V8 requirement count     : 62 exact
-remaining required pre-V8 debt         : 0 exact
-closure stage distribution             : 2 / 12 / 19 / 24 / 4 / 1
-module and test evidence paths          : PASS
-baseline registry SHA-256 link          : PASS
-27-class correction gate                : PASS
-V3-V7 link validation                   : PASS
-V8-0B through V8-0E link validation     : PASS
-ready and explicit rejection states     : PASS
-NaN-safe canonical JSON                 : PASS
-public API exports                      : PASS
+compileall                              : PASS
+pip check                               : PASS
+V8-0F targeted suite                    : 56 passed
+Complete public suite                   : 1522 passed, 4 skipped
+Complete private suite                  : 1526 passed
+Pre-V8 required requirement count       : 62 exact
+Supported pre-V8 requirement count      : 62 exact
+Remaining required pre-V8 debt          : 0 exact
+Closure stage distribution              : 2 / 12 / 19 / 24 / 4 / 1
+Module and test evidence paths           : PASS
+Baseline registry SHA-256 link           : PASS
+Canonical 27-class correction gate       : PASS
+V3-V7 provenance validation              : PASS
+V8-0B through V8-0E link validation      : PASS
+Ready and explicit rejection states      : PASS
+NaN-safe canonical JSON                  : PASS
+Public API exports                       : PASS
+Isolated PEP 517 wheel build             : PASS
+Wheel module and ledger inclusion        : PASS
+Wheel size                               : 386754 bytes
+Wheel SHA-256                            : 557e524f6b66121e00a57c4551a000ea53258e65c0d6c355bc7b0805d528b3cf
+git diff --check                         : PASS
+Authorized implementation paths          : 14/14 exact
 ```
 
-The four public skips are the existing private real-dump tests because private evidence is not stored in the repository.
+The four public skips are exclusively the existing private real-dump tests. The complete private suite was executed with all four reference dumps mounted and finished with zero failed and zero skipped tests.
 
-## Target-environment gates still required
+The wheel was built with the standard isolated PEP 517 process declared by `pyproject.toml`. The pre-V8 aggregate module and the packaged closure ledger were present in the generated wheel.
+
+The line-ending notices emitted by Git on Windows were advisory only. The implementation diff passed `git diff --check`, the exact-path gate, and the final empty-index gate.
+
+## Remote validation evidence
 
 ```text
-[ ] compileall passes in the target repository
-[ ] pip check passes in the target environment
-[ ] V8-0F targeted suite passes in the target repository
-[ ] complete public suite passes
-[ ] complete private suite passes with all four reference dumps mounted
-[ ] isolated PEP 517 wheel includes the pre-V8 module and closure ledger
-[ ] exact authorized file set and git diff --check pass
-[ ] implementation commit SHA is recorded
-[ ] twelve push and pull-request checks pass
-[ ] repository is clean after the implementation commit
-[ ] final closure evidence is committed in this report
+Implementation commit       : e38bdf92b4942874e11d8ca325158d69f80d3ceb
+Draft pull request          : 7
+Pull-request base           : main
+Pull-request head           : code-v8-wavetable-builder
+Push workflow run           : 30824646892
+Pull-request workflow run   : 30824647770
+Unique CI environments      : 6
+Push checks                 : 6/6 passed
+Pull-request checks         : 6/6 passed
+Total implementation checks : 12/12 passed
+Cancelled                   : 0
+Failed                      : 0
+Skipped                     : 0
+Pending                     : 0
 ```
 
-## Acceptance assertions
+The six operating-system and Python combinations ran through both push and pull-request events. Every job completed project installation, compileall, pip check, and the complete public suite.
 
-- The exact 62 active requirements destined to `V8-0*` are present once, in canonical registry order.
-- No excluded or post-prototype requirement is used to inflate the closure count.
-- No requirement assigned to a later CODE stage is falsely claimed as pre-V8 work.
-- Every closure record has module, test, reason, and deterministic hash evidence.
-- `CDC-CLS-001` records 27 canonical musical classes.
-- The historical baseline registry remains byte-stable and separately hash-linked.
-- V3, V4, V5, V6, and supplied V7 artifacts must form one exact provenance chain.
-- Every V8-0B through V8-0E analysis and decision link must match.
-- A rejected source remains rejected while the implementation debt gate remains closed.
-- No MIDI or SysEx transmission path is introduced.
+## Closure gates
+
+```text
+[x] the historical V8-0A baseline registry remains unchanged and hash-linked
+[x] exactly 62 active pre-V8 requirements are represented once in canonical order
+[x] exactly 62 pre-V8 requirements are supported
+[x] missing required pre-V8 debt is zero
+[x] partial required pre-V8 debt is zero
+[x] absent required pre-V8 debt is zero
+[x] excluded and post-prototype requirements do not inflate the closure count
+[x] no later-stage requirement is falsely claimed as pre-V8 work
+[x] every closure record has module, test, reason, and deterministic hash evidence
+[x] the canonical 27-class correction is recorded for CDC-CLS-001
+[x] V3 imported-state and sample identity are linked
+[x] V4, V5, and V6 aggregate provenance is validated
+[x] supplied V7 projection and optional trajectory, QC, and package provenance is validated
+[x] V8-0B through V8-0E analysis and decision links are validated
+[x] ready and explicit rejected source states are implemented
+[x] rejected sources have no hidden fallback
+[x] canonical JSON and aggregate SHA-256 are deterministic
+[x] historical V5, V6, V7, and V8-0B through V8-0E schemas remain unchanged
+[x] targeted V8-0F suite passes
+[x] complete public suite passes
+[x] complete private suite passes with all four reference dumps
+[x] isolated PEP 517 wheel builds successfully
+[x] pre-V8 module and closure ledger are present in the wheel
+[x] exact 14-file implementation diff and whitespace checks pass
+[x] twelve implementation checks pass
+[x] implementation commit SHA and workflow runs are recorded
+[x] repository is clean after the implementation commit
+[x] no wavetable construction, XT allocation, or automatic MIDI/SysEx transmission is introduced
+[x] no private dump, generated SysEx, audio capture, local path, or private evidence is committed
+```
+
+CODE V8-0F is formally closed.
+
+The complete CODE V8-0 preflight sequence is now closed with 62/62 required obligations supported and zero required pre-V8 debt. The next stage is CODE V8, which implements 61-position generation, placement, interpolation, and transitions. This closure does not claim that the CODE V8 builder is already implemented.
 
 ## Safety boundary
 

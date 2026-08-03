@@ -8,7 +8,7 @@
 **Baseline:** CODE V7 / `v0.7.0`<br>
 **Target:** `v1.0.0-prototype`  
 **Primary platform:** Windows 11  
-**Status:** authoritative public execution order; CODE V8-0A through V8-0E closed, CODE V8-0F active
+**Status:** authoritative public execution order; CODE V8-0A through V8-0F closed, CODE V8 next
 
 ---
 
@@ -701,10 +701,13 @@ canonical JSON and aggregate SHA-256
 
 The baseline registry remains a historical audit and is not rewritten. The separate closure ledger proves current support while preserving the original post-V7 findings. V8-0F builds no table and opens no MIDI path.
 
-## Remaining V8-0 order
+## V8-0 completion gate
 
 ```text
-V8-0F implementation, validation, and formal closure
+V8-0A through V8-0F formally closed
+62/62 required pre-V8 obligations supported
+0 required pre-V8 debt
+next stage: CODE V8
 ```
 
 ---
