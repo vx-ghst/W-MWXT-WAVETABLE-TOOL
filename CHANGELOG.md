@@ -13,6 +13,15 @@ All notable changes to **W-MWXT-WAVETABLE-TOOL** are documented here.
 - Added canonical JSON, deterministic hashes, and an executable zero required-debt gate before CODE V8-A.
 - Preserved version `0.7.0` and every historical V1-V7 and V8-0B through V8-0E schema.
 
+### CODE V8-F - Factory Style, WCTD models and hardware gates
+
+- Added request-controlled deterministic Factory Style transition shaping with byte-exact protection of locked, structural, essential, breakpoint, extreme, stable and edge-hold slots.
+- Added bounded circular smoothing, neighbor blending, safe `-127..127` output and mandatory continuity revalidation without claiming an exact Waldorf factory algorithm.
+- Added canonical 64-entry WCTD reference models with 61 user references, three preserved fixed-tail references, explicit unresolved allocation and deterministic 128-byte reference-payload hashes.
+- Added six executable hardware gates for known references, intermediate positions, positions 60-63, slow scan, fast scan and complete read-back.
+- Added explicit blocked, pending, pass and fail evidence states; hardware acceptance is impossible without six passing real-evidence records.
+- Preserved version `0.7.0` and all accepted V8-A through V8-E, V8-0 and V1-V7 schemas while deferring final integration and release to V8-G.
+
 ### CODE V8-E - interpolation families and adaptive transition density
 
 - Added deterministic waveform, amplitude, phase-aware, spectral, harmonic, and perceptual interpolation under explicit allowed-method policies.

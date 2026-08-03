@@ -218,6 +218,17 @@ CODE V8-D assigns only the selected real or reconstructed keyframes. It does not
 
 CODE V8-E fills all editable positions while preserving every V8-D keyframe byte-for-byte. It does not apply Factory Style, serialize WCTD, allocate XT memory, generate SysEx, open MIDI, or transmit MIDI. Those gates remain assigned to V8-F and later controlled stages.
 
+### CODE V8-F - Factory Style, WCTD models and hardware gates (development branch)
+
+- optional request-controlled Factory Style shaping limited to mutable transition slots;
+- byte-exact protection of locked, structural, essential and non-transition positions;
+- canonical 64-entry WCTD reference models with 61 user entries and three exact fixed-tail entries;
+- explicit unresolved allocation and binary-ready states instead of invented User Wave references;
+- six evidence-driven hardware gates for known references, intermediate positions, positions 60-63, slow and fast scans, and complete read-back;
+- deterministic canonical JSON and SHA-256 links across Factory Style, WCTD and hardware evidence.
+
+CODE V8-F does not claim a bit-exact Waldorf Factory algorithm. It serializes no complete instrument dump, generates no SysEx, opens no MIDI port and cannot claim hardware acceptance without all six real-evidence gates. Final integration, compliance closure and release remain assigned to V8-G.
+
 ## Installation on Windows 11
 
 Open PowerShell in the repository root:

@@ -8,7 +8,7 @@
 **Baseline:** CODE V7 / `v0.7.0`<br>
 **Target:** `v1.0.0-prototype`  
 **Primary platform:** Windows 11  
-**Status:** authoritative public execution order; CODE V8-0A through V8-0F closed, CODE V8-A through V8-E closed, CODE V8-F next
+**Status:** authoritative public execution order; CODE V8-0A through V8-0F closed, CODE V8-A through V8-E closed, CODE V8-F active
 
 ---
 
