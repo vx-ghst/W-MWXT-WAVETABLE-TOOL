@@ -8,7 +8,7 @@ Stage   : CODE V8-D
 Branch  : code-v8-wavetable-builder
 Base    : CODE V8-C / 4dd3eeb32a638eb45be96a41606aeb3bcd5f75b5
 Version : 0.7.0 (unchanged until CODE V8-G)
-Status  : IMPLEMENTED LOCALLY - PRIVATE SUITE AND REMOTE CI PENDING
+Status  : VALIDATED - LOCAL, PRIVATE, WHEEL, AND REMOTE CI GATES PASSED
 ```
 
 ## Implemented contracts
@@ -45,61 +45,115 @@ version 0.7.0
 
 V8-D consumes V8-A through V8-C evidence without mutation and preserves every selected candidate ID exactly once.
 
-## Local design validation
+## Final validation evidence
 
 ```text
-compileall                                         : PASS on isolated V8-A/V8-B/V8-C/V8-D bundle
-V8-D targeted suite                               : 97 passed
-V8-A targeted regression suite                    : 115 passed
-V8-B targeted regression suite                    : 112 passed
-V8-C targeted regression suite                    : 82 passed
-one, two, eight and 61-position capacity behavior         : PASS
-mixed real/reconstructed provenance               : PASS
-six ordering strategies and five spacing biases   : PASS
-five-term weighted compromise                     : PASS
-small-case exhaustive ordering optimality         : PASS through public scorer
-large-case deterministic topological ordering     : PASS
-required locks and chronology                     : PASS
-preference lock/chronology evidence                : PASS
-infeasible anchor capacity rejection               : PASS with no partial output
-sparse occupied/open position partition            : PASS
-ranked unique placement variants                   : PASS
-canonical tuples, frozen models and hashes         : PASS
-no interpolation, WCTD, SysEx or MIDI path         : PASS
+compileall                                      : PASS
+pip check                                       : PASS
+V8-D targeted suite                             : 97 passed
+V8-A targeted regression suite                  : 115 passed
+V8-B targeted regression suite                  : 112 passed
+V8-C targeted regression suite                  : 82 passed
+Complete public suite                           : 1928 passed, 4 skipped
+Complete private suite                          : 1932 passed
+Pre-V8 compliance gate                          : 62/62 supported, debt=0
+One, two, eight and 61-position behavior        : PASS
+Mixed real/reconstructed provenance             : PASS
+Six ordering strategies                         : PASS
+Five placement biases                           : PASS
+Five-term weighted ordering objective           : PASS
+Small-case exhaustive ordering optimality       : PASS through public scorer
+Large-case deterministic topological ordering   : PASS
+Required locks and chronology                   : PASS
+Preference lock and chronology evidence         : PASS
+Infeasible anchor-capacity rejection            : PASS with no partial output
+Sparse occupied/open position partition         : PASS
+Ranked unique placement variants                : PASS
+Canonical tuples, frozen models and hashes      : PASS
+No interpolation, WCTD, SysEx or MIDI path      : PASS
+Isolated PEP 517 wheel build                    : PASS
+Wheel wavetable modules                         : 10/10 present
+Wheel size                                      : 445706 bytes
+Wheel SHA-256                                   : cb85f580d4c7ff9a7755bf51f4c52b1c540ca2e3c975484a8ab5410c4b2b8c6f
+git diff --check                                : PASS
+Authorized implementation paths                 : 17/17 exact
+Implementation insertions                       : 3896 exact
+Implementation deletions                        : 1 exact
 ```
 
-## Target-environment gates still required
+The four public skips are exclusively the existing private real-dump tests. The complete private suite was executed with all four reference dumps mounted and finished with zero failed and zero skipped tests.
+
+The wheel was built with the standard isolated PEP 517 process declared by `pyproject.toml`. The ten `wavetable` modules required through V8-D were present in the generated wheel: `__init__`, `models`, `contracts`, `metrics`, `usefulness`, `deduplication`, `selection`, `ordering`, `placement`, and `variants`.
+
+The line-ending notices emitted by Git on Windows were advisory only. The implementation diff passed `git diff --check`, the exact-path gate, the added-line private-path gate, the media gate, and the final empty-index gate.
+
+## Remote validation evidence
 
 ```text
-[ ] compileall passes in the target repository
-[ ] pip check passes in the target environment
-[ ] V8-D targeted suite passes in the target repository
-[ ] complete public suite passes
-[ ] complete private suite passes with all four reference dumps mounted
-[ ] pre-V8 gate remains 62/62 supported with zero debt
-[ ] isolated PEP 517 wheel includes all V8-D modules
-[ ] exact authorized file set and git diff --check pass
-[ ] implementation commit SHA is recorded
-[ ] twelve push and pull-request checks pass
-[ ] repository is clean after the implementation commit
-[ ] final closure evidence is committed in this report
+Implementation commit       : f6a986b400269641145693717487739a93add6fd
+Implementation parent       : 4dd3eeb32a638eb45be96a41606aeb3bcd5f75b5
+Draft pull request          : 7
+Pull-request base           : main
+Pull-request head           : code-v8-wavetable-builder
+Push workflow run           : 30847955609
+Pull-request workflow run   : 30847959550
+Unique CI environments      : 6
+Push checks                 : 6/6 passed
+Pull-request checks         : 6/6 passed
+Total implementation checks : 12/12 passed
+Cancelled                   : 0
+Failed                      : 0
+Skipped                     : 0
+Pending                     : 0
 ```
 
-## Acceptance assertions
+The six operating-system and Python combinations ran through both push and pull-request events. Every job completed project installation, compileall, pip check, and the complete public suite.
 
-- Every complete ordering is an exact permutation of the complete V8-C selection.
-- Every complete placement assigns each ordered candidate exactly once to one unique position from 0 through 60.
-- Assigned positions increase strictly with final order.
-- Required chronology and required position locks are never silently violated.
-- Preference constraints are satisfied, violated, or marked not applicable with explicit evidence.
-- Exact search is independently verifiable through `evaluate_wavetable_order`.
-- Large cases use deterministic topological greedy solving and canonical tie-breaks.
-- Ordering exposes source fidelity, scan smoothness, harmonic diversity, Bass strength, and discontinuity avoidance.
-- Sparse placements expose every open position for V8-E and do not synthesize filler waves.
-- Inventories above 61 are first reduced by V8-C and then assigned to exactly 61 editable positions.
-- Placement variants have unique candidate-position signatures and deterministic rank.
-- Infeasible mandatory constraints produce blockers and no partial order, placement, or variant.
-- No interpolation, WCTD materialization, SysEx generation, MIDI opening, or MIDI transmission path is introduced.
+## Closure gates
+
+```text
+[x] the immutable V8-A request, V8-B analysis, and V8-C selection hashes are preserved
+[x] every complete ordering is an exact permutation of the selected V8-C candidates
+[x] every complete placement assigns every ordered candidate exactly once
+[x] occupied positions are unique integers from 0 through 60
+[x] assigned positions increase strictly with the final order
+[x] required chronology constraints are never silently violated
+[x] required position locks are never silently violated
+[x] preference constraints expose satisfied, violated, or not-applicable evidence
+[x] lock, chronology, capacity, and selected-set conflicts produce explicit blockers
+[x] rejected results expose no partial order, placement, or variant
+[x] exact small-case ordering is independently verifiable through the public scorer
+[x] large cases use deterministic topological greedy solving and canonical tie-breaks
+[x] source fidelity, scan smoothness, harmonic diversity, Bass strength, and discontinuity avoidance are explicit
+[x] balanced, source-fidelity, scan-smoothness, harmonic-diversity, Bass-strength, and discontinuity-avoidance strategies are deterministic
+[x] balanced, early, late, center, and edge-expanded placement biases are deterministic
+[x] sparse placements expose every open position for V8-E
+[x] placement variants have unique candidate-position signatures and deterministic ranks
+[x] moved-candidate counts and mean position deltas are explicit
+[x] the primary variant is stable independently of the requested retained-variant count
+[x] mixed real and reconstructed candidate provenance is preserved
+[x] canonical JSON and SHA-256 links are deterministic
+[x] accepted V8-A, V8-B, V8-C, V8-0, and V1-V7 schemas remain unchanged
+[x] targeted V8-D suite passes
+[x] V8-A, V8-B, and V8-C targeted regression suites pass
+[x] complete public suite passes
+[x] complete private suite passes with all four reference dumps
+[x] pre-V8 gate remains 62/62 supported with zero debt
+[x] isolated PEP 517 wheel builds successfully
+[x] all ten V8-D-era wavetable modules are present in the wheel
+[x] exact 17-file implementation diff and whitespace checks pass
+[x] twelve implementation checks pass
+[x] implementation commit SHA and workflow runs are recorded
+[x] repository is clean after the implementation commit
+[x] V8-D generates no transition waveform samples
+[x] V8-D does not interpolate transitions or materialize WCTD
+[x] no XT allocation, SysEx generation, MIDI opening, or MIDI transmission is introduced
+[x] no private dump, generated SysEx, audio capture, local path, or private evidence is committed
+```
+
+CODE V8-D is formally closed.
+
+The next stage is CODE V8-E, which consumes the validated V8-D ordering and sparse placement variants, generates deterministic transition waves, allocates adaptive transition density, and produces continuity evidence. This closure does not claim Factory Style, WCTD materialization, hardware acceptance, SysEx generation, or MIDI transmission.
 
 ## Safety boundary
 

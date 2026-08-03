@@ -8,7 +8,7 @@
 **Baseline:** CODE V7 / `v0.7.0`<br>
 **Target:** `v1.0.0-prototype`  
 **Primary platform:** Windows 11  
-**Status:** authoritative public execution order; CODE V8-0A through V8-0F closed, CODE V8-A through V8-C closed, CODE V8-D active
+**Status:** authoritative public execution order; CODE V8-0A through V8-0F closed, CODE V8-A through V8-D closed, CODE V8-E next
 
 ---
 
@@ -805,18 +805,31 @@ structural and essential keyframe selection validated
 next stage: V8-D
 ```
 
-## CODE V8-D active scope
+## CODE V8-D completion gate
 
 ```text
-order the selected V8-C keyframes
-assign selected candidates to editable positions 1-61
-satisfy required position locks and chronology constraints
-detect and report lock, capacity and chronology conflicts
-generate deterministic placement variants with explicit evidence
-preserve V8-C selection identity and defer interpolation to V8-E
+V8-D formally closed
+ordering, placement, locks, chronology and variants validated
+97 targeted tests passed
+1928 public tests passed, 4 private tests skipped
+1932 private tests passed
+12/12 implementation checks passed
+next stage: V8-E
 ```
 
-V8-D is the active stage. It must consume the immutable V8-A request, complete V8-B analysis, and validated V8-C selection. It may solve final ordering, position placement, required locks, chronology constraints, and placement variants, but it must not interpolate transitions, materialize WCTD, generate SysEx, or open MIDI.
+## CODE V8-E active scope
+
+```text
+consume validated V8-D ordering and sparse placement variants
+fill open editable positions with deterministic transition waves
+support waveform, amplitude, phase-aware, spectral, harmonic and perceptual interpolation
+allocate adaptive transition density from interval complexity and continuity evidence
+protect fundamental, level, polarity and locked or essential keyframes
+produce explicit transition maps and continuity evidence without materializing WCTD
+defer Factory Style, WCTD materialization and hardware gates to V8-F
+```
+
+V8-E is the active stage. It must consume the immutable V8-A request, complete V8-B analysis, validated V8-C selection, and validated V8-D placement variants. It may generate transition waves, allocate adaptive transition density, and evaluate continuity, but it must not apply Factory Style, materialize WCTD, generate SysEx, open MIDI, or transmit MIDI.
 
 ## Hardware gates
 
