@@ -8,7 +8,7 @@ Stage   : CODE V8-0A
 Branch  : code-v8-wavetable-builder
 Base    : main / v0.7.0 / 82e555248da838769061f7e5d56e8a9652bd1184
 Version : 0.7.0 (unchanged until CODE V8-G)
-Status  : IMPLEMENTED LOCALLY — REMOTE CI AND PRIVATE SUITE PENDING
+Status  : VALIDATED - LOCAL, PRIVATE AND REMOTE CI GATES PASSED
 ```
 
 ## Purpose
@@ -130,8 +130,10 @@ Each job installs the project, runs `compileall`, runs `pip check`, then execute
 
 ```text
 compileall                         : PASS
+pip check                          : PASS
 V8-0A targeted tests              : 24 passed
 Complete public suite             : 1059 passed, 4 skipped
+Complete private suite            : 1063 passed
 Bundled registry import           : PASS
 Wheel package-data inclusion      : PASS
 Registry exact count/hash         : PASS
@@ -140,28 +142,65 @@ git diff --check                  : PASS
 Private-data path leakage scan    : PASS
 ```
 
-The four skipped tests are the existing real-dump tests because the private dump directory is not mounted in the execution environment.
+The four public skips are exclusively the existing real-dump tests. Public environments do not contain the four private reference dumps.
 
-## Local pip-check limitation
+The same code was executed with all four private reference dumps mounted. The complete private suite finished with 1063 passed, zero failed and zero skipped tests.
 
-The shared execution environment reports an unrelated pre-existing dependency conflict:
-
-```text
-moviepy 2.2.1 requires pillow <12.0, but pillow 12.2.0 is installed
-```
-
-Neither package is a dependency of W-MWXT-WAVETABLE-TOOL. The clean GitHub Actions matrix remains the authoritative `pip check` gate for V8-0A.
-
-## Gates still required before V8-0A closure
+## Remote validation evidence
 
 ```text
-[ ] remote six-job CI matrix passes
-[ ] clean-environment pip check passes in every CI job
-[ ] private suite passes with the four reference dumps mounted
-[ ] branch commit SHA is recorded
-[ ] repository state is clean after the validated commit
+Implementation commit       : b9df467153f7527a57e81f0a14619e9dcc93ed82
+Draft pull request          : 7
+Pull-request base           : main
+Pull-request head           : code-v8-wavetable-builder
+Push workflow run           : 30808523617
+Pull-request workflow run   : 30808966797
+Unique CI environments      : 6
+Push checks                 : 6/6 passed
+Pull-request checks         : 6/6 passed
+Total implementation checks : 12/12 passed
+Cancelled                   : 0
+Failed                      : 0
+Skipped                     : 0
+Pending                     : 0
 ```
 
+The six operating-system and Python combinations were executed through both push and pull-request events.
+
+Every clean CI job completed project installation, compileall, pip check and the complete public test suite.
+
+The pull request remains intentionally open and in draft state. It must not be merged before completion of CODE V8-0 through CODE V8-G, the required hardware gates and release 0.8.0.
+
+## Closure gates
+
+```text
+[x] executable registry contains exactly 206 unique requirements
+[x] all 195 active obligations have explicit destinations
+[x] all 195 active obligations have explicit target modules
+[x] all 195 active obligations have explicit target tests
+[x] all nine deliberate exclusions have non-reintroduction gates
+[x] both post-prototype items remain explicitly identified
+[x] strict schema-version validation passes
+[x] migration and adapter tests pass
+[x] targeted V8-0A suite passes
+[x] complete public suite passes
+[x] complete private suite passes with all four reference dumps
+[x] six-environment remote CI matrix passes
+[x] push-triggered remote checks pass
+[x] pull-request-triggered remote checks pass
+[x] clean-environment pip check passes in every CI job
+[x] implementation commit SHA is recorded
+[x] no frozen V7 XT module is modified
+[x] no historical V1-V7 validation or release report is modified
+[x] no private dump is committed
+[x] no generated SysEx file is committed
+[x] no private audio capture is committed
+[x] no automatic MIDI or SysEx transmission is introduced
+```
+
+CODE V8-0A is formally closed.
+
+This closure validates the executable compliance and traceability infrastructure only. It does not claim implementation of requirements assigned to V8-0B through V8-0F or later CODE stages.
 ## Safety boundary
 
 CODE V8-0A opens no MIDI port, transmits no SysEx, modifies no instrument state and includes no private dump, generated SysEx, audio capture, local path or private evidence file.
