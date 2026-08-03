@@ -8,7 +8,7 @@ Stage   : CODE V8-C
 Branch  : code-v8-wavetable-builder
 Base    : CODE V8-B / a973d41d2e46448bc0ec284fac3969bccb99cbec
 Version : 0.7.0 (unchanged until CODE V8-G)
-Status  : IMPLEMENTED LOCALLY - PRIVATE SUITE AND REMOTE CI PENDING
+Status  : VALIDATED - LOCAL, PRIVATE, WHEEL, AND REMOTE CI GATES PASSED
 ```
 
 ## Implemented contracts
@@ -43,59 +43,109 @@ version 0.7.0
 
 V8-C consumes V8-A and V8-B evidence without mutation and does not reinterpret their hashes or classifications.
 
-## Local design validation
+## Final validation evidence
 
 ```text
-compileall                                      : PASS on isolated V8-A/V8-B/V8-C bundle
-V8-C targeted suite                            : 82 passed
-V8-A targeted regression suite                 : 115 passed
-V8-B targeted regression suite                 : 112 passed
-one, two, eight and 61 distinct candidates     : PASS
-above-61 reduction to exactly 61               : PASS
-exact and polarity duplicate representative use: PASS
-mixed real/reconstructed provenance            : PASS
-required locks and chronology participants     : PASS
-infeasible forced capacity rejection           : PASS with no partial selection
-requested count and endpoint policy             : PASS
-small-case exhaustive optimality                : PASS through public scorer
-greedy large-case determinism                   : PASS
-one decision per input candidate                : PASS
-finite bounded objective components             : PASS
-canonical tuples, frozen models and hashes      : PASS
-no position, ordering, variant, WCTD or MIDI path: PASS
+compileall                                      : PASS
+pip check                                       : PASS
+V8-C targeted suite                             : 82 passed
+V8-A targeted regression suite                  : 115 passed
+V8-B targeted regression suite                  : 112 passed
+Complete public suite                           : 1831 passed, 4 skipped
+Complete private suite                          : 1835 passed
+Pre-V8 compliance gate                          : 62/62 supported, debt=0
+One, two, eight and 61 distinct candidates      : PASS
+Above-61 reduction to exactly 61                : PASS
+Exact and polarity duplicate representative use: PASS
+Mixed real/reconstructed provenance             : PASS
+Required locks and chronology participants      : PASS
+Infeasible forced-capacity rejection            : PASS with no partial selection
+Requested count and endpoint policy             : PASS
+Small-case exhaustive optimality                : PASS through public scorer
+Greedy large-case determinism                   : PASS
+One decision per input candidate                : PASS
+Finite bounded objective components             : PASS
+Canonical tuples, frozen models and hashes      : PASS
+No position, ordering, variant, WCTD or MIDI path: PASS
+Isolated PEP 517 wheel build                    : PASS
+Wheel wavetable modules                         : 7/7 present
+Wheel size                                      : 424360 bytes
+Wheel SHA-256                                   : d0209b3b69b9d59e75bfcc86579b4fee8818fe9c927073bdcb2e5db32b0157d0
+git diff --check                                : PASS
+Authorized implementation paths                 : 14/14 exact
+Implementation insertions                       : 2208 exact
+Implementation deletions                        : 1 exact
 ```
 
-## Target-environment gates still required
+The four public skips are exclusively the existing private real-dump tests. The complete private suite was executed with all four reference dumps mounted and finished with zero failed and zero skipped tests.
+
+The wheel was built with the standard isolated PEP 517 process declared by `pyproject.toml`. The seven `wavetable` modules required through V8-C were present in the generated wheel: `__init__`, `models`, `contracts`, `metrics`, `usefulness`, `deduplication`, and `selection`.
+
+The line-ending notices emitted by Git on Windows were advisory only. The implementation diff passed `git diff --check`, the exact-path gate, the added-line private-path gate, the media gate, and the final empty-index gate.
+
+## Remote validation evidence
 
 ```text
-[ ] compileall passes in the target repository
-[ ] pip check passes in the target environment
-[ ] V8-C targeted suite passes in the target repository
-[ ] complete public suite passes
-[ ] complete private suite passes with all four reference dumps mounted
-[ ] pre-V8 gate remains 62/62 supported with zero debt
-[ ] isolated PEP 517 wheel includes the V8-C selection module
-[ ] exact authorized file set and git diff --check pass
-[ ] implementation commit SHA is recorded
-[ ] twelve push and pull-request checks pass
-[ ] repository is clean after the implementation commit
-[ ] final closure evidence is committed in this report
+Implementation commit       : 82dff4b247817cf79325ae8394032ae0f3d64c33
+Implementation parent       : a973d41d2e46448bc0ec284fac3969bccb99cbec
+Draft pull request          : 7
+Pull-request base           : main
+Pull-request head           : code-v8-wavetable-builder
+Push workflow run           : 30842955192
+Pull-request workflow run   : 30842958781
+Unique CI environments      : 6
+Push checks                 : 6/6 passed
+Pull-request checks         : 6/6 passed
+Total implementation checks : 12/12 passed
+Cancelled                   : 0
+Failed                      : 0
+Skipped                     : 0
+Pending                     : 0
 ```
 
-## Acceptance assertions
+The six operating-system and Python combinations ran through both push and pull-request events. Every job completed project installation, compileall, pip check, and the complete public suite.
 
-- Every V8-C input links to the exact immutable V8-A request and V8-B analysis.
-- Every input candidate receives exactly one explicit decision.
-- Unprotected complete-link duplicates are omitted before capacity selection.
-- Required locks and required chronology participants are never silently omitted.
-- Complete selections contain one through 61 candidate IDs.
-- More than 61 feasible candidates are reduced deterministically to exactly 61.
-- Infeasible mandatory capacity returns rejected status, blockers and no partial list.
-- Selected IDs are serialized in source order only and do not claim final table ordering.
-- Exact small-case optimization is independently verifiable through the public subset scorer.
-- Larger cases use stable deterministic greedy selection and canonical tie-breaks.
-- Every objective component is finite, bounded and visible.
-- No position assignment, chronology solving, variant generation, interpolation, WCTD, SysEx or MIDI execution path is introduced.
+## Closure gates
+
+```text
+[x] the exact immutable V8-A request and V8-B analysis hashes are preserved
+[x] every input candidate receives exactly one explicit selection decision
+[x] one deterministic representative per V8-B complete-link group is used
+[x] unprotected removable duplicates are omitted before capacity selection
+[x] required position-lock candidates are never silently omitted
+[x] both endpoints of required chronology constraints are never silently omitted
+[x] optional source-endpoint preservation uses deterministic group representatives
+[x] complete selections contain one through 61 candidate IDs
+[x] inventories above 61 are reduced deterministically to exactly 61 when feasible
+[x] infeasible mandatory capacity returns rejected status, blockers, and no partial selection
+[x] selected IDs remain in canonical source order and do not claim final table ordering
+[x] utility, diversity, temporal, structural, and group objective components are bounded and visible
+[x] exact small-case optimization is independently verifiable through the public subset scorer
+[x] large cases use deterministic greedy selection and canonical tie-breaks
+[x] selected, essential, forced, redundant, protected, and capacity-omitted evidence is explicit
+[x] mixed real and reconstructed candidate provenance is preserved
+[x] canonical JSON and SHA-256 links are deterministic
+[x] accepted V8-A, V8-B, V8-0, and V1-V7 schemas remain unchanged
+[x] targeted V8-C suite passes
+[x] V8-A and V8-B targeted regression suites pass
+[x] complete public suite passes
+[x] complete private suite passes with all four reference dumps
+[x] pre-V8 gate remains 62/62 supported with zero debt
+[x] isolated PEP 517 wheel builds successfully
+[x] all seven V8-C-era wavetable modules are present in the wheel
+[x] exact 14-file implementation diff and whitespace checks pass
+[x] twelve implementation checks pass
+[x] implementation commit SHA and workflow runs are recorded
+[x] repository is clean after the implementation commit
+[x] V8-C does not assign positions, solve final ordering, or generate variants
+[x] V8-C does not interpolate transitions or materialize WCTD
+[x] no XT allocation, SysEx generation, MIDI opening, or MIDI transmission is introduced
+[x] no private dump, generated SysEx, audio capture, local path, or private evidence is committed
+```
+
+CODE V8-C is formally closed.
+
+The next stage is CODE V8-D, which orders and places the selected V8-C keyframes into the editable positions, resolves required locks and chronology constraints, and generates deterministic placement variants. This closure does not claim interpolation, WCTD materialization, hardware acceptance, SysEx generation, or MIDI transmission.
 
 ## Safety boundary
 

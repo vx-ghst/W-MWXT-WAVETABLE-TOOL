@@ -8,7 +8,7 @@
 **Baseline:** CODE V7 / `v0.7.0`<br>
 **Target:** `v1.0.0-prototype`  
 **Primary platform:** Windows 11  
-**Status:** authoritative public execution order; CODE V8-0A through V8-0F closed, CODE V8-A and V8-B closed, CODE V8-C active
+**Status:** authoritative public execution order; CODE V8-0A through V8-0F closed, CODE V8-A through V8-C closed, CODE V8-D next
 
 ---
 
@@ -793,18 +793,30 @@ usefulness, structure, breakpoint and deduplication analysis validated
 next stage: V8-C
 ```
 
-## CODE V8-C active scope
+## CODE V8-C completion gate
 
 ```text
-select final structural and essential keyframes
-consume V8-B structure and complete-link duplicate groups
-preserve required locks and chronology-protected candidates
-resolve candidate inventories below, equal to and above 61 distinct groups
-produce deterministic selection evidence without assigning final positions
-defer ordering, placement, chronology solving and variants to V8-D
+V8-C formally closed
+structural and essential keyframe selection validated
+82 targeted tests passed
+1831 public tests passed, 4 private tests skipped
+1835 private tests passed
+12/12 implementation checks passed
+next stage: V8-D
 ```
 
-V8-C is the active stage. It must consume the immutable V8-A request and the complete V8-B analysis. It may choose the final structural and essential keyframes, but it must not assign final positions, solve table ordering, interpolate transitions, materialize WCTD, generate SysEx, or open MIDI.
+## CODE V8-D active scope
+
+```text
+order the selected V8-C keyframes
+assign selected candidates to editable positions 1-61
+satisfy required position locks and chronology constraints
+detect and report lock, capacity and chronology conflicts
+generate deterministic placement variants with explicit evidence
+preserve V8-C selection identity and defer interpolation to V8-E
+```
+
+V8-D is the active stage. It must consume the immutable V8-A request, complete V8-B analysis, and validated V8-C selection. It may solve final ordering, position placement, required locks, chronology constraints, and placement variants, but it must not interpolate transitions, materialize WCTD, generate SysEx, or open MIDI.
 
 ## Hardware gates
 
