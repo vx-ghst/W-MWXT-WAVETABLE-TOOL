@@ -660,6 +660,8 @@ For each repair, the user shall be able to choose:
 
 Every applied repair shall be logged and available for before/after comparison.
 
+For prototype acceptance, every required defect shall produce a canonical finding and action record. `COMPARE` shall generate a candidate without selecting it, while `IGNORE` and `PRESERVE` shall retain the source and remain distinguishable in the log. Missing contextual evidence shall produce an explicit non-applicable or review-required state rather than an inferred repair. Before, candidate, and selected samples and metrics shall remain separately available.
+
 ---
 
 # 20. Bass and Sub optimization

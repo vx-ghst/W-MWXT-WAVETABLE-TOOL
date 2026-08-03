@@ -8,7 +8,7 @@
 **Baseline:** CODE V7 / `v0.7.0`<br>
 **Target:** `v1.0.0-prototype`  
 **Primary platform:** Windows 11  
-**Status:** authoritative public execution order; CODE V8-0A through V8-0D closed, CODE V8-0E next
+**Status:** authoritative public execution order; CODE V8-0A through V8-0D closed, CODE V8-0E active
 
 ---
 
@@ -663,12 +663,28 @@ Bass-specific working-pitch comparison, Sub/Bass scores, and sequence consistenc
 independent optimization of every wave, including exactly 61-wave sets
 ```
 
-V8-0D does not change the V7 `XtProjectionSet`, trajectory, QC, package, or hardware evidence. Complete repair policy and actions remain assigned to V8-0E.
+V8-0D does not change the V7 `XtProjectionSet`, trajectory, QC, package, or hardware evidence.
+
+## V8-0E - complete Auto Repair policies and actions
+
+V8-0E unifies the previously distributed protection and correction logic under one additive deterministic repair contract:
+
+```text
+17 canonical defect detectors and action mappings
+AUTO, COMPARE, IGNORE, and PRESERVE policies
+canonical defaults and per-defect overrides
+explicit context refusal and review-required states
+separate before, candidate, and selected branches
+complete metrics, logs, evidence, and deterministic hashes
+profile-aware controlled-defect preservation
+ordered wave-sequence processing, including exactly 61 waves
+```
+
+V8-0E does not change historical V5, V6, V7, or V8-0D schemas. Reports, preview audition, editor controls, and the final 61-position builder remain assigned to their later stages.
 
 ## Remaining V8-0 order
 
 ```text
-V8-0D XT-native resampling and effective profiles
 V8-0E complete Auto Repair policies and actions
 V8-0F aggregate pre-V8 contract and zero required debt gate
 ```

@@ -139,7 +139,18 @@ CODE V8-0C remains additive: accepted V5/V6 schemas and the frozen V7 XT modules
 - nine effective optimization profiles with normalized weights and capped musical-classification/conversion-mode influence;
 - Bass-specific working-pitch comparison, monophonic warnings, inter-wave consistency, and independent optimization of exactly 61 waves.
 
-CODE V8-0D remains mathematical and non-destructive. It does not build the final 61-position table, open MIDI ports, transmit SysEx, or claim calibrated XT audibility. Auto Repair remains assigned to V8-0E.
+CODE V8-0D remains mathematical and non-destructive. It does not build the final 61-position table, open MIDI ports, transmit SysEx, or claim calibrated XT audibility.
+
+### CODE V8-0E - complete Auto Repair policies and actions (development branch)
+
+- deterministic detection and action mapping for all 17 required repair defects;
+- exact `AUTO`, `COMPARE`, `IGNORE`, and `PRESERVE` policies with per-defect overrides;
+- explicit review states when neighbor, reference, pitch, target-level, or aliasing context is unavailable;
+- separate before, candidate, and selected branches with complete metrics and action logs;
+- profile-aware controlled-defect preservation and hard numeric safety;
+- deterministic ordered sequence processing, including exactly 61 waves.
+
+CODE V8-0E remains additive and non-destructive. It exposes canonical data for later reports, preview audition, and editor controls without opening MIDI ports or transmitting SysEx.
 
 ## Installation on Windows 11
 

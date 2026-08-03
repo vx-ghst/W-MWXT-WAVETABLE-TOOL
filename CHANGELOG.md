@@ -4,6 +4,15 @@ All notable changes to **W-MWXT-WAVETABLE-TOOL** are documented here.
 
 ## Unreleased — CODE V8 development
 
+### CODE V8-0E - complete Auto Repair policies and actions
+
+- Added one deterministic detector and action mapping for all 17 required Auto Repair defects.
+- Added the exact `AUTO`, `COMPARE`, `IGNORE`, and `PRESERVE` policies with canonical defaults and per-defect overrides.
+- Added explicit context refusal and review-required states instead of guessed neighbor, reference, pitch, or aliasing evidence.
+- Added separate immutable before, candidate, and selected branches with complete metrics, defect counts, action logs, and SHA-256 links.
+- Added deterministic ordered sequence repair, including exact 61-wave operation and profile-aware controlled-defect preservation.
+- Preserved version `0.7.0`, all historical V5/V6/V7 schemas, and the accepted V8-0D optimization contracts.
+
 ### CODE V8-0D - XT-native resampling and effective profiles
 
 - Added deterministic periodic windowed-sinc, Fourier, and linear resampling with explicit anti-alias, normalization, phase, fundamental, ringing, overshoot, and extreme-value evidence.
