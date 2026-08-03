@@ -4,11 +4,11 @@
 **Project:** W-MWXT-WAVETABLE-TOOL  
 **Owner:** R-MiT  
 **Document type:** public development roadmap and traceability register  
-**Document version:** 2.3-public<br>
+**Document version:** 2.4-public<br>
 **Baseline:** CODE V7 / `v0.7.0`<br>
 **Target:** `v1.0.0-prototype`  
 **Primary platform:** Windows 11  
-**Status:** authoritative public execution order
+**Status:** authoritative public execution order; CODE V8-0A active
 
 ---
 
@@ -99,8 +99,9 @@ Priority order when sources conflict:
 | CODE V4 | `0.4.0` | Time-domain DSP, pitch, periodicity, phase |
 | CODE V5 | `0.5.0` | Spectral/perceptual analysis, classification, decisions |
 | CODE V6 | `0.6.0` | Working pitch, segmentation, cycle ranking, reconstruction |
-| CODE V7 | `0.7.0` | XT-native optimization, resampling, quantization, Auto Repair |
-| CODE V8 | `0.8.0` | 61-position generation, placement, transitions |
+| CODE V7 | `0.7.0` | XT-native projection, first deterministic 61-position trajectory, QC, package, hardware acceptance |
+| CODE V8-0 | part of `0.8.0` | Exhaustive post-V7 compliance closure, missing DSP/decision/repair contracts |
+| CODE V8 | `0.8.0` | Generic WavetableBuild, placement, transitions, WCTD and hardware gates |
 | CODE V9 | `0.9.0-alpha.1` | Sound, reports, exports, complete project format |
 | CODE V10 | `0.9.0-alpha.2` | Preview, simulator, hardware calibration |
 | CODE V11 | `0.9.0-alpha.3` | Non-destructive integrated editor |
@@ -580,6 +581,45 @@ The broader provisional Auto Repair scope is not claimed by release `0.7.0`. It 
 ## Safety boundary
 
 CODE V7 never opens a MIDI port or writes the instrument automatically. Private dumps, audio captures, generated SysEx files, and private evidence remain outside Git.
+
+---
+
+# 10A. CODE V8-0 — Exhaustive post-V7 compliance closure
+
+## Purpose
+
+CODE V8-0 is mandatory before the generic V8 builder. It closes every active cahier-des-charges requirement required by V8 that is absent or only partial after release `v0.7.0`. It does not rewrite the accepted V7 hardware path.
+
+## V8-0A — executable compliance registry
+
+V8-0A introduces a strict machine-readable registry containing all 206 requirements. The contract records the exact requirement text, scope, V7 baseline status, explicit support state, evidence, tests, gap, corrected destination, target modules, target tests, source fingerprints and a canonical registry SHA-256.
+
+The registry acceptance gates are:
+
+```text
+206 unique IDs
+195 active obligations
+9 deliberate exclusions with executable non-reintroduction gates
+2 post-prototype architecture items
+0 empty destination
+0 empty target module field
+0 empty target test field
+strict schema version 1
+adapter and migration tests
+Ubuntu and Windows CI on Python 3.11, 3.12 and 3.13
+```
+
+V8-0A is a traceability and contract stage. It does not claim that partial or planned capabilities are already implemented. Their closure remains assigned to V8-0B through V8-0F or the later version recorded by each requirement.
+
+## Remaining V8-0 order
+
+```text
+V8-0B import, signal and regions
+V8-0C spectrum, perceptual analysis, classification and modes
+V8-0D XT-native resampling and effective profiles
+V8-0E complete Auto Repair policies and actions
+V8-0F aggregate pre-V8 contract and zero required debt gate
+```
 
 ---
 

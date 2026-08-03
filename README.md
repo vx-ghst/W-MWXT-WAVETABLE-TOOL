@@ -98,6 +98,17 @@ CODE V6 remains non-destructive: it does not quantize XT values, allocate synth 
 
 CODE V7 never transmits MIDI automatically. Hardware writes remain deliberate manual actions followed by a fresh redump and exact comparison.
 
+### CODE V8-0A — executable compliance registry (development branch)
+
+- strict schema-versioned registry for all 206 cahier-des-charges requirements;
+- explicit V7 support state and corrected closure destination for every requirement;
+- canonical registry SHA-256 and pinned source fingerprints;
+- adapters and migrations for the validated legacy audit-matrix format;
+- executable non-reintroduction gates for all nine deliberate exclusions;
+- six-job Ubuntu/Windows Python 3.11–3.13 CI matrix.
+
+CODE V8-0A is a traceability contract, not a claim that partial or planned features are already implemented. Those requirements remain assigned to their recorded CODE stages.
+
 ## Installation on Windows 11
 
 Open PowerShell in the repository root:
@@ -317,9 +328,13 @@ Completed:
 - [x] CODE V6 — working pitch, segmentation, cycle ranking, selection, reconstruction, and aggregate analysis
 - [x] CODE V7 — XT-native projection, 61-position trajectory, QC, package generation, and hardware acceptance
 
+In progress:
+
+- [ ] CODE V8-0 — exhaustive post-V7 compliance closure; V8-0A executable registry implemented on the V8 branch
+
 Next:
 
-- [ ] CODE V8 — complete wavetable-generation profiles, placement policies, and advanced transitions
+- [ ] CODE V8 — generic WavetableBuild, placement policies, interpolation, WCTD and hardware gates
 - [ ] CODE V9+ — complete project export, preview, transport, and graphical interface
 
 See `docs/roadmap/W-MWXT-WAVETABLE-TOOL_ROADMAP_AND_TRACEABILITY_MATRIX.md` for the full staged plan.

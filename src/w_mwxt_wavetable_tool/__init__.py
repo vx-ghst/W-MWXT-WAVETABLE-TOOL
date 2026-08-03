@@ -116,6 +116,22 @@ from .audio import (
     normalize_float_samples,
     supported_extensions,
 )
+from .compliance import (
+    BaselineStatus,
+    CapabilitySummary,
+    ComplianceFormatError,
+    ComplianceRegistry,
+    EXCLUSION_GATES,
+    ExclusionGate,
+    ExclusionKind,
+    RegistrySource,
+    RequirementRecord,
+    RequirementScope,
+    SupportState,
+    load_compliance_registry,
+    migrate_registry_payload,
+    summarize_capabilities,
+)
 from .constants import DumpType
 from .destinations import (
     DeviceAddress,
@@ -349,4 +365,18 @@ __all__ = [
     "save_project",
     "split_sysex_stream",
     "supported_extensions",
+    "BaselineStatus",
+    "CapabilitySummary",
+    "ComplianceFormatError",
+    "ComplianceRegistry",
+    "EXCLUSION_GATES",
+    "ExclusionGate",
+    "ExclusionKind",
+    "RegistrySource",
+    "RequirementRecord",
+    "RequirementScope",
+    "SupportState",
+    "load_compliance_registry",
+    "migrate_registry_payload",
+    "summarize_capabilities",
 ]

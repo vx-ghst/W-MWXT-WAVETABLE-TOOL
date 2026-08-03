@@ -1194,6 +1194,27 @@ No private factory bank, user backup, copyrighted sound bank, or firmware image 
 
 ---
 
+## 33.1 Executable requirements and capability contract
+
+The implementation shall bundle a versioned machine-readable compliance registry. The registry shall preserve every atomic cahier-des-charges requirement and shall record:
+
+- stable requirement ID and exact requirement text;
+- final scope status;
+- observed baseline support state;
+- existing evidence and tests;
+- unresolved gap;
+- corrected implementation destination;
+- target modules, tests and acceptance path;
+- source-document fingerprints;
+- canonical registry SHA-256.
+
+The initial registry schema contains exactly 206 requirements: 195 active obligations, nine deliberate exclusions and two post-prototype architecture items. Requirement IDs must be unique, ordered and non-empty. No active requirement may have an empty destination, target-module field or target-test field.
+
+Schema evolution shall be explicit. Current payloads shall be validated strictly, supported legacy audit rows shall be adapted through a documented migration, and unknown future schema versions shall be rejected rather than interpreted on a best-effort basis.
+
+The nine explicit exclusions shall have executable non-reintroduction gates. A documented exclusion is not considered forgotten functionality.
+
+
 # 34. Prototype acceptance
 
 `v1.0.0-prototype` is accepted only when a user can complete the following workflow without modifying source code:

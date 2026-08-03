@@ -2,6 +2,17 @@
 
 All notable changes to **W-MWXT-WAVETABLE-TOOL** are documented here.
 
+## Unreleased — CODE V8 development
+
+### CODE V8-0A — executable compliance registry
+
+- Added a strict schema-versioned registry containing all 206 cahier-des-charges requirements.
+- Added explicit support states, corrected destinations, source fingerprints and a canonical registry SHA-256.
+- Added strict adapters and migrations for the validated legacy audit-matrix row format.
+- Added executable gates for all nine deliberate exclusions.
+- Added Ubuntu and Windows CI coverage for Python 3.11, 3.12 and 3.13 with compile, dependency and full-suite gates.
+- Preserved version `0.7.0` until the final CODE V8 release gate.
+
 ## 0.7.0 — CODE V7
 
 ### XT-native representation and trajectory
