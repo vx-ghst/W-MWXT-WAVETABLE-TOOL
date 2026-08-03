@@ -8,7 +8,7 @@ Stage   : CODE V8-B
 Branch  : code-v8-wavetable-builder
 Base    : CODE V8-A / ef7827060b474d3241d20df752b57bf0e14fb436
 Version : 0.7.0 (unchanged until CODE V8-G)
-Status  : IMPLEMENTED LOCALLY - PRIVATE SUITE AND REMOTE CI PENDING
+Status  : VALIDATED - LOCAL, PRIVATE, WHEEL, AND REMOTE CI GATES PASSED
 ```
 
 ## Implemented contracts
@@ -42,61 +42,108 @@ version 0.7.0
 
 V8-B consumes `WavetableBuildRequest` and never mutates the request or candidate objects.
 
-## Local design validation
+## Final validation evidence
 
 ```text
-compileall                                        : PASS on isolated V8-A/V8-B bundle
-V8-A plus V8-B targeted bundle                   : 227 passed
-V8-B targeted suite                              : 112 passed
-invalid sample length/type/range gates            : PASS
-zero, sine, square and deterministic corpus       : PASS
-metric bounds, frozen models and finite values    : PASS
-pair symmetry and exact/polarity identities       : PASS
-stable, moderate/strong transition and breakpoint : PASS
-source-order and interval-hash links               : PASS
-ineligible and extreme-feature classification      : PASS
-exact, polarity and near duplicate groups          : PASS
-complete-link anti-chain gate                      : PASS
-required lock/chronology protection                : PASS
-representative ranking and >61 warning             : PASS
-request/structure/dedup aggregate hash links       : PASS
-public API compatibility                           : PASS
-no selection, placement, interpolation or WCTD     : PASS
+compileall                                        : PASS
+pip check                                         : PASS
+V8-B targeted suite                               : 112 passed
+V8-A plus V8-B isolated bundle                    : 227 passed
+Complete public suite                             : 1749 passed, 4 skipped
+Complete private suite                            : 1753 passed
+Pre-V8 compliance gate                            : 62/62 supported, debt=0
+Invalid sample length/type/range gates             : PASS
+Zero, sine, square and deterministic corpus        : PASS
+Metric bounds, frozen models and finite values     : PASS
+Pair symmetry and exact/polarity identities        : PASS
+Stable, moderate/strong transition and breakpoint  : PASS
+Source-order and interval-hash links                : PASS
+Ineligible and feature-extreme classification      : PASS
+Exact, polarity and near duplicate groups           : PASS
+Complete-link anti-chain gate                       : PASS
+Required lock/chronology protection                 : PASS
+Representative ranking and >61 warning              : PASS
+Request/structure/dedup aggregate hash links        : PASS
+No selection, placement, interpolation or WCTD      : PASS
+Isolated PEP 517 wheel build                        : PASS
+Wheel wavetable modules                             : 6/6 present
+Wheel size                                          : 414243 bytes
+Wheel SHA-256                                       : c1fe752821501ff50a469e732eac8b6b4fe847657059e76e151b034e7dad2349
+git diff --check                                    : PASS
+Authorized implementation paths                     : 16/16 exact
+Implementation insertions                           : 3145 exact
+Implementation deletions                            : 3 exact
 ```
 
-## Target-environment gates still required
+The four public skips are exclusively the existing private real-dump tests. The complete private suite was executed with all four reference dumps mounted and finished with zero failed and zero skipped tests.
+
+The wheel was built with the standard isolated PEP 517 process declared by `pyproject.toml`. The six `wavetable` modules required through V8-B were present in the generated wheel: `__init__`, `models`, `contracts`, `metrics`, `usefulness`, and `deduplication`.
+
+The line-ending notices emitted by Git on Windows were advisory only. The implementation diff passed `git diff --check`, the exact-path gate, the added-line private-path gate, the media gate, and the final empty-index gate.
+
+## Remote validation evidence
 
 ```text
-[ ] compileall passes in the target repository
-[ ] pip check passes in the target environment
-[ ] V8-B targeted suite passes in the target repository
-[ ] complete public suite passes
-[ ] complete private suite passes with all four reference dumps mounted
-[ ] pre-V8 gate remains 62/62 supported with zero debt
-[ ] isolated PEP 517 wheel includes all six wavetable modules
-[ ] exact authorized file set and git diff --check pass
-[ ] implementation commit SHA is recorded
-[ ] twelve push and pull-request checks pass
-[ ] repository is clean after the implementation commit
-[ ] final closure evidence is committed in this report
+Implementation commit       : 9f68ae2e36c77ece85c31e1fbe260c35814334b7
+Implementation parent       : ef7827060b474d3241d20df752b57bf0e14fb436
+Draft pull request          : 7
+Pull-request base           : main
+Pull-request head           : code-v8-wavetable-builder
+Push workflow run           : 30839447623
+Pull-request workflow run   : 30839586598
+Unique CI environments      : 6
+Push checks                 : 6/6 passed
+Pull-request checks         : 6/6 passed
+Total implementation checks : 12/12 passed
+Cancelled                   : 0
+Failed                      : 0
+Skipped                     : 0
+Pending                     : 0
 ```
 
-## Acceptance assertions
+The six operating-system and Python combinations ran through both push and pull-request events. Every job completed project installation, compileall, pip check, and the complete public suite.
 
-- Every input candidate is analyzed exactly once and remains immutable.
-- Every adjacent source-order interval is labeled stable, transition or breakpoint.
-- The configured stable, transition and breakpoint thresholds are all effective.
-- Breakpoint evidence is explicit and never inferred from one opaque score alone.
-- Exact and polarity-equivalent identities are preserved as distinct duplicate kinds.
-- Near-duplicate decisions require waveform/perceptual, spectral, feature and correlation gates.
-- Duplicate groups use complete-link membership and cannot rely on transitive chaining.
-- Required locks and chronology constraints protect referenced candidates.
-- The distinct-wave count equals the number of deterministic duplicate groups.
-- V8-B exposes candidates that V8-C may omit but never removes them itself.
-- More than 61 distinct groups produces an explicit V8-C warning.
-- The engineering perceptual-distance proxy is not claimed as calibrated auditory truth.
-- Every analysis object carries explicit evidence, reason, canonical serialization and hashes.
-- No final keyframe choice, position assignment, table ordering, interpolation, WCTD, SysEx or MIDI execution path is introduced.
+## Closure gates
+
+```text
+[x] V8-A immutable candidate, request, constraint, and provenance contracts remain unchanged
+[x] every V8-A candidate is analyzed exactly once without mutation
+[x] deterministic 64-point and reconstructed 128-point shape metrics are present
+[x] the fixed 32-bin DFT and all serialized numeric values are deterministic
+[x] exact, polarity-equivalent, near, and distinct pair classes are explicit
+[x] stable, moderate transition, strong transition, and breakpoint intervals are explicit
+[x] waveform, spectral, level, brightness, Bass, polarity, and composite breakpoint evidence is explicit
+[x] structural, feature-extreme, stable, transition, breakpoint, and ineligible candidate classes are explicit
+[x] source-order and adjacent-interval hash links are validated
+[x] complete-link duplicate grouping prevents transitive near-duplicate chains
+[x] required position locks protect referenced candidates
+[x] required chronology constraints protect referenced candidates
+[x] representative, redundant, protected, and removable states are explicit
+[x] distinct-wave count equals the deterministic duplicate-group count
+[x] more than 61 distinct groups produces an explicit V8-C warning
+[x] the engineering perceptual-distance proxy is not claimed as calibrated auditory truth
+[x] V8-B does not remove candidates or choose final keyframes
+[x] V8-B does not assign positions, order the final table, or generate variants
+[x] V8-B does not interpolate transitions or materialize WCTD
+[x] canonical JSON and SHA-256 links are deterministic
+[x] accepted V8-A, V8-0, and V1-V7 schemas remain unchanged
+[x] targeted V8-B suite passes
+[x] complete public suite passes
+[x] complete private suite passes with all four reference dumps
+[x] pre-V8 gate remains 62/62 supported with zero debt
+[x] isolated PEP 517 wheel builds successfully
+[x] all six V8-B-era wavetable modules are present in the wheel
+[x] exact 16-file implementation diff and whitespace checks pass
+[x] twelve implementation checks pass
+[x] implementation commit SHA and workflow runs are recorded
+[x] repository is clean after the implementation commit
+[x] no XT allocation, SysEx generation, MIDI opening, or MIDI transmission is introduced
+[x] no private dump, generated SysEx, audio capture, local path, or private evidence is committed
+```
+
+CODE V8-B is formally closed.
+
+The next stage is CODE V8-C, which selects the final structural and essential keyframes for the 61 editable positions from the immutable V8-A request and the complete V8-B structure/deduplication evidence. This closure does not claim final ordering, placement, interpolation, WCTD materialization, hardware acceptance, SysEx generation, or MIDI transmission.
 
 ## Safety boundary
 

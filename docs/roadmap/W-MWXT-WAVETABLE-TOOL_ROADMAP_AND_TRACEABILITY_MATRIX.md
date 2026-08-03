@@ -8,7 +8,7 @@
 **Baseline:** CODE V7 / `v0.7.0`<br>
 **Target:** `v1.0.0-prototype`  
 **Primary platform:** Windows 11  
-**Status:** authoritative public execution order; CODE V8-0A through V8-0F closed, CODE V8-A closed, CODE V8-B active
+**Status:** authoritative public execution order; CODE V8-0A through V8-0F closed, CODE V8-A and V8-B closed, CODE V8-C next
 
 ---
 
@@ -781,19 +781,30 @@ generic WavetableBuild contracts validated
 next stage: V8-B
 ```
 
-## CODE V8-B active scope
+## CODE V8-B completion gate
 
 ```text
-measure every V8-A candidate without mutation
-classify stable, transition and breakpoint intervals
-identify structural and feature-extreme candidates
-classify exact, polarity-equivalent and near redundancy
-form deterministic complete-link duplicate groups
-report distinct-wave count and protected redundancy
-defer final structural/keyframe choice to V8-C
+V8-B formally closed
+usefulness, structure, breakpoint and deduplication analysis validated
+112 targeted tests passed
+1749 public tests passed, 4 private tests skipped
+1753 private tests passed
+12/12 implementation checks passed
+next stage: V8-C
 ```
 
-V8-B is the active stage. It must consume the immutable V8-A contracts and may not bypass the pre-V8 readiness, candidate-provenance, fixed-tail, or constraint gates. It does not select final keyframes, assign positions, order the final table, interpolate transitions, materialize WCTD, generate SysEx, or open MIDI.
+## CODE V8-C active scope
+
+```text
+select final structural and essential keyframes
+consume V8-B structure and complete-link duplicate groups
+preserve required locks and chronology-protected candidates
+resolve candidate inventories below, equal to and above 61 distinct groups
+produce deterministic selection evidence without assigning final positions
+defer ordering, placement, chronology solving and variants to V8-D
+```
+
+V8-C is the active stage. It must consume the immutable V8-A request and the complete V8-B analysis. It may choose the final structural and essential keyframes, but it must not assign final positions, solve table ordering, interpolate transitions, materialize WCTD, generate SysEx, or open MIDI.
 
 ## Hardware gates
 
