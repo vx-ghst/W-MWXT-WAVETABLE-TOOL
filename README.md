@@ -185,6 +185,17 @@ CODE V8-A defines contracts only. Usefulness/deduplication, structural selection
 
 CODE V8-B measures the complete V8-A candidate inventory but does not choose final keyframes, assign positions, order the table, interpolate waves, materialize WCTD, or create a MIDI/SysEx path. Those operations remain assigned to V8-C through V8-F.
 
+### CODE V8-C - structural and essential keyframe selection (development branch)
+
+- final keyframe selection from the immutable V8-A request and linked V8-B structure/deduplication analysis;
+- one-through-61 capacity behavior with exact handling below, at, and above the XT user-position limit;
+- required lock and chronology participant preservation with explicit infeasible rejection;
+- bounded utility, diversity, temporal, structural, and group objective components;
+- exact small-case search, deterministic greedy large-case search, public subset scoring, canonical JSON, and SHA-256 links;
+- one explicit decision per input candidate, including essential, forced, redundant, protected, and capacity-omitted evidence.
+
+CODE V8-C selects candidate IDs in canonical source order only. It does not assign positions, solve final ordering or chronology, generate variants, interpolate waves, materialize WCTD, or create a MIDI/SysEx path. Those operations remain assigned to V8-D through V8-F.
+
 ## Installation on Windows 11
 
 Open PowerShell in the repository root:

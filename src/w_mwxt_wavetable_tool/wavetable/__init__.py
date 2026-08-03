@@ -56,6 +56,19 @@ from .models import (
     reconstruct_xt_cycle,
     stored_samples_sha256,
 )
+from .selection import (
+    DEFAULT_KEYFRAME_SELECTION_POLICY,
+    WAVETABLE_SELECTION_SCHEMA_VERSION,
+    CandidateSelectionDecision,
+    CodeV8CAnalysis,
+    KeyframeSelectionPolicy,
+    KeyframeSelectionScore,
+    KeyframeSelectionStatus,
+    SelectionEvidenceKind,
+    WavetableKeyframeSelection,
+    evaluate_keyframe_subset,
+    select_wavetable_keyframes,
+)
 from .usefulness import (
     DEFAULT_USEFULNESS_THRESHOLDS,
     WAVETABLE_USEFULNESS_SCHEMA_VERSION,
@@ -70,6 +83,17 @@ from .usefulness import (
 )
 
 __all__ = [
+    "DEFAULT_KEYFRAME_SELECTION_POLICY",
+    "WAVETABLE_SELECTION_SCHEMA_VERSION",
+    "CandidateSelectionDecision",
+    "CodeV8CAnalysis",
+    "KeyframeSelectionPolicy",
+    "KeyframeSelectionScore",
+    "KeyframeSelectionStatus",
+    "SelectionEvidenceKind",
+    "WavetableKeyframeSelection",
+    "evaluate_keyframe_subset",
+    "select_wavetable_keyframes",
     "DEFAULT_DEDUPLICATION_THRESHOLDS",
     "DEFAULT_INTERPOLATION_METHODS",
     "DEFAULT_USEFULNESS_THRESHOLDS",

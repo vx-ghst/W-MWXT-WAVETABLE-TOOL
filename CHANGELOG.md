@@ -13,6 +13,15 @@ All notable changes to **W-MWXT-WAVETABLE-TOOL** are documented here.
 - Added canonical JSON, deterministic hashes, and an executable zero required-debt gate before CODE V8-A.
 - Preserved version `0.7.0` and every historical V1-V7 and V8-0B through V8-0E schema.
 
+### CODE V8-C - structural and essential keyframe selection
+
+- Added deterministic final keyframe selection linked to the immutable V8-A request and complete V8-B analysis.
+- Added explicit one-through-61 capacity behavior, required-constraint preservation, source-endpoint policy, and rejected infeasible results with no partial selection.
+- Added bounded utility, diversity, temporal, structural, and complete-link group objective components with public subset scoring.
+- Added exhaustive small-case optimization and deterministic greedy large-case selection with canonical tie-breaks.
+- Added one immutable selected/essential/forced/omitted decision per input candidate while deferring positions, final ordering, variants, interpolation, WCTD, SysEx, and MIDI.
+- Preserved version `0.7.0` and all accepted V8-A, V8-B, V8-0, and V1-V7 schemas.
+
 ### CODE V8-B - usefulness, structure, breakpoints and deduplication
 
 - Added deterministic XT-wave shape metrics, direct/inverted waveform comparison, fixed spectral descriptors, and an explicit engineering perceptual-distance proxy.
