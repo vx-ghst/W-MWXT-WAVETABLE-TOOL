@@ -8,7 +8,7 @@ Stage   : CODE V8-0B
 Branch  : code-v8-wavetable-builder
 Base    : CODE V8-0A / 820927bfdd69dbac55ae3fdf9a90f0d7c716f50c
 Version : 0.7.0 (unchanged until CODE V8-G)
-Status  : IMPLEMENTED LOCALLY - REMOTE CI AND PRIVATE SUITE PENDING
+Status  : VALIDATED - LOCAL, PRIVATE, WHEEL, AND REMOTE CI GATES PASSED
 ```
 
 ## Closed requirements
@@ -198,43 +198,81 @@ The autocorrelation pitch selector previously assumed that a positive local maxi
 
 New projects persist structured mono periodicity evidence. The strict parser accepts complete legacy mono reports and complete extended mono reports. Partial or unknown representations are rejected. Round-trip and persistence tests cover both forms.
 
-## Local validation
+## Final validation evidence
 
 ```text
-compileall                               : PASS
+compileall                              : PASS
+pip check                               : PASS
 V8-0B targeted suite                    : 161 passed
 Complete public suite                   : 1128 passed, 4 skipped
+Complete private suite                  : 1132 passed
 Project legacy/extended compatibility   : PASS
-Wheel module inclusion                   : PASS
-Known synthetic and real-signal corpus   : PASS
+Known synthetic and real-signal corpus  : PASS
 Sparse transient pathological case      : PASS
 No NaN or infinity serialization        : PASS
-Deterministic hashes                     : PASS
+Deterministic hashes                    : PASS
+Isolated PEP 517 wheel build             : PASS
+Wheel module inclusion                  : PASS
+Wheel size                              : 288488 bytes
+Wheel SHA-256                           : 3fb8af406c1bf0df78fa377ff70d1fe2ef5454959bd77fb00dca247561f19c64
 git diff --check                        : PASS
 ```
 
-The four public skips are the existing private real-dump tests because the reference dump directory is not mounted in the local public environment.
+The four public skips are exclusively the existing private real-dump tests. The complete private suite was executed with all four reference dumps mounted and finished with zero failed and zero skipped tests.
 
-## Local pip-check limitation
+The wheel was built with the standard isolated PEP 517 process declared by `pyproject.toml`. Every new V8-0B package module was present in the generated wheel.
 
-The shared execution environment contains an unrelated pre-existing dependency conflict:
-
-```text
-moviepy 2.2.1 requires pillow <12.0, but pillow 12.2.0 is installed
-```
-
-Neither package is a dependency of W-MWXT-WAVETABLE-TOOL. The clean Windows validation environment and the twelve GitHub Actions jobs remain the authoritative `pip check` gates for V8-0B. Wheel construction with the installed build backend succeeds and includes every new package module.
-
-## Gates still required before V8-0B closure
+## Remote validation evidence
 
 ```text
-[ ] final targeted and complete public counts recorded
-[ ] private suite passes with all four reference dumps mounted
-[ ] implementation commit SHA recorded
-[ ] twelve push and pull-request checks pass on the implementation commit
-[ ] repository is clean after the validated commit
-[ ] final closure evidence committed in this report
+Implementation commit       : 4d5eb6a61f2abf41a50a556e08f6ec5e1bbff630
+Draft pull request          : 7
+Pull-request base           : main
+Pull-request head           : code-v8-wavetable-builder
+Push workflow run           : 30813514420
+Pull-request workflow run   : 30813516910
+Unique CI environments      : 6
+Push checks                 : 6/6 passed
+Pull-request checks         : 6/6 passed
+Total implementation checks : 12/12 passed
+Cancelled                   : 0
+Failed                      : 0
+Skipped                     : 0
+Pending                     : 0
 ```
+
+The six operating-system and Python combinations ran through both push and pull-request events. Every job completed project installation, compileall, pip check, and the complete public suite.
+
+## Closure gates
+
+```text
+[x] complete deterministic mono policies implemented
+[x] rapid frequency-modulation analysis implemented
+[x] saturation, asymmetry, density, and complexity metrics implemented
+[x] beating, unison, and detune analysis implemented
+[x] exactly eight source-behavior classes implemented
+[x] region-interest contract covers the complete source
+[x] long low-change redundancy detection implemented
+[x] deterministic interest-weighted allocation implemented
+[x] legacy and extended project representations validated
+[x] sparse transient pathological case repaired
+[x] all models reject NaN and infinity
+[x] deterministic serialization and hashes validated
+[x] targeted V8-0B suite passes
+[x] complete public suite passes
+[x] complete private suite passes with all four reference dumps
+[x] isolated PEP 517 wheel builds successfully
+[x] all new package modules are present in the wheel
+[x] twelve implementation checks pass
+[x] implementation commit SHA is recorded
+[x] repository is clean after the implementation commit
+[x] no automatic MIDI or SysEx transmission is introduced
+[x] no private dump, generated SysEx, audio capture, or private evidence is committed
+```
+
+CODE V8-0B is formally closed.
+
+This closure validates V8-0B only. It does not claim implementation of V8-0C spectrum, perceptual, musical-classification, or conversion-mode requirements.
 
 ## Safety boundary
 
