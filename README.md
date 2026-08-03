@@ -174,6 +174,17 @@ CODE V8-0F does not build a wavetable or transmit MIDI/SysEx. It only authorizes
 
 CODE V8-A defines contracts only. Usefulness/deduplication, structural selection, ordering, interpolation, Factory Style, WCTD materialization, and hardware gates remain assigned to V8-B through V8-F. No MIDI or SysEx path is introduced.
 
+### CODE V8-B - usefulness, structure, breakpoints and deduplication (development branch)
+
+- deterministic 64/128-point wave-shape, spectral, level, polarity, and complexity metrics;
+- exact, polarity-equivalent, near, and distinct pair classification;
+- stable, moderate/strong transition, breakpoint, structural, extreme, and ineligible candidate labels;
+- complete-link duplicate grouping that prevents transitive near-duplicate chains;
+- required-lock and required-chronology protection without deleting candidates;
+- distinct-wave count, representative/redundant states, canonical JSON, and SHA-256 links.
+
+CODE V8-B measures the complete V8-A candidate inventory but does not choose final keyframes, assign positions, order the table, interpolate waves, materialize WCTD, or create a MIDI/SysEx path. Those operations remain assigned to V8-C through V8-F.
+
 ## Installation on Windows 11
 
 Open PowerShell in the repository root:

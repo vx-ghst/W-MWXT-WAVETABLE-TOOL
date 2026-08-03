@@ -8,7 +8,7 @@
 **Baseline:** CODE V7 / `v0.7.0`<br>
 **Target:** `v1.0.0-prototype`  
 **Primary platform:** Windows 11  
-**Status:** authoritative public execution order; CODE V8-0A through V8-0F closed, CODE V8-A closed, CODE V8-B next
+**Status:** authoritative public execution order; CODE V8-0A through V8-0F closed, CODE V8-A closed, CODE V8-B active
 
 ---
 
@@ -781,7 +781,19 @@ generic WavetableBuild contracts validated
 next stage: V8-B
 ```
 
-V8-B is the active stage. It must consume the immutable V8-A contracts and may not bypass the pre-V8 readiness, candidate-provenance, fixed-tail, or constraint gates.
+## CODE V8-B active scope
+
+```text
+measure every V8-A candidate without mutation
+classify stable, transition and breakpoint intervals
+identify structural and feature-extreme candidates
+classify exact, polarity-equivalent and near redundancy
+form deterministic complete-link duplicate groups
+report distinct-wave count and protected redundancy
+defer final structural/keyframe choice to V8-C
+```
+
+V8-B is the active stage. It must consume the immutable V8-A contracts and may not bypass the pre-V8 readiness, candidate-provenance, fixed-tail, or constraint gates. It does not select final keyframes, assign positions, order the final table, interpolate transitions, materialize WCTD, generate SysEx, or open MIDI.
 
 ## Hardware gates
 

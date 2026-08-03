@@ -13,6 +13,15 @@ All notable changes to **W-MWXT-WAVETABLE-TOOL** are documented here.
 - Added canonical JSON, deterministic hashes, and an executable zero required-debt gate before CODE V8-A.
 - Preserved version `0.7.0` and every historical V1-V7 and V8-0B through V8-0E schema.
 
+### CODE V8-B - usefulness, structure, breakpoints and deduplication
+
+- Added deterministic XT-wave shape metrics, direct/inverted waveform comparison, fixed spectral descriptors, and an explicit engineering perceptual-distance proxy.
+- Added source-ordered stable, transition, breakpoint, structural, extreme, and ineligible candidate analysis with linked interval evidence.
+- Added exact, polarity-equivalent, near, and distinct redundancy classes with deterministic complete-link duplicate groups.
+- Added required-lock and required-chronology protection, representative ranking, distinct-wave counts, and explicit warnings above 61 groups.
+- Added the linked `CodeV8BAnalysis` aggregate while deferring final keyframe selection, placement, interpolation, WCTD, SysEx, and MIDI.
+- Preserved version `0.7.0` and all accepted V8-A, V8-0, and V1-V7 schemas.
+
 ### CODE V8-A - generic wavetable build contracts
 
 - Added immutable candidate, fixed-tail, build-policy, request, slot, build, and variant-set contracts for the generic 61-position builder.
