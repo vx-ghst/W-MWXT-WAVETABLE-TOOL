@@ -8,7 +8,7 @@
 **Baseline:** CODE V7 / `v0.7.0`<br>
 **Target:** `v1.0.0-prototype`  
 **Primary platform:** Windows 11  
-**Status:** authoritative public execution order; CODE V8-0A through V8-0F closed, CODE V8-A active
+**Status:** authoritative public execution order; CODE V8-0A through V8-0F closed, CODE V8-A closed, CODE V8-B next
 
 ---
 
@@ -769,7 +769,19 @@ V8-F  Factory Style, WCTD materialization and hardware gates
 V8-G  integration, compliance closure, documentation and release gate
 ```
 
-V8-A is the active stage. Later V8 stages must consume its immutable contracts and may not bypass the pre-V8 readiness or candidate-provenance gates.
+## CODE V8-A completion gate
+
+```text
+V8-A formally closed
+generic WavetableBuild contracts validated
+115 targeted tests passed
+1637 public tests passed, 4 private tests skipped
+1641 private tests passed
+12/12 implementation checks passed
+next stage: V8-B
+```
+
+V8-B is the active stage. It must consume the immutable V8-A contracts and may not bypass the pre-V8 readiness, candidate-provenance, fixed-tail, or constraint gates.
 
 ## Hardware gates
 
