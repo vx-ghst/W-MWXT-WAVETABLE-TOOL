@@ -13,6 +13,15 @@ All notable changes to **W-MWXT-WAVETABLE-TOOL** are documented here.
 - Added canonical JSON, deterministic hashes, and an executable zero required-debt gate before CODE V8-A.
 - Preserved version `0.7.0` and every historical V1-V7 and V8-0B through V8-0E schema.
 
+### CODE V8-E - interpolation families and adaptive transition density
+
+- Added deterministic waveform, amplitude, phase-aware, spectral, harmonic, and perceptual interpolation under explicit allowed-method policies.
+- Added adaptive transition density from V8-D open-position capacity and V8-B endpoint complexity, including deterministic repeated stages for intentionally sparse intervals.
+- Added exact immutable-keyframe preservation, XT-safe `-127..127` quantization, and explicit fundamental, level, polarity, and edge-hold protection.
+- Added complete 61-slot V8-E builds, transition maps for every previously open position, and 60-edge continuity reports with explicit pass, warning, and failure evidence.
+- Added ranked V8-E variants and explicit rejection when no continuity-acceptable complete build exists.
+- Preserved version `0.7.0` and all accepted V8-A through V8-D, V8-0, and V1-V7 schemas while deferring Factory Style, WCTD, hardware gates, SysEx, and MIDI.
+
 ### CODE V8-D - ordering, placement, locks, chronology and variants
 
 - Added deterministic final keyframe ordering with explicit source-fidelity, scan-smoothness, harmonic-diversity, Bass-strength, and discontinuity-avoidance score terms.

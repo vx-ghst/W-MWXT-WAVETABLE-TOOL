@@ -207,6 +207,17 @@ CODE V8-C selects candidate IDs in canonical source order only. It does not assi
 
 CODE V8-D assigns only the selected real or reconstructed keyframes. It does not synthesize transition waves or fill open positions. Interpolation and adaptive transition density remain assigned to V8-E; WCTD materialization and hardware gates remain assigned to V8-F. No MIDI or SysEx path is introduced.
 
+### CODE V8-E - interpolation families and adaptive transition density (development branch)
+
+- deterministic waveform, amplitude, phase-aware, spectral, harmonic, and perceptual interpolation;
+- adaptive transition density linked to each V8-D anchor interval and its open-position capacity;
+- exact keyframe, lock, essential-role, level, fundamental, polarity, and safe-range protection;
+- explicit interpolated, repeated-stage, and edge-hold records for every position filled by V8-E;
+- complete 61-slot builds with all 60 adjacent transitions measured;
+- ranked V8-E variants with continuity pass, warning, or failure evidence.
+
+CODE V8-E fills all editable positions while preserving every V8-D keyframe byte-for-byte. It does not apply Factory Style, serialize WCTD, allocate XT memory, generate SysEx, open MIDI, or transmit MIDI. Those gates remain assigned to V8-F and later controlled stages.
+
 ## Installation on Windows 11
 
 Open PowerShell in the repository root:

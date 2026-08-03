@@ -1,5 +1,38 @@
 """Generic CODE V8 wavetable analysis and build contracts."""
 
+from .builder import (
+    DEFAULT_TRANSITION_DENSITY_POLICY,
+    WAVETABLE_BUILDER_SCHEMA_VERSION,
+    CodeV8EAnalysis,
+    CodeV8EStatus,
+    CodeV8EVariant,
+    TransitionDensityPolicy,
+    TransitionIntervalPlan,
+    TransitionPositionKind,
+    TransitionPositionRecord,
+    WavetableTransitionMap,
+    build_wavetable_transitions,
+    plan_transition_density,
+)
+from .continuity import (
+    DEFAULT_CONTINUITY_THRESHOLDS,
+    WAVETABLE_CONTINUITY_SCHEMA_VERSION,
+    ContinuityStatus,
+    ContinuityThresholds,
+    SlotContinuityAnalysis,
+    WavetableContinuityReport,
+    analyze_slot_continuity,
+    analyze_wavetable_continuity,
+)
+from .interpolation import (
+    DEFAULT_INTERPOLATION_POLICY,
+    WAVETABLE_INTERPOLATION_SCHEMA_VERSION,
+    InterpolatedWave,
+    InterpolationPolicy,
+    interpolate_xt_wave,
+    progression_value,
+    select_interpolation_method,
+)
 from .contracts import (
     DEFAULT_INTERPOLATION_METHODS,
     create_wavetable_build_request,
@@ -117,6 +150,33 @@ from .usefulness import (
 )
 
 __all__ = [
+    "DEFAULT_CONTINUITY_THRESHOLDS",
+    "DEFAULT_INTERPOLATION_POLICY",
+    "DEFAULT_TRANSITION_DENSITY_POLICY",
+    "WAVETABLE_BUILDER_SCHEMA_VERSION",
+    "WAVETABLE_CONTINUITY_SCHEMA_VERSION",
+    "WAVETABLE_INTERPOLATION_SCHEMA_VERSION",
+    "CodeV8EAnalysis",
+    "CodeV8EStatus",
+    "CodeV8EVariant",
+    "ContinuityStatus",
+    "ContinuityThresholds",
+    "InterpolatedWave",
+    "InterpolationPolicy",
+    "SlotContinuityAnalysis",
+    "TransitionDensityPolicy",
+    "TransitionIntervalPlan",
+    "TransitionPositionKind",
+    "TransitionPositionRecord",
+    "WavetableContinuityReport",
+    "WavetableTransitionMap",
+    "analyze_slot_continuity",
+    "analyze_wavetable_continuity",
+    "build_wavetable_transitions",
+    "interpolate_xt_wave",
+    "plan_transition_density",
+    "progression_value",
+    "select_interpolation_method",
     "DEFAULT_ORDERING_POLICY",
     "DEFAULT_PLACEMENT_POLICY",
     "WAVETABLE_ORDERING_SCHEMA_VERSION",
