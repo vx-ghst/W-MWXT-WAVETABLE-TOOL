@@ -13,6 +13,15 @@ All notable changes to **W-MWXT-WAVETABLE-TOOL** are documented here.
 - Added canonical JSON, deterministic hashes, and an executable zero required-debt gate before CODE V8-A.
 - Preserved version `0.7.0` and every historical V1-V7 and V8-0B through V8-0E schema.
 
+### CODE V8-D - ordering, placement, locks, chronology and variants
+
+- Added deterministic final keyframe ordering with explicit source-fidelity, scan-smoothness, harmonic-diversity, Bass-strength, and discontinuity-avoidance score terms.
+- Added exhaustive small-case and topological greedy large-case solving with required chronology and required lock-capacity gates.
+- Added sparse unique placement across editable positions 1-61, hard required anchors, feasible preference anchors, and explicit open positions for V8-E.
+- Added balanced, early, late, center, and edge-expanded spacing policies with lock, chronology, and spacing evidence.
+- Added ranked signature-deduplicated placement variants with moved-candidate and mean-position-delta evidence.
+- Preserved version `0.7.0` and all accepted V8-A, V8-B, V8-C, V8-0, and V1-V7 schemas while deferring interpolation, WCTD, SysEx, and MIDI.
+
 ### CODE V8-C - structural and essential keyframe selection
 
 - Added deterministic final keyframe selection linked to the immutable V8-A request and complete V8-B analysis.

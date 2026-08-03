@@ -56,6 +56,33 @@ from .models import (
     reconstruct_xt_cycle,
     stored_samples_sha256,
 )
+from .ordering import (
+    DEFAULT_ORDERING_POLICY,
+    WAVETABLE_ORDERING_SCHEMA_VERSION,
+    ConstraintOutcome,
+    ConstraintOutcomeStatus,
+    OrderedCandidate,
+    OrderingPolicy,
+    OrderingScore,
+    OrderingStatus,
+    OrderingStrategy,
+    PlacementConstraintKind,
+    WavetableOrdering,
+    evaluate_wavetable_order,
+    order_wavetable_keyframes,
+    ordering_policy_for_strategy,
+)
+from .placement import (
+    DEFAULT_PLACEMENT_POLICY,
+    WAVETABLE_PLACEMENT_SCHEMA_VERSION,
+    PlacementBias,
+    PlacementPolicy,
+    PlacementScore,
+    PlacementStatus,
+    PositionAssignment,
+    WavetablePlacement,
+    place_wavetable_ordering,
+)
 from .selection import (
     DEFAULT_KEYFRAME_SELECTION_POLICY,
     WAVETABLE_SELECTION_SCHEMA_VERSION,
@@ -68,6 +95,13 @@ from .selection import (
     WavetableKeyframeSelection,
     evaluate_keyframe_subset,
     select_wavetable_keyframes,
+)
+from .variants import (
+    WAVETABLE_VARIANTS_SCHEMA_VERSION,
+    CodeV8DAnalysis,
+    CodeV8DStatus,
+    WavetablePlacementVariant,
+    build_wavetable_placement_variants,
 )
 from .usefulness import (
     DEFAULT_USEFULNESS_THRESHOLDS,
@@ -83,6 +117,34 @@ from .usefulness import (
 )
 
 __all__ = [
+    "DEFAULT_ORDERING_POLICY",
+    "DEFAULT_PLACEMENT_POLICY",
+    "WAVETABLE_ORDERING_SCHEMA_VERSION",
+    "WAVETABLE_PLACEMENT_SCHEMA_VERSION",
+    "WAVETABLE_VARIANTS_SCHEMA_VERSION",
+    "ConstraintOutcome",
+    "ConstraintOutcomeStatus",
+    "OrderedCandidate",
+    "OrderingPolicy",
+    "OrderingScore",
+    "OrderingStatus",
+    "OrderingStrategy",
+    "PlacementBias",
+    "PlacementConstraintKind",
+    "PlacementPolicy",
+    "PlacementScore",
+    "PlacementStatus",
+    "PositionAssignment",
+    "WavetableOrdering",
+    "WavetablePlacement",
+    "WavetablePlacementVariant",
+    "CodeV8DAnalysis",
+    "CodeV8DStatus",
+    "evaluate_wavetable_order",
+    "order_wavetable_keyframes",
+    "ordering_policy_for_strategy",
+    "place_wavetable_ordering",
+    "build_wavetable_placement_variants",
     "DEFAULT_KEYFRAME_SELECTION_POLICY",
     "WAVETABLE_SELECTION_SCHEMA_VERSION",
     "CandidateSelectionDecision",

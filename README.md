@@ -196,6 +196,17 @@ CODE V8-B measures the complete V8-A candidate inventory but does not choose fin
 
 CODE V8-C selects candidate IDs in canonical source order only. It does not assign positions, solve final ordering or chronology, generate variants, interpolate waves, materialize WCTD, or create a MIDI/SysEx path. Those operations remain assigned to V8-D through V8-F.
 
+### CODE V8-D - ordering, placement, locks, chronology and variants (development branch)
+
+- exact V8-C selected-set preservation through deterministic final ordering;
+- explicit five-term compromise: source fidelity, scan smoothness, harmonic diversity, Bass strength, and avoidance of unintended discontinuities;
+- required chronology and position-lock capacity solving with explicit preference outcomes;
+- sparse unique assignment to editable positions 1-61 with occupied/open position evidence;
+- balanced, early, late, center, and edge-expanded placement biases;
+- ranked signature-deduplicated ordering/placement variants with canonical JSON and SHA-256 links.
+
+CODE V8-D assigns only the selected real or reconstructed keyframes. It does not synthesize transition waves or fill open positions. Interpolation and adaptive transition density remain assigned to V8-E; WCTD materialization and hardware gates remain assigned to V8-F. No MIDI or SysEx path is introduced.
+
 ## Installation on Windows 11
 
 Open PowerShell in the repository root:
