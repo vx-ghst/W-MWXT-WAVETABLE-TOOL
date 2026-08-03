@@ -13,6 +13,15 @@ All notable changes to **W-MWXT-WAVETABLE-TOOL** are documented here.
 - Added canonical JSON, deterministic hashes, and an executable zero required-debt gate before CODE V8-A.
 - Preserved version `0.7.0` and every historical V1-V7 and V8-0B through V8-0E schema.
 
+### CODE V8-A - generic wavetable build contracts
+
+- Added immutable candidate, fixed-tail, build-policy, request, slot, build, and variant-set contracts for the generic 61-position builder.
+- Added strict candidate provenance, XT-safe `-127..127` stored samples, 64/128-point hashes, complete per-wave metadata, and deterministic JSON/SHA-256 serialization.
+- Added required/preferred position locks and chronology constraints with cycle and transitive lock-conflict rejection.
+- Added the ready V8-0F preflight, repaired-wave-count, mixed-provenance, exact 61-slot, explicit rejection, and three-fixed-reference gates.
+- Declared the controlled CODE V8-A through V8-G execution order while deferring selection, ordering, interpolation, WCTD materialization, hardware gates, SysEx, and MIDI.
+- Preserved version `0.7.0` and every accepted V1-V7 and V8-0 schema.
+
 ### CODE V8-0E - complete Auto Repair policies and actions
 
 - Added one deterministic detector and action mapping for all 17 required Auto Repair defects.

@@ -163,6 +163,17 @@ CODE V8-0E remains additive and non-destructive. It exposes canonical data for l
 
 CODE V8-0F does not build a wavetable or transmit MIDI/SysEx. It only authorizes entry into the generic CODE V8 builder when implementation debt and component provenance are valid.
 
+### CODE V8-A - generic wavetable build contracts (development branch)
+
+- immutable candidate contracts with real/reconstructed/repaired/variant/interpolated provenance;
+- strict XT-safe 64-sample storage, reverse-negate reconstruction identity, per-wave metrics, evidence, and hashes;
+- exact 61 editable positions, 64 total WCTD positions, and three preserved fixed-tail references;
+- ready V8-0F preflight and repaired-wave-count gates;
+- explicit build policies, required/preferred position locks, chronology constraints, and deterministic variant requests;
+- output contracts for complete or explicitly rejected 61-slot builds.
+
+CODE V8-A defines contracts only. Usefulness/deduplication, structural selection, ordering, interpolation, Factory Style, WCTD materialization, and hardware gates remain assigned to V8-B through V8-F. No MIDI or SysEx path is introduced.
+
 ## Installation on Windows 11
 
 Open PowerShell in the repository root:

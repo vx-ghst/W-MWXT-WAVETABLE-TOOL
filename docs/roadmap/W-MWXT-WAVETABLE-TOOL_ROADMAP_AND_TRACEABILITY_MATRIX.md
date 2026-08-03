@@ -8,7 +8,7 @@
 **Baseline:** CODE V7 / `v0.7.0`<br>
 **Target:** `v1.0.0-prototype`  
 **Primary platform:** Windows 11  
-**Status:** authoritative public execution order; CODE V8-0A through V8-0F closed, CODE V8 next
+**Status:** authoritative public execution order; CODE V8-0A through V8-0F closed, CODE V8-A active
 
 ---
 
@@ -740,7 +740,9 @@ Build a complete musically useful table plan.
 ## Modules
 
 ```text
-wavetable/builder.py
+wavetable/models.py
+wavetable/contracts.py
+wavetable/metrics.py
 wavetable/usefulness.py
 wavetable/deduplication.py
 wavetable/selection.py
@@ -750,7 +752,24 @@ wavetable/interpolation.py
 wavetable/continuity.py
 wavetable/variants.py
 wavetable/factory_style.py
+wavetable/wctd.py
+wavetable/builder.py
+wavetable/hardware_gate.py
 ```
+
+## Controlled execution order
+
+```text
+V8-A  generic WavetableBuild models and contracts
+V8-B  usefulness, structure, breakpoints and deduplication
+V8-C  structural/keyframe selection for positions 1-61
+V8-D  ordering, placement, locks, chronology and variants
+V8-E  interpolation families and adaptive transition density
+V8-F  Factory Style, WCTD materialization and hardware gates
+V8-G  integration, compliance closure, documentation and release gate
+```
+
+V8-A is the active stage. Later V8 stages must consume its immutable contracts and may not bypass the pre-V8 readiness or candidate-provenance gates.
 
 ## Hardware gates
 
