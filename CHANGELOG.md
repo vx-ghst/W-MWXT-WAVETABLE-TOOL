@@ -4,6 +4,15 @@ All notable changes to **W-MWXT-WAVETABLE-TOOL** are documented here.
 
 ## Unreleased — CODE V8 development
 
+### CODE V8-0D - XT-native resampling and effective profiles
+
+- Added deterministic periodic windowed-sinc, Fourier, and linear resampling with explicit anti-alias, normalization, phase, fundamental, ringing, overshoot, and extreme-value evidence.
+- Added strict XT quantization comparisons, generated range `-127..127`, and an executable gate forbidding generated `-128`.
+- Added six wave transforms, 128 phase/start positions, six half-wave/reduction methods, complete XT metrics, multi-note aliasing analysis, and automatic or manually overridden treatment selection.
+- Added nine effective optimization profiles with normalized objective weights, capped classification/mode priors, and explicit Experimental controlled-defect preservation.
+- Added Bass-specific pitch comparison, separate Sub and Bass scores, monophonic warnings, inter-wave consistency evidence, and independent optimization of exactly 61 waves.
+- Preserved version `0.7.0`, historical V5/V6 contracts, and the frozen V7 projection/trajectory/package schemas.
+
 ### CODE V8-0C - spectrum, perceptual analysis, classification, and modes
 
 - Added linked formant, four-band spectral-evolution, partial-inventory, and source-span spectral-correlation contracts.

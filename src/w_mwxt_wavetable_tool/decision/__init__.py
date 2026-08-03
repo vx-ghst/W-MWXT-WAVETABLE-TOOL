@@ -8,6 +8,7 @@ from .explanations import (
     validate_mode_execution_paths,
 )
 from .mode_selector import select_conversion_mode
+from .profile_selector import select_optimization_profile
 from .models import (
     BehaviorClass,
     BehaviorClassification,
@@ -41,5 +42,6 @@ __all__ = [
     "confidence_from_ranked_scores",
     "execution_path_for_mode",
     "select_conversion_mode",
+    "select_optimization_profile",
     "validate_mode_execution_paths",
 ]

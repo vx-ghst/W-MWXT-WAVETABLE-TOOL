@@ -8,7 +8,7 @@
 **Baseline:** CODE V7 / `v0.7.0`<br>
 **Target:** `v1.0.0-prototype`  
 **Primary platform:** Windows 11  
-**Status:** authoritative public execution order; CODE V8-0A through V8-0C closed, CODE V8-0D next
+**Status:** authoritative public execution order; CODE V8-0A through V8-0C closed, CODE V8-0D active
 
 ---
 
@@ -644,12 +644,30 @@ five explainable conversion modes
 manual override, warnings, ambiguity and explicit refusal
 ```
 
-Every declared conversion mode resolves to an importable existing callable. Musical labels guide priorities through a capped prior and cannot independently force a conversion mode. XT-relative harmonic loss, aliasing risk, and source-versus-XT perceptual difference remain assigned to V8-0D.
+Every declared conversion mode resolves to an importable existing callable. Musical labels guide priorities through a capped prior and cannot independently force a conversion mode.
+
+## V8-0D - XT-native resampling and effective profiles
+
+V8-0D closes the XT-relative comparison and treatment contracts while preserving the accepted V7 serialized path:
+
+```text
+periodic windowed-sinc, Fourier, and linear resampling
+explicit anti-aliasing, normalization, phase, fundamental, ringing, and extreme evidence
+nearest and deterministic error-feedback XT quantization
+strict generated range -127..127 and forbidden -128 gate
+six transforms and all 128 phase/start positions
+six half-wave or reduction methods
+complete source-versus-XT wave metrics and multi-note aliasing analysis
+nine effective optimization profiles and capped profile selection
+Bass-specific working-pitch comparison, Sub/Bass scores, and sequence consistency
+independent optimization of every wave, including exactly 61-wave sets
+```
+
+V8-0D does not change the V7 `XtProjectionSet`, trajectory, QC, package, or hardware evidence. Complete repair policy and actions remain assigned to V8-0E.
 
 ## Remaining V8-0 order
 
 ```text
-V8-0C spectrum, perceptual analysis, classification and modes
 V8-0D XT-native resampling and effective profiles
 V8-0E complete Auto Repair policies and actions
 V8-0F aggregate pre-V8 contract and zero required debt gate

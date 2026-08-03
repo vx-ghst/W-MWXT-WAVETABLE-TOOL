@@ -128,7 +128,18 @@ CODE V8-0B extends accepted V4-V6 results through linked schema-versioned aggreg
 - the canonical 27-class multi-label musical taxonomy with scores, confidence, ambiguity, evidence, and explanations;
 - five explainable conversion modes with importable execution paths, manual override, warnings, and explicit refusal for inactive sources.
 
-CODE V8-0C remains additive: accepted V5/V6 schemas and the frozen V7 XT modules are unchanged. XT-reduction loss, post-conversion aliasing, and source-versus-XT perceptual comparison remain assigned to V8-0D.
+CODE V8-0C remains additive: accepted V5/V6 schemas and the frozen V7 XT modules are unchanged.
+
+### CODE V8-0D - XT-native resampling and effective profiles (development branch)
+
+- deterministic periodic windowed-sinc, Fourier, and linear resampling with explicit anti-alias, normalization, phase, fundamental, ringing, overshoot, and extreme-value evidence;
+- strict nearest and error-feedback XT quantization in the safe generated range `-127..127`;
+- six transforms, 128 phase/start positions, six half-wave/reduction methods, and automatic or manually overridden treatment selection;
+- complete XT time, phase, harmonic, band, perceptual, aliasing, ringing, seam, amplitude, Sub, and Bass metrics;
+- nine effective optimization profiles with normalized weights and capped musical-classification/conversion-mode influence;
+- Bass-specific working-pitch comparison, monophonic warnings, inter-wave consistency, and independent optimization of exactly 61 waves.
+
+CODE V8-0D remains mathematical and non-destructive. It does not build the final 61-position table, open MIDI ports, transmit SysEx, or claim calibrated XT audibility. Auto Repair remains assigned to V8-0E.
 
 ## Installation on Windows 11
 

@@ -623,6 +623,10 @@ The engine shall provide:
 
 No operation may silently overflow, wrap, clip, or normalize away important low-frequency energy.
 
+For prototype acceptance, the periodic comparison layer shall expose at least a high-quality windowed-sinc path, a Fourier-domain path, and a linear diagnostic baseline. Anti-alias behavior, normalization, phase shift, fundamental preservation, ringing, overshoot, extreme values, and before/after errors shall be explicit in the result.
+
+Generated XT quantization shall use the confirmed safe range `-127..127`. Generated `-128`, silent wrapping, and unreported clipping are forbidden.
+
 ---
 
 # 19. Auto Repair
@@ -702,6 +706,10 @@ The Experimental profile may intentionally preserve controlled:
 - abrupt transitions.
 
 Such preservation must be explicit, never accidental.
+
+Profiles are effective normalized objective policies rather than display-only labels. Musical classification supplies the main profile prior; conversion-mode influence must remain bounded and may not independently force a profile. Automatic selection and any manual override shall both remain serialized.
+
+Bass/Sub processing shall expose separate Sub and Bass scores, compare the accepted working-pitch candidates, and measure amplitude and Bass-power consistency across an ordered wave set.
 
 ---
 
