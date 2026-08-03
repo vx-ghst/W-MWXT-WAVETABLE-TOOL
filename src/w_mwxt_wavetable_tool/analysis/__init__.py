@@ -1,4 +1,4 @@
-"""Deterministic DSP analysis contracts through CODE V8-0B."""
+"""Deterministic DSP analysis contracts through CODE V8-0C."""
 
 from .envelope import analyze_envelope
 from .beating import BeatingAnalysis, analyze_beating
@@ -143,6 +143,18 @@ from .spectral import (
     analyze_audio_source_spectral,
     analyze_spectral,
 )
+from .formants import FormantAnalysis, FormantCandidate, analyze_formants
+from .spectral_evolution import (
+    PartialCandidate,
+    PartialKind,
+    SpectralCorrelation,
+    SpectralCorrelationMatrix,
+    SpectralEvolutionAnalysis,
+    SpectralEvolutionFrame,
+    SpectralSpan,
+    analyze_spectral_correlations,
+    analyze_spectral_evolution,
+)
 from .time_domain import analyze_audio_source, analyze_time_domain
 from .transients import analyze_audio_source_transients, analyze_transients
 
@@ -168,6 +180,15 @@ __all__ = [
     "EnvelopeAnalysis",
     "HarmonicPeak",
     "HarmonicPerceptualAnalysis",
+    "FormantAnalysis",
+    "FormantCandidate",
+    "PartialCandidate",
+    "PartialKind",
+    "SpectralCorrelation",
+    "SpectralCorrelationMatrix",
+    "SpectralEvolutionAnalysis",
+    "SpectralEvolutionFrame",
+    "SpectralSpan",
     "LevelAnalysis",
     "NoiseAnalysis",
     "NoiseClass",
@@ -254,6 +275,9 @@ __all__ = [
     "classify_source",
     "decide_wavetable_readiness",
     "analyze_harmonic_perceptual",
+    "analyze_formants",
+    "analyze_spectral_correlations",
+    "analyze_spectral_evolution",
     "analyze_spectral",
     "analyze_audio_source_spectral",
     "analyze_time_domain",

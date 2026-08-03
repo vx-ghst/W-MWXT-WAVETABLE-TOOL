@@ -213,7 +213,7 @@ These metrics are intended to prevent technically different but perceptually red
 
 The program may return multiple labels with confidence values.
 
-Target classes include:
+The canonical taxonomy contains exactly 27 target classes:
 
 - Sub;
 - Bass;

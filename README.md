@@ -120,6 +120,16 @@ CODE V8-0A is a traceability contract, not a claim that partial or planned featu
 
 CODE V8-0B extends accepted V4-V6 results through linked schema-versioned aggregates. It does not mutate the frozen V7 XT path and never transmits MIDI or SysEx.
 
+### CODE V8-0C - spectrum, perceptual analysis, classification, and modes (development branch)
+
+- four-band spectral evolution, harmonic/inharmonic partial inventory, formant candidates, and source-span spectral correlation;
+- bounded perceptual proxies for low-frequency power, fundamental presence, brightness, hardness, saturation, density, motion, tonality, and noise;
+- explicit perceptual distance, audible-redundancy grouping, and ordered-sweep continuity;
+- the canonical 27-class multi-label musical taxonomy with scores, confidence, ambiguity, evidence, and explanations;
+- five explainable conversion modes with importable execution paths, manual override, warnings, and explicit refusal for inactive sources.
+
+CODE V8-0C remains additive: accepted V5/V6 schemas and the frozen V7 XT modules are unchanged. XT-reduction loss, post-conversion aliasing, and source-versus-XT perceptual comparison remain assigned to V8-0D.
+
 ## Installation on Windows 11
 
 Open PowerShell in the repository root:
@@ -341,7 +351,7 @@ Completed:
 
 In progress:
 
-- [ ] CODE V8-0 — exhaustive post-V7 compliance closure; V8-0A closed and V8-0B implemented locally pending remote/private gates
+- [ ] CODE V8-0 — exhaustive post-V7 compliance closure; V8-0A and V8-0B closed, V8-0C implemented locally pending private/remote gates
 
 Next:
 

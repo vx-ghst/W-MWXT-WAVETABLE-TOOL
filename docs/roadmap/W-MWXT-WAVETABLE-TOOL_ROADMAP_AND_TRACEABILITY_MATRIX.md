@@ -629,10 +629,26 @@ interest-weighted advisory allocation
 
 The historical CODE V5 source classifier and CODE V6 segmentation remain available unchanged. New results are linked through `SignalExtensionAnalysis`, `BehaviorClassification`, and `RegionInterestAnalysis`. Final wave selection and placement remain assigned to later CODE V8 stages.
 
+## V8-0C - spectrum, perceptual analysis, classification, and modes
+
+V8-0C adds source-domain spectral and perceptual extensions without mutating accepted V5/V6 schemas:
+
+```text
+four-band spectral evolution and partial inventory
+broad formant candidates and source-span spectral correlation
+nine bounded perceptual feature proxies
+weighted perceptual distance and transitive redundancy groups
+ordered-sweep continuity
+27 canonical multi-label musical classes
+five explainable conversion modes
+manual override, warnings, ambiguity and explicit refusal
+```
+
+Every declared conversion mode resolves to an importable existing callable. Musical labels guide priorities through a capped prior and cannot independently force a conversion mode. XT-relative harmonic loss, aliasing risk, and source-versus-XT perceptual difference remain assigned to V8-0D.
+
 ## Remaining V8-0 order
 
 ```text
-V8-0B import, signal and regions
 V8-0C spectrum, perceptual analysis, classification and modes
 V8-0D XT-native resampling and effective profiles
 V8-0E complete Auto Repair policies and actions

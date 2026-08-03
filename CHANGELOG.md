@@ -4,6 +4,14 @@ All notable changes to **W-MWXT-WAVETABLE-TOOL** are documented here.
 
 ## Unreleased — CODE V8 development
 
+### CODE V8-0C - spectrum, perceptual analysis, classification, and modes
+
+- Added linked formant, four-band spectral-evolution, partial-inventory, and source-span spectral-correlation contracts.
+- Added nine bounded perceptual proxies, weighted perceptual distance, transitive audible-redundancy groups, and generic sweep continuity.
+- Added the canonical 27-class multi-label musical classifier with confidence, ambiguity, evidence, and explanations.
+- Added five explainable conversion modes, importable execution-path gates, manual overrides, warnings, and explicit inactive-source refusal.
+- Preserved all accepted V5/V6 schemas, version `0.7.0`, and the frozen V7 XT path.
+
 ### CODE V8-0B - import, signal, behavior, and regions
 
 - Added complete deterministic mono policies with structured periodicity evidence and legacy project compatibility.
