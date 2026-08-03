@@ -8,7 +8,7 @@
 **Baseline:** CODE V7 / `v0.7.0`<br>
 **Target:** `v1.0.0-prototype`  
 **Primary platform:** Windows 11  
-**Status:** authoritative public execution order; CODE V8-0A through V8-0E closed, CODE V8-0F next
+**Status:** authoritative public execution order; CODE V8-0A through V8-0E closed, CODE V8-0F active
 
 ---
 
@@ -682,11 +682,29 @@ ordered wave-sequence processing, including exactly 61 waves
 
 V8-0E does not change historical V5, V6, V7, or V8-0D schemas. Reports, preview audition, editor controls, and the final 61-position builder remain assigned to their later stages.
 
+## V8-0F - pre-V8 aggregate and zero required-debt gate
+
+V8-0F closes the mandatory gate before generic wavetable construction:
+
+```text
+immutable V8-0A baseline registry link
+62/62 active V8-0* obligations supported
+0 missing, partial, or absent required pre-V8 obligations
+canonical 27-class taxonomy correction
+V3 imported-state and sample-identity provenance
+V4-V6 aggregate provenance
+V7 projection and optional trajectory/QC/package provenance
+V8-0B through V8-0E decision/profile/optimization/repair links
+ready or explicit rejected source status
+canonical JSON and aggregate SHA-256
+```
+
+The baseline registry remains a historical audit and is not rewritten. The separate closure ledger proves current support while preserving the original post-V7 findings. V8-0F builds no table and opens no MIDI path.
+
 ## Remaining V8-0 order
 
 ```text
-V8-0E complete Auto Repair policies and actions
-V8-0F aggregate pre-V8 contract and zero required debt gate
+V8-0F implementation, validation, and formal closure
 ```
 
 ---

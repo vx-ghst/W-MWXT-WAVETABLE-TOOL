@@ -152,6 +152,17 @@ CODE V8-0D remains mathematical and non-destructive. It does not build the final
 
 CODE V8-0E remains additive and non-destructive. It exposes canonical data for later reports, preview audition, and editor controls without opening MIDI ports or transmitting SysEx.
 
+### CODE V8-0F - pre-V8 aggregate and zero required-debt gate (development branch)
+
+- immutable closure evidence for all 62 active obligations whose corrected destination begins with `V8-0`;
+- exact link to the historical V8-0A registry without rewriting baseline support states;
+- validated V3 imported-state, V4/V5/V6 aggregate, and V7 projection/trajectory/QC/package provenance;
+- one linked decision plan covering V8-0B signal/region extensions, V8-0C classification/modes, V8-0D profiles/XT optimization, and V8-0E repair records;
+- explicit ready or rejected preflight status, canonical JSON, and one final SHA-256;
+- executable gate requiring zero missing, partial, or absent debt before CODE V8-A.
+
+CODE V8-0F does not build a wavetable or transmit MIDI/SysEx. It only authorizes entry into the generic CODE V8 builder when implementation debt and component provenance are valid.
+
 ## Installation on Windows 11
 
 Open PowerShell in the repository root:

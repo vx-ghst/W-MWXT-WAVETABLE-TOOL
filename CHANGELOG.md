@@ -4,6 +4,15 @@ All notable changes to **W-MWXT-WAVETABLE-TOOL** are documented here.
 
 ## Unreleased — CODE V8 development
 
+### CODE V8-0F - pre-V8 aggregate and zero required-debt gate
+
+- Added a schema-versioned closure ledger linked to the immutable V8-0A baseline registry.
+- Closed exactly 62/62 active obligations whose corrected destination begins with `V8-0`, with module, test, reason, and hash evidence.
+- Added strict V3-V7 provenance validation and a linked V8-0B through V8-0E decision/profile/optimization/repair plan.
+- Added explicit ready and rejected preflight states without hidden fallbacks.
+- Added canonical JSON, deterministic hashes, and an executable zero required-debt gate before CODE V8-A.
+- Preserved version `0.7.0` and every historical V1-V7 and V8-0B through V8-0E schema.
+
 ### CODE V8-0E - complete Auto Repair policies and actions
 
 - Added one deterministic detector and action mapping for all 17 required Auto Repair defects.

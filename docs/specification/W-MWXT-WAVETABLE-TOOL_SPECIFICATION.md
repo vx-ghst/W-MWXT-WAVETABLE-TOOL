@@ -662,6 +662,18 @@ Every applied repair shall be logged and available for before/after comparison.
 
 For prototype acceptance, every required defect shall produce a canonical finding and action record. `COMPARE` shall generate a candidate without selecting it, while `IGNORE` and `PRESERVE` shall retain the source and remain distinguishable in the log. Missing contextual evidence shall produce an explicit non-applicable or review-required state rather than an inferred repair. Before, candidate, and selected samples and metrics shall remain separately available.
 
+Before the generic wavetable builder is allowed to run, the implementation shall produce a versioned pre-V8 aggregate that:
+
+- links the canonical imported audio state to the accepted V4, V5, V6, and supplied V7 artifacts;
+- links the signal-extension, region, spectral, perceptual, classification, mode, profile, XT-optimization, and repair records;
+- verifies the executable compliance registry against a separate current closure ledger;
+- reports every active obligation assigned to `V8-0*`;
+- rejects entry into CODE V8 when any such obligation is missing, partial, or absent;
+- preserves explicit source rejection without substituting a hidden fallback;
+- serializes one deterministic final SHA-256.
+
+The historical baseline registry shall not be rewritten to conceal earlier partial or absent support. Current closure evidence must remain separately versioned and hash-linked.
+
 ---
 
 # 20. Bass and Sub optimization
