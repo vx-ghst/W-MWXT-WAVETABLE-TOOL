@@ -5,6 +5,7 @@ from hashlib import sha256
 import json
 from typing import Any
 
+import numpy as np
 import numpy.typing as npt
 
 from ..audio import AudioSource
@@ -21,6 +22,13 @@ from .periodicity import analyze_pitch_periodicity
 from .phase_motion import analyze_phase_motion
 from .time_domain import analyze_time_domain
 from .transients import analyze_transients
+from .beating import BeatingAnalysis, analyze_beating
+from .complexity import ComplexityAnalysis, analyze_complexity
+from .frequency_modulation import (
+    FrequencyModulationAnalysis,
+    analyze_frequency_modulation,
+)
+from .saturation import SaturationAnalysis, analyze_saturation
 
 
 @dataclass(frozen=True, slots=True)
@@ -231,3 +239,187 @@ def analyze_audio_source_signal(
     if analysis.sample_sha256 != source.sample_sha256:
         raise ValueError("signal analysis did not preserve the AudioSource sample hash")
     return analysis
+
+
+@dataclass(frozen=True, slots=True)
+class SignalExtensionAnalysis:
+    """V8-0B signal metrics linked to the immutable CODE V4 aggregate."""
+
+    schema_version: int
+    tool_version: str
+    sample_rate: int
+    sample_count: int
+    sample_sha256: str
+    signal_analysis_sha256: str
+    pitch_periodicity_analysis_sha256: str
+    frequency_modulation_analysis: FrequencyModulationAnalysis
+    saturation_analysis: SaturationAnalysis
+    complexity_analysis: ComplexityAnalysis
+    beating_analysis: BeatingAnalysis
+
+    def __post_init__(self) -> None:
+        if self.schema_version != 1:
+            raise ValueError("Unsupported signal-extension schema version")
+        if not self.tool_version or self.tool_version.strip() != self.tool_version:
+            raise ValueError("tool_version must be a non-empty normalized string")
+        if self.sample_rate <= 0 or self.sample_count <= 0:
+            raise ValueError("sample_rate and sample_count must be positive")
+        for name in (
+            "sample_sha256",
+            "signal_analysis_sha256",
+            "pitch_periodicity_analysis_sha256",
+        ):
+            value = getattr(self, name)
+            if len(value) != 64 or any(
+                character not in "0123456789abcdef" for character in value
+            ):
+                raise ValueError(f"{name} must be a lowercase SHA-256 digest")
+        if (
+            self.frequency_modulation_analysis.pitch_periodicity_analysis_sha256
+            != self.pitch_periodicity_analysis_sha256
+        ):
+            raise ValueError(
+                "frequency-modulation analysis does not link to the pitch analysis"
+            )
+        components = (
+            self.frequency_modulation_analysis,
+            self.saturation_analysis,
+            self.complexity_analysis,
+            self.beating_analysis,
+        )
+        for component in components:
+            if component.sample_rate != self.sample_rate:
+                raise ValueError("extension component sample rate is inconsistent")
+            if component.sample_count != self.sample_count:
+                raise ValueError("extension component sample count is inconsistent")
+            if component.sample_sha256 != self.sample_sha256:
+                raise ValueError("extension component sample hash is inconsistent")
+
+    @property
+    def component_analysis_sha256(self) -> dict[str, str]:
+        return {
+            "frequency_modulation_analysis": (
+                self.frequency_modulation_analysis.analysis_sha256
+            ),
+            "saturation_analysis": self.saturation_analysis.analysis_sha256,
+            "complexity_analysis": self.complexity_analysis.analysis_sha256,
+            "beating_analysis": self.beating_analysis.analysis_sha256,
+        }
+
+    def _content_dict(self) -> dict[str, Any]:
+        return {
+            "schema_version": self.schema_version,
+            "tool_version": self.tool_version,
+            "sample_rate": self.sample_rate,
+            "sample_count": self.sample_count,
+            "sample_sha256": self.sample_sha256,
+            "signal_analysis_sha256": self.signal_analysis_sha256,
+            "pitch_periodicity_analysis_sha256": (
+                self.pitch_periodicity_analysis_sha256
+            ),
+            "component_analysis_sha256": self.component_analysis_sha256,
+            "frequency_modulation_analysis": (
+                self.frequency_modulation_analysis.to_dict()
+            ),
+            "saturation_analysis": self.saturation_analysis.to_dict(),
+            "complexity_analysis": self.complexity_analysis.to_dict(),
+            "beating_analysis": self.beating_analysis.to_dict(),
+        }
+
+    @property
+    def analysis_sha256(self) -> str:
+        rendered = json.dumps(
+            self._content_dict(),
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+            allow_nan=False,
+        ).encode("utf-8")
+        return sha256(rendered).hexdigest()
+
+    def to_dict(self) -> dict[str, Any]:
+        result = self._content_dict()
+        result["analysis_sha256"] = self.analysis_sha256
+        return result
+
+
+def analyze_signal_extensions(
+    samples: npt.ArrayLike,
+    sample_rate: int,
+    *,
+    signal_analysis: SignalAnalysis | None = None,
+    saturation_frame_size: int = 2048,
+    saturation_hop_size: int = 512,
+    complexity_active_threshold: float = 1e-6,
+    beating_minimum_frequency_hz: float = 35.0,
+    beating_maximum_frequency_hz: float = 2000.0,
+) -> SignalExtensionAnalysis:
+    base = signal_analysis or analyze_signal(samples, sample_rate)
+    data = np.asarray(samples, dtype=np.float64)
+    if data.ndim != 1 or data.size == 0:
+        raise ValueError("signal extension analysis expects non-empty mono samples")
+    if not bool(np.all(np.isfinite(data))):
+        raise ValueError("signal extension analysis requires finite samples")
+    canonical_hash = sha256(
+        np.ascontiguousarray(data, dtype=np.float64)
+        .astype("<f8", copy=False)
+        .tobytes(order="C")
+    ).hexdigest()
+    if int(sample_rate) != base.sample_rate:
+        raise ValueError("signal extension sample rate does not match base analysis")
+    if int(data.size) != base.sample_count:
+        raise ValueError("signal extension sample count does not match base analysis")
+    if canonical_hash != base.sample_sha256:
+        raise ValueError("signal extension sample hash does not match base analysis")
+
+    frequency_modulation = analyze_frequency_modulation(
+        base.pitch_periodicity_analysis
+    )
+    saturation = analyze_saturation(
+        data,
+        sample_rate,
+        frame_size=saturation_frame_size,
+        hop_size=saturation_hop_size,
+    )
+    complexity = analyze_complexity(
+        data,
+        sample_rate,
+        active_threshold=complexity_active_threshold,
+    )
+    beating = analyze_beating(
+        data,
+        sample_rate,
+        minimum_frequency_hz=beating_minimum_frequency_hz,
+        maximum_frequency_hz=beating_maximum_frequency_hz,
+    )
+
+    return SignalExtensionAnalysis(
+        schema_version=1,
+        tool_version=__version__,
+        sample_rate=base.sample_rate,
+        sample_count=base.sample_count,
+        sample_sha256=base.sample_sha256,
+        signal_analysis_sha256=base.analysis_sha256,
+        pitch_periodicity_analysis_sha256=(
+            base.pitch_periodicity_analysis.analysis_sha256
+        ),
+        frequency_modulation_analysis=frequency_modulation,
+        saturation_analysis=saturation,
+        complexity_analysis=complexity,
+        beating_analysis=beating,
+    )
+
+
+def analyze_audio_source_signal_extensions(
+    source: AudioSource,
+    **kwargs: float | int | SignalAnalysis,
+) -> SignalExtensionAnalysis:
+    base = kwargs.pop("signal_analysis", None)
+    if base is not None and not isinstance(base, SignalAnalysis):
+        raise TypeError("signal_analysis must be a SignalAnalysis when provided")
+    return analyze_signal_extensions(
+        source.mono_samples,
+        source.metadata.sample_rate,
+        signal_analysis=base,
+        **kwargs,
+    )

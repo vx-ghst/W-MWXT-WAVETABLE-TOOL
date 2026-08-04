@@ -213,7 +213,7 @@ These metrics are intended to prevent technically different but perceptually red
 
 The program may return multiple labels with confidence values.
 
-Target classes include:
+The canonical taxonomy contains exactly 27 target classes:
 
 - Sub;
 - Bass;
@@ -623,6 +623,10 @@ The engine shall provide:
 
 No operation may silently overflow, wrap, clip, or normalize away important low-frequency energy.
 
+For prototype acceptance, the periodic comparison layer shall expose at least a high-quality windowed-sinc path, a Fourier-domain path, and a linear diagnostic baseline. Anti-alias behavior, normalization, phase shift, fundamental preservation, ringing, overshoot, extreme values, and before/after errors shall be explicit in the result.
+
+Generated XT quantization shall use the confirmed safe range `-127..127`. Generated `-128`, silent wrapping, and unreported clipping are forbidden.
+
 ---
 
 # 19. Auto Repair
@@ -655,6 +659,20 @@ For each repair, the user shall be able to choose:
 - PRESERVE.
 
 Every applied repair shall be logged and available for before/after comparison.
+
+For prototype acceptance, every required defect shall produce a canonical finding and action record. `COMPARE` shall generate a candidate without selecting it, while `IGNORE` and `PRESERVE` shall retain the source and remain distinguishable in the log. Missing contextual evidence shall produce an explicit non-applicable or review-required state rather than an inferred repair. Before, candidate, and selected samples and metrics shall remain separately available.
+
+Before the generic wavetable builder is allowed to run, the implementation shall produce a versioned pre-V8 aggregate that:
+
+- links the canonical imported audio state to the accepted V4, V5, V6, and supplied V7 artifacts;
+- links the signal-extension, region, spectral, perceptual, classification, mode, profile, XT-optimization, and repair records;
+- verifies the executable compliance registry against a separate current closure ledger;
+- reports every active obligation assigned to `V8-0*`;
+- rejects entry into CODE V8 when any such obligation is missing, partial, or absent;
+- preserves explicit source rejection without substituting a hidden fallback;
+- serializes one deterministic final SHA-256.
+
+The historical baseline registry shall not be rewritten to conceal earlier partial or absent support. Current closure evidence must remain separately versioned and hash-linked.
 
 ---
 
@@ -702,6 +720,10 @@ The Experimental profile may intentionally preserve controlled:
 - abrupt transitions.
 
 Such preservation must be explicit, never accidental.
+
+Profiles are effective normalized objective policies rather than display-only labels. Musical classification supplies the main profile prior; conversion-mode influence must remain bounded and may not independently force a profile. Automatic selection and any manual override shall both remain serialized.
+
+Bass/Sub processing shall expose separate Sub and Bass scores, compare the accepted working-pitch candidates, and measure amplitude and Bass-power consistency across an ordered wave set.
 
 ---
 
@@ -1193,6 +1215,51 @@ The project shall guarantee:
 No private factory bank, user backup, copyrighted sound bank, or firmware image may be committed to the public repository.
 
 ---
+
+## 33.1 Executable requirements and capability contract
+
+The implementation shall bundle a versioned machine-readable compliance registry. The registry shall preserve every atomic cahier-des-charges requirement and shall record:
+
+- stable requirement ID and exact requirement text;
+- final scope status;
+- observed baseline support state;
+- existing evidence and tests;
+- unresolved gap;
+- corrected implementation destination;
+- target modules, tests and acceptance path;
+- source-document fingerprints;
+- canonical registry SHA-256.
+
+The initial registry schema contains exactly 206 requirements: 195 active obligations, nine deliberate exclusions and two post-prototype architecture items. Requirement IDs must be unique, ordered and non-empty. No active requirement may have an empty destination, target-module field or target-test field.
+
+Schema evolution shall be explicit. Current payloads shall be validated strictly, supported legacy audit rows shall be adapted through a documented migration, and unknown future schema versions shall be rejected rather than interpreted on a best-effort basis.
+
+The nine explicit exclusions shall have executable non-reintroduction gates. A documented exclusion is not considered forgotten functionality.
+
+## 33.2 Import, signal-extension, behavior, and region contract
+
+The implementation shall provide all mono policies required by the cahier des charges: arithmetic sum, arithmetic average, left, right, stereo Mid, best periodicity, and automatic deterministic selection. Compatibility policies may remain public, but automatic selection shall preserve mono, single-active-channel, identical-channel, and anti-phase safety gates before periodicity scoring. Scored decisions shall retain candidate scores, selected candidate, margin, and explanation.
+
+The accepted CODE V4 `SignalAnalysis` schema shall not be silently mutated. Additional V8-0B metrics shall be provided by a linked versioned aggregate containing rapid frequency modulation, time-varying saturation, asymmetry, density, complexity, beating, unison, and detune results. Every result shall contain finite bounded metrics, exact source identity, deterministic serialization, and a canonical hash.
+
+The behavioral classifier shall expose exactly these eight classes:
+
+```text
+periodic
+quasi_periodic
+evolving
+pitch_variable
+transient
+noisy
+non_periodic
+hybrid
+```
+
+Every classification shall contain all eight scores in canonical order, confidence, ambiguity, evidence, one explanation per score, a selected behavior, and a deterministic hash. Silence shall be represented explicitly through the eight-class contract rather than by adding an undocumented ninth behavior.
+
+The accepted CODE V6 segmentation schema shall remain readable. A linked region-interest layer shall map or refine complete source coverage into attack, establishment, sustain, evolution, saturation, redundancy, disappearance, and noise, with silence retained as a coverage state. Regions shall be contiguous and non-overlapping and shall expose useful-change, redundancy, saturation, complexity, interest, and allocation values. Long low-change regions shall be deprioritized, and advisory density shall be allocated by interest rather than uniform time. This advisory allocation shall not itself build a wavetable or transmit MIDI.
+
+Minimal-project parsing shall accept both the complete legacy mono report and the complete extended scored report. Partial mixed representations and unknown fields shall be rejected.
 
 # 34. Prototype acceptance
 

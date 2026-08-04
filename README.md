@@ -98,6 +98,137 @@ CODE V6 remains non-destructive: it does not quantize XT values, allocate synth 
 
 CODE V7 never transmits MIDI automatically. Hardware writes remain deliberate manual actions followed by a fresh redump and exact comparison.
 
+### CODE V8-0A — executable compliance registry (development branch)
+
+- strict schema-versioned registry for all 206 cahier-des-charges requirements;
+- explicit V7 support state and corrected closure destination for every requirement;
+- canonical registry SHA-256 and pinned source fingerprints;
+- adapters and migrations for the validated legacy audit-matrix format;
+- executable non-reintroduction gates for all nine deliberate exclusions;
+- six-job Ubuntu/Windows Python 3.11–3.13 CI matrix.
+
+CODE V8-0A is a traceability contract, not a claim that partial or planned features are already implemented. Those requirements remain assigned to their recorded CODE stages.
+
+### CODE V8-0B - import, signal, behavior, and regions (development branch)
+
+- complete deterministic mono policies: sum, average, left, right, Mid, best periodicity, and automatic selection;
+- structured candidate scores and backward-compatible minimal-project parsing;
+- dedicated rapid-FM, saturation, asymmetry, density, complexity, beating, unison, and detune contracts;
+- eight explainable source-behavior classes without changing the historical CODE V5 classifier;
+- contiguous region-interest analysis for establishment, sustain, evolution, saturation, redundancy, disappearance, and noise;
+- deterministic interest-weighted advisory allocation without building or transmitting a wavetable.
+
+CODE V8-0B extends accepted V4-V6 results through linked schema-versioned aggregates. It does not mutate the frozen V7 XT path and never transmits MIDI or SysEx.
+
+### CODE V8-0C - spectrum, perceptual analysis, classification, and modes (development branch)
+
+- four-band spectral evolution, harmonic/inharmonic partial inventory, formant candidates, and source-span spectral correlation;
+- bounded perceptual proxies for low-frequency power, fundamental presence, brightness, hardness, saturation, density, motion, tonality, and noise;
+- explicit perceptual distance, audible-redundancy grouping, and ordered-sweep continuity;
+- the canonical 27-class multi-label musical taxonomy with scores, confidence, ambiguity, evidence, and explanations;
+- five explainable conversion modes with importable execution paths, manual override, warnings, and explicit refusal for inactive sources.
+
+CODE V8-0C remains additive: accepted V5/V6 schemas and the frozen V7 XT modules are unchanged.
+
+### CODE V8-0D - XT-native resampling and effective profiles (development branch)
+
+- deterministic periodic windowed-sinc, Fourier, and linear resampling with explicit anti-alias, normalization, phase, fundamental, ringing, overshoot, and extreme-value evidence;
+- strict nearest and error-feedback XT quantization in the safe generated range `-127..127`;
+- six transforms, 128 phase/start positions, six half-wave/reduction methods, and automatic or manually overridden treatment selection;
+- complete XT time, phase, harmonic, band, perceptual, aliasing, ringing, seam, amplitude, Sub, and Bass metrics;
+- nine effective optimization profiles with normalized weights and capped musical-classification/conversion-mode influence;
+- Bass-specific working-pitch comparison, monophonic warnings, inter-wave consistency, and independent optimization of exactly 61 waves.
+
+CODE V8-0D remains mathematical and non-destructive. It does not build the final 61-position table, open MIDI ports, transmit SysEx, or claim calibrated XT audibility.
+
+### CODE V8-0E - complete Auto Repair policies and actions (development branch)
+
+- deterministic detection and action mapping for all 17 required repair defects;
+- exact `AUTO`, `COMPARE`, `IGNORE`, and `PRESERVE` policies with per-defect overrides;
+- explicit review states when neighbor, reference, pitch, target-level, or aliasing context is unavailable;
+- separate before, candidate, and selected branches with complete metrics and action logs;
+- profile-aware controlled-defect preservation and hard numeric safety;
+- deterministic ordered sequence processing, including exactly 61 waves.
+
+CODE V8-0E remains additive and non-destructive. It exposes canonical data for later reports, preview audition, and editor controls without opening MIDI ports or transmitting SysEx.
+
+### CODE V8-0F - pre-V8 aggregate and zero required-debt gate (development branch)
+
+- immutable closure evidence for all 62 active obligations whose corrected destination begins with `V8-0`;
+- exact link to the historical V8-0A registry without rewriting baseline support states;
+- validated V3 imported-state, V4/V5/V6 aggregate, and V7 projection/trajectory/QC/package provenance;
+- one linked decision plan covering V8-0B signal/region extensions, V8-0C classification/modes, V8-0D profiles/XT optimization, and V8-0E repair records;
+- explicit ready or rejected preflight status, canonical JSON, and one final SHA-256;
+- executable gate requiring zero missing, partial, or absent debt before CODE V8-A.
+
+CODE V8-0F does not build a wavetable or transmit MIDI/SysEx. It only authorizes entry into the generic CODE V8 builder when implementation debt and component provenance are valid.
+
+### CODE V8-A - generic wavetable build contracts (development branch)
+
+- immutable candidate contracts with real/reconstructed/repaired/variant/interpolated provenance;
+- strict XT-safe 64-sample storage, reverse-negate reconstruction identity, per-wave metrics, evidence, and hashes;
+- exact 61 editable positions, 64 total WCTD positions, and three preserved fixed-tail references;
+- ready V8-0F preflight and repaired-wave-count gates;
+- explicit build policies, required/preferred position locks, chronology constraints, and deterministic variant requests;
+- output contracts for complete or explicitly rejected 61-slot builds.
+
+CODE V8-A defines contracts only. Usefulness/deduplication, structural selection, ordering, interpolation, Factory Style, WCTD materialization, and hardware gates remain assigned to V8-B through V8-F. No MIDI or SysEx path is introduced.
+
+### CODE V8-B - usefulness, structure, breakpoints and deduplication (development branch)
+
+- deterministic 64/128-point wave-shape, spectral, level, polarity, and complexity metrics;
+- exact, polarity-equivalent, near, and distinct pair classification;
+- stable, moderate/strong transition, breakpoint, structural, extreme, and ineligible candidate labels;
+- complete-link duplicate grouping that prevents transitive near-duplicate chains;
+- required-lock and required-chronology protection without deleting candidates;
+- distinct-wave count, representative/redundant states, canonical JSON, and SHA-256 links.
+
+CODE V8-B measures the complete V8-A candidate inventory but does not choose final keyframes, assign positions, order the table, interpolate waves, materialize WCTD, or create a MIDI/SysEx path. Those operations remain assigned to V8-C through V8-F.
+
+### CODE V8-C - structural and essential keyframe selection (development branch)
+
+- final keyframe selection from the immutable V8-A request and linked V8-B structure/deduplication analysis;
+- one-through-61 capacity behavior with exact handling below, at, and above the XT user-position limit;
+- required lock and chronology participant preservation with explicit infeasible rejection;
+- bounded utility, diversity, temporal, structural, and group objective components;
+- exact small-case search, deterministic greedy large-case search, public subset scoring, canonical JSON, and SHA-256 links;
+- one explicit decision per input candidate, including essential, forced, redundant, protected, and capacity-omitted evidence.
+
+CODE V8-C selects candidate IDs in canonical source order only. It does not assign positions, solve final ordering or chronology, generate variants, interpolate waves, materialize WCTD, or create a MIDI/SysEx path. Those operations remain assigned to V8-D through V8-F.
+
+### CODE V8-D - ordering, placement, locks, chronology and variants (development branch)
+
+- exact V8-C selected-set preservation through deterministic final ordering;
+- explicit five-term compromise: source fidelity, scan smoothness, harmonic diversity, Bass strength, and avoidance of unintended discontinuities;
+- required chronology and position-lock capacity solving with explicit preference outcomes;
+- sparse unique assignment to editable positions 1-61 with occupied/open position evidence;
+- balanced, early, late, center, and edge-expanded placement biases;
+- ranked signature-deduplicated ordering/placement variants with canonical JSON and SHA-256 links.
+
+CODE V8-D assigns only the selected real or reconstructed keyframes. It does not synthesize transition waves or fill open positions. Interpolation and adaptive transition density remain assigned to V8-E; WCTD materialization and hardware gates remain assigned to V8-F. No MIDI or SysEx path is introduced.
+
+### CODE V8-E - interpolation families and adaptive transition density (development branch)
+
+- deterministic waveform, amplitude, phase-aware, spectral, harmonic, and perceptual interpolation;
+- adaptive transition density linked to each V8-D anchor interval and its open-position capacity;
+- exact keyframe, lock, essential-role, level, fundamental, polarity, and safe-range protection;
+- explicit interpolated, repeated-stage, and edge-hold records for every position filled by V8-E;
+- complete 61-slot builds with all 60 adjacent transitions measured;
+- ranked V8-E variants with continuity pass, warning, or failure evidence.
+
+CODE V8-E fills all editable positions while preserving every V8-D keyframe byte-for-byte. It does not apply Factory Style, serialize WCTD, allocate XT memory, generate SysEx, open MIDI, or transmit MIDI. Those gates remain assigned to V8-F and later controlled stages.
+
+### CODE V8-F - Factory Style, WCTD models and hardware gates (development branch)
+
+- optional request-controlled Factory Style shaping limited to mutable transition slots;
+- byte-exact protection of locked, structural, essential and non-transition positions;
+- canonical 64-entry WCTD reference models with 61 user entries and three exact fixed-tail entries;
+- explicit unresolved allocation and binary-ready states instead of invented User Wave references;
+- six evidence-driven hardware gates for known references, intermediate positions, positions 60-63, slow and fast scans, and complete read-back;
+- deterministic canonical JSON and SHA-256 links across Factory Style, WCTD and hardware evidence.
+
+CODE V8-F does not claim a bit-exact Waldorf Factory algorithm. It serializes no complete instrument dump, generates no SysEx, opens no MIDI port and cannot claim hardware acceptance without all six real-evidence gates. Final integration, compliance closure and release remain assigned to V8-G.
+
 ## Installation on Windows 11
 
 Open PowerShell in the repository root:
@@ -317,9 +448,13 @@ Completed:
 - [x] CODE V6 — working pitch, segmentation, cycle ranking, selection, reconstruction, and aggregate analysis
 - [x] CODE V7 — XT-native projection, 61-position trajectory, QC, package generation, and hardware acceptance
 
+In progress:
+
+- [ ] CODE V8-0 — exhaustive post-V7 compliance closure; V8-0A and V8-0B closed, V8-0C implemented locally pending private/remote gates
+
 Next:
 
-- [ ] CODE V8 — complete wavetable-generation profiles, placement policies, and advanced transitions
+- [ ] CODE V8 — generic WavetableBuild, placement policies, interpolation, WCTD and hardware gates
 - [ ] CODE V9+ — complete project export, preview, transport, and graphical interface
 
 See `docs/roadmap/W-MWXT-WAVETABLE-TOOL_ROADMAP_AND_TRACEABILITY_MATRIX.md` for the full staged plan.

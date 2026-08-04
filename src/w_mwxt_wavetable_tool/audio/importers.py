@@ -80,6 +80,7 @@ def import_audio(
     mono, mono_report = convert_to_mono(
         normalized,
         policy=mono_policy,
+        sample_rate=int(sample_rate),
         silence_threshold=silence_threshold,
     )
     measurements = measure_mono(

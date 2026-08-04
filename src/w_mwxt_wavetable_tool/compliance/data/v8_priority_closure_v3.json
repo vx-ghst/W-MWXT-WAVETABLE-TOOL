@@ -1,0 +1,48 @@
+{
+  "baseline": {
+    "branch": "code-v8-wavetable-builder",
+    "commit": "159217a3a3a25b91e2b4a703d41de9253b14d3b3"
+  },
+  "boundaries": {
+    "factory_style_placement": true,
+    "historical_waldorf_reconstruction_claim": false,
+    "transition_shaping_optional": true,
+    "hardware_pass_claim": false,
+    "inventory_allocation": false,
+    "midi_transport": false,
+    "physical_wave_consolidation": false,
+    "sysex_generation": false,
+    "wctd_materialization": false
+  },
+  "canonical_registry": {
+    "registry_id": "w-mwxt-cdc-traceability",
+    "requirement_count": 206
+  },
+  "closure_id": "code-v8-h-priority-closure-v3",
+  "predecessor": {
+    "closure_id": "code-v8-g-priority-closure-v2",
+    "sha256": "c5925e89ebfd00e91302d1159312b1674b83f1072b025d4aef2fa5065f76d03d"
+  },
+  "requirements": {
+    "CDC-PLC-001": "implemented_pending_full_validation",
+    "CDC-PLC-002": "implemented_pending_full_validation",
+    "CDC-PLC-003": "implemented_pending_full_validation",
+    "CDC-PLC-004": "implemented_pending_full_validation",
+    "CDC-PLC-005": "implemented_pending_full_validation",
+    "CDC-PLC-006": "implemented_pending_full_validation",
+    "CDC-PLC-007": "implemented_pending_full_validation",
+    "CDC-PROF-003": "implemented_pending_full_validation"
+  },
+  "migration": {
+    "legacy_factory_style_semantic": "optional_post_transition_shaping",
+    "canonical_factory_style_semantic": "profile_driven_three_zone_keyframe_placement",
+    "legacy_aliases_retained": true,
+    "legacy_aliases_close_factory_style_requirement": false
+  },
+  "schema_version": 3,
+  "zones": {
+    "stable_playable": [1, 20],
+    "main_evolution": [21, 45],
+    "extreme": [46, 61]
+  }
+}

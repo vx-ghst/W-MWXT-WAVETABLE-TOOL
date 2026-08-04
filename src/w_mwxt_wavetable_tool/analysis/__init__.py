@@ -1,6 +1,26 @@
-"""Deterministic DSP analysis for CODE V4 and CODE V5."""
+"""Deterministic DSP analysis contracts through CODE V8-0C."""
 
 from .envelope import analyze_envelope
+from .beating import BeatingAnalysis, analyze_beating
+from .complexity import ComplexityAnalysis, analyze_complexity
+from .frequency_modulation import (
+    FrequencyModulationAnalysis,
+    FrequencyModulationFrame,
+    analyze_frequency_modulation,
+)
+from .regions import (
+    InterestRegion,
+    RegionInterestAnalysis,
+    RegionKind,
+    RegionSlotAllocation,
+    allocate_region_slots,
+    analyze_region_interest,
+)
+from .saturation import (
+    SaturationAnalysis,
+    SaturationFrameAnalysis,
+    analyze_saturation,
+)
 from .levels import analyze_levels
 from .models import (
     ChangePointEvent,
@@ -78,7 +98,14 @@ from .reconstruction import (
     analyze_audio_source_reconstruction,
     reconstruct_selected_cycles,
 )
-from .signal import SignalAnalysis, analyze_audio_source_signal, analyze_signal
+from .signal import (
+    SignalAnalysis,
+    SignalExtensionAnalysis,
+    analyze_audio_source_signal,
+    analyze_audio_source_signal_extensions,
+    analyze_signal,
+    analyze_signal_extensions,
+)
 from .classification import (
     ClassificationFeature,
     SourceClass,
@@ -116,11 +143,34 @@ from .spectral import (
     analyze_audio_source_spectral,
     analyze_spectral,
 )
+from .formants import FormantAnalysis, FormantCandidate, analyze_formants
+from .spectral_evolution import (
+    PartialCandidate,
+    PartialKind,
+    SpectralCorrelation,
+    SpectralCorrelationMatrix,
+    SpectralEvolutionAnalysis,
+    SpectralEvolutionFrame,
+    SpectralSpan,
+    analyze_spectral_correlations,
+    analyze_spectral_evolution,
+)
 from .time_domain import analyze_audio_source, analyze_time_domain
 from .transients import analyze_audio_source_transients, analyze_transients
 
 __all__ = [
     "ChangePointEvent",
+    "SignalExtensionAnalysis",
+    "SaturationFrameAnalysis",
+    "SaturationAnalysis",
+    "RegionSlotAllocation",
+    "RegionKind",
+    "RegionInterestAnalysis",
+    "InterestRegion",
+    "FrequencyModulationFrame",
+    "FrequencyModulationAnalysis",
+    "ComplexityAnalysis",
+    "BeatingAnalysis",
     "ClassificationFeature",
     "CodeV5Analysis",
     "CodeV6Analysis",
@@ -130,6 +180,15 @@ __all__ = [
     "EnvelopeAnalysis",
     "HarmonicPeak",
     "HarmonicPerceptualAnalysis",
+    "FormantAnalysis",
+    "FormantCandidate",
+    "PartialCandidate",
+    "PartialKind",
+    "SpectralCorrelation",
+    "SpectralCorrelationMatrix",
+    "SpectralEvolutionAnalysis",
+    "SpectralEvolutionFrame",
+    "SpectralSpan",
     "LevelAnalysis",
     "NoiseAnalysis",
     "NoiseClass",
@@ -178,6 +237,14 @@ __all__ = [
     "TransientEvent",
     "TransientFrameAnalysis",
     "analyze_audio_source",
+    "analyze_signal_extensions",
+    "analyze_saturation",
+    "analyze_region_interest",
+    "analyze_frequency_modulation",
+    "analyze_complexity",
+    "analyze_beating",
+    "analyze_audio_source_signal_extensions",
+    "allocate_region_slots",
     "analyze_audio_source_code_v5",
     "analyze_audio_source_code_v6",
     "analyze_audio_source_harmonic_perceptual",
@@ -208,6 +275,9 @@ __all__ = [
     "classify_source",
     "decide_wavetable_readiness",
     "analyze_harmonic_perceptual",
+    "analyze_formants",
+    "analyze_spectral_correlations",
+    "analyze_spectral_evolution",
     "analyze_spectral",
     "analyze_audio_source_spectral",
     "analyze_time_domain",
