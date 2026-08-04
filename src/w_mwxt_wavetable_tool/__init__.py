@@ -1115,3 +1115,60 @@ try:
     )
 except NameError:
     pass
+
+from .inventory import (
+    XT_MEMORY_INVENTORY_SCHEMA_VERSION,
+    InventoryState,
+    InventorySourceKind,
+    InventoryPresence,
+    InventoryDumpSource,
+    InventorySourceEvidence,
+    ValidatedEmptyWaveSignature,
+    InventoryEvidenceStatus,
+    UserWaveInventoryEntry,
+    UserWavetableInventoryEntry,
+    XtMemoryInventory,
+    analyze_xt_memory_inventory,
+)
+from .wavetable import (
+    WAVETABLE_SAFE_ALLOCATION_SCHEMA_VERSION,
+    AllocationProposalStatus,
+    SafeAllocationPolicy,
+    DEFAULT_SAFE_ALLOCATION_POLICY,
+    UserWaveDestinationAssignment,
+    AllocationProposal,
+    plan_safe_user_wave_allocation,
+    CODE_V8J_SCHEMA_VERSION,
+    CodeV8JStatus,
+    CodeV8JAnalysis,
+    build_code_v8j,
+)
+
+try:
+    __all__ += (
+        "XT_MEMORY_INVENTORY_SCHEMA_VERSION",
+        "InventoryState",
+        "InventorySourceKind",
+        "InventoryPresence",
+        "InventoryDumpSource",
+        "InventorySourceEvidence",
+        "ValidatedEmptyWaveSignature",
+        "InventoryEvidenceStatus",
+        "UserWaveInventoryEntry",
+        "UserWavetableInventoryEntry",
+        "XtMemoryInventory",
+        "analyze_xt_memory_inventory",
+        "WAVETABLE_SAFE_ALLOCATION_SCHEMA_VERSION",
+        "AllocationProposalStatus",
+        "SafeAllocationPolicy",
+        "DEFAULT_SAFE_ALLOCATION_POLICY",
+        "UserWaveDestinationAssignment",
+        "AllocationProposal",
+        "plan_safe_user_wave_allocation",
+        "CODE_V8J_SCHEMA_VERSION",
+        "CodeV8JStatus",
+        "CodeV8JAnalysis",
+        "build_code_v8j",
+    )
+except NameError:
+    pass

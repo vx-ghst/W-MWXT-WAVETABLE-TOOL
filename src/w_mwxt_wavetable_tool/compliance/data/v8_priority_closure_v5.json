@@ -1,0 +1,54 @@
+{
+  "baseline": {
+    "branch": "code-v8-wavetable-builder",
+    "commit": "8bdee0b239277a9ca91a3f4057e3df2e40145cbe"
+  },
+  "boundaries": {
+    "allocation_proposal": true,
+    "hardware_pass_claim": false,
+    "inventory_analysis": true,
+    "memory_write": false,
+    "midi_transport": false,
+    "physical_wave_consolidation": true,
+    "safe_free_hardware_activation": false,
+    "safe_free_inference_without_proof": false,
+    "sysex_generation": false,
+    "v8_k_started": false,
+    "wctd_materialization": false
+  },
+  "canonical_registry": {
+    "registry_id": "w-mwxt-cdc-traceability",
+    "requirement_count": 206
+  },
+  "closure_id": "code-v8-j-priority-closure-v5",
+  "policy": {
+    "allocation": "prefer_contiguous_then_policy_gated_non_contiguous",
+    "insufficient_eligible_slots": "blocked_no_silent_fallback",
+    "inventory_states": [
+      "USED",
+      "SAFE_FREE",
+      "ORPHANED",
+      "UNKNOWN"
+    ],
+    "live_source": "external_current_state_dump_only_no_midi",
+    "orphaned_rule": "present_content_plus_complete_conflict_free_reference_coverage_plus_no_reference",
+    "safe_free_rule": "complete_conflict_free_wave_and_wavetable_coverage_plus_hardware_validated_empty_signature",
+    "unknown_allocation": "forbidden",
+    "unknown_rule": "insufficient_or_conflicting_evidence",
+    "used_rule": "any_observed_wavetable_reference_proves_use",
+    "wavetable_destination": "manual_only"
+  },
+  "predecessor": {
+    "closure_id": "code-v8-i-priority-closure-v4",
+    "sha256": "bfb7bb957c82c375221550d7034db7e8087e6809d36a6b3c8e4021261ec43a73"
+  },
+  "requirements": {},
+  "schema_version": 5,
+  "software_gate": {
+    "deterministic_allocation": "implemented_pending_full_validation",
+    "external_dump_parsing": "implemented_pending_full_validation",
+    "inventory_models": "implemented_pending_full_validation",
+    "safe_free_activation": "blocked_pending_v8_k_hardware_evidence",
+    "unknown_never_selected": "implemented_pending_full_validation"
+  }
+}
