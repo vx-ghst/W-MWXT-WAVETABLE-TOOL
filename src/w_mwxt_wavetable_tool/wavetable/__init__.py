@@ -400,3 +400,68 @@ try:
     )
 except NameError:
     pass
+
+from .factory_placement import (
+    FACTORY_PLACEMENT_SCHEMA_VERSION,
+    CandidateTrajectoryFeatures,
+    FactoryPlacementAnalysis,
+    FactoryPlacementStatus,
+    FactoryPlacementVariant,
+    FactoryZone,
+    FactoryZoneAssignment,
+    FactoryZoneTarget,
+    PlacementProfilePolicy,
+    build_factory_placement,
+    placement_profile_policy,
+)
+from .transition_shaping import (
+    DEFAULT_TRANSITION_SHAPING_POLICY,
+    DISABLED_TRANSITION_SHAPING_POLICY,
+    TRANSITION_SHAPING_SCHEMA_VERSION,
+    TransitionShapingAction,
+    TransitionShapingAnalysis,
+    TransitionShapingPolicy,
+    TransitionShapingSlotDecision,
+    TransitionShapingStatus,
+    TransitionShapingVariant,
+    apply_transition_shaping,
+)
+from .code_v8h import (
+    CODE_V8H_SCHEMA_VERSION,
+    CodeV8HAnalysis,
+    CodeV8HStatus,
+    CodeV8HVariant,
+    build_code_v8h,
+)
+
+try:
+    __all__ += (
+        "FACTORY_PLACEMENT_SCHEMA_VERSION",
+        "CandidateTrajectoryFeatures",
+        "FactoryPlacementAnalysis",
+        "FactoryPlacementStatus",
+        "FactoryPlacementVariant",
+        "FactoryZone",
+        "FactoryZoneAssignment",
+        "FactoryZoneTarget",
+        "PlacementProfilePolicy",
+        "build_factory_placement",
+        "placement_profile_policy",
+        "DEFAULT_TRANSITION_SHAPING_POLICY",
+        "DISABLED_TRANSITION_SHAPING_POLICY",
+        "TRANSITION_SHAPING_SCHEMA_VERSION",
+        "TransitionShapingAction",
+        "TransitionShapingAnalysis",
+        "TransitionShapingPolicy",
+        "TransitionShapingSlotDecision",
+        "TransitionShapingStatus",
+        "TransitionShapingVariant",
+        "apply_transition_shaping",
+        "CODE_V8H_SCHEMA_VERSION",
+        "CodeV8HAnalysis",
+        "CodeV8HStatus",
+        "CodeV8HVariant",
+        "build_code_v8h",
+    )
+except NameError:
+    pass
