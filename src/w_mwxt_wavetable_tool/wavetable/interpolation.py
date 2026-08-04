@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from functools import lru_cache
 from hashlib import sha256
 import json
 import math
@@ -211,9 +212,13 @@ def _protect_cycle(
 ) -> tuple[np.ndarray, tuple[str, ...]]:
     protected = np.asarray(cycle, dtype=np.float64)
     evidence: list[str] = []
-    target_rms = (1.0 - progress) * _rms(left) + progress * _rms(right)
+    target_rms = (
+        (1.0 - progress) * _rms(left)
+        + progress * _rms(right)
+    )
     target_fundamental = (
-        (1.0 - progress) * _fundamental(left) + progress * _fundamental(right)
+        (1.0 - progress) * _fundamental(left)
+        + progress * _fundamental(right)
     )
     if protect_polarity and protected.size:
         weighted_correlation = (
@@ -222,27 +227,90 @@ def _protect_cycle(
         )
         if weighted_correlation < 0.0:
             protected = -protected
-            evidence.append("global polarity inverted to preserve endpoint orientation")
+            evidence.append(
+                "global polarity inverted to preserve endpoint orientation"
+            )
         else:
-            evidence.append("global polarity preserved against endpoint orientation")
-    if protect_fundamental and protected.size:
+            evidence.append(
+                "global polarity preserved against endpoint orientation"
+            )
+    if protect_level and protect_fundamental and protected.size:
+        # Scaling the complete waveform after replacing bin 1 would undo the
+        # fundamental target. Scale only the orthogonal residual energy.
         spectrum = np.fft.rfft(protected)
         if spectrum.size > 1:
             phase = float(np.angle(spectrum[1]))
-            spectrum[1] = target_fundamental * (protected.size / 2.0) * np.exp(1j * phase)
-            protected = np.fft.irfft(spectrum, n=protected.size)
-            evidence.append("fundamental magnitude protected against endpoint target")
-    if protect_level:
-        measured = _rms(protected)
-        if measured > 1e-15 and target_rms > 0.0:
-            protected = protected * (target_rms / measured)
-        elif target_rms <= 1e-15:
-            protected = np.zeros_like(protected)
-        evidence.append("RMS level protected against endpoint target")
-    peak = float(np.max(np.abs(protected))) if protected.size else 0.0
+            index = np.arange(protected.size, dtype=np.float64)
+            target_component = target_fundamental * np.cos(
+                2.0 * np.pi * index / protected.size + phase
+            )
+            current_amplitude = (
+                2.0 * abs(spectrum[1]) / protected.size
+            )
+            current_component = current_amplitude * np.cos(
+                2.0 * np.pi * index / protected.size + phase
+            )
+            residual = protected - current_component
+            target_residual_rms = math.sqrt(
+                max(
+                    0.0,
+                    target_rms * target_rms
+                    - 0.5
+                    * target_fundamental
+                    * target_fundamental,
+                )
+            )
+            measured_residual_rms = _rms(residual)
+            if measured_residual_rms > 1e-15:
+                residual = residual * (
+                    target_residual_rms
+                    / measured_residual_rms
+                )
+            elif target_residual_rms <= 1e-15:
+                residual = np.zeros_like(residual)
+            protected = target_component + residual
+            evidence.append(
+                "RMS and fundamental jointly protected using "
+                "orthogonal residual energy"
+            )
+    else:
+        if protect_fundamental and protected.size:
+            spectrum = np.fft.rfft(protected)
+            if spectrum.size > 1:
+                phase = float(np.angle(spectrum[1]))
+                spectrum[1] = (
+                    target_fundamental
+                    * (protected.size / 2.0)
+                    * np.exp(1j * phase)
+                )
+                protected = np.fft.irfft(
+                    spectrum, n=protected.size
+                )
+                evidence.append(
+                    "fundamental magnitude protected against "
+                    "endpoint target"
+                )
+        if protect_level:
+            measured = _rms(protected)
+            if measured > 1e-15 and target_rms > 0.0:
+                protected = protected * (
+                    target_rms / measured
+                )
+            elif target_rms <= 1e-15:
+                protected = np.zeros_like(protected)
+            evidence.append(
+                "RMS level protected against endpoint target"
+            )
+    peak = (
+        float(np.max(np.abs(protected)))
+        if protected.size
+        else 0.0
+    )
     if peak > 1.0:
         protected = protected / peak
-        evidence.append("peak normalized to XT-safe generated range")
+        evidence.append(
+            "peak normalized to XT-safe generated range"
+        )
     return protected, tuple(evidence)
 
 
@@ -444,6 +512,7 @@ def _interpolated_metrics(
     )
 
 
+@lru_cache(maxsize=16384)
 def interpolate_xt_wave(
     left: WavetableCandidate,
     right: WavetableCandidate,
@@ -492,6 +561,94 @@ def interpolate_xt_wave(
     measured_fundamental = _q(_fundamental(measured_cycle))
     level_error = _q(min(1.0, abs(measured_shape.rms - target_rms)))
     fundamental_error = _q(min(1.0, abs(measured_fundamental - target_fundamental)))
+    protection_evidence_list = list(protection_evidence)
+    if value not in (0.0, 1.0) and (
+        (
+            policy.protect_level
+            and level_error > policy.level_tolerance
+        )
+        or (
+            policy.protect_fundamental
+            and fundamental_error
+            > policy.fundamental_tolerance
+        )
+    ):
+        fallback_raw, _ = _raw_interpolation(
+            left_cycle,
+            right_cycle,
+            value,
+            GenerationMethod.WAVEFORM_INTERPOLATION,
+        )
+        fallback_protected, fallback_evidence = _protect_cycle(
+            fallback_raw,
+            left_cycle,
+            right_cycle,
+            value,
+            protect_level=policy.protect_level,
+            protect_fundamental=policy.protect_fundamental,
+            protect_polarity=policy.protect_polarity,
+        )
+        fallback_stored = _quantize_half(fallback_protected)
+        fallback_cycle = _full_cycle(fallback_stored)
+        fallback_shape = analyze_wave_shape(fallback_stored)
+        fallback_level_error = _q(
+            min(1.0, abs(fallback_shape.rms - target_rms))
+        )
+        fallback_fundamental = _q(
+            _fundamental(fallback_cycle)
+        )
+        fallback_fundamental_error = _q(
+            min(
+                1.0,
+                abs(
+                    fallback_fundamental
+                    - target_fundamental
+                ),
+            )
+        )
+        current_key = (
+            max(
+                level_error / policy.level_tolerance,
+                fundamental_error
+                / policy.fundamental_tolerance,
+            ),
+            level_error + fundamental_error,
+            sha256(
+                bytes(sample + 128 for sample in stored)
+            ).hexdigest(),
+        )
+        fallback_key = (
+            max(
+                fallback_level_error
+                / policy.level_tolerance,
+                fallback_fundamental_error
+                / policy.fundamental_tolerance,
+            ),
+            fallback_level_error
+            + fallback_fundamental_error,
+            sha256(
+                bytes(
+                    sample + 128
+                    for sample in fallback_stored
+                )
+            ).hexdigest(),
+        )
+        if fallback_key < current_key:
+            stored = fallback_stored
+            measured_cycle = fallback_cycle
+            measured_shape = fallback_shape
+            measured_fundamental = fallback_fundamental
+            level_error = fallback_level_error
+            fundamental_error = (
+                fallback_fundamental_error
+            )
+            protection_evidence_list.extend(
+                fallback_evidence
+            )
+            protection_evidence_list.append(
+                "waveform safety fallback enforced mandatory "
+                "level and fundamental tolerances"
+            )
     left_distance_report = compare_wave_shapes(left.stored_samples, stored)
     right_distance_report = compare_wave_shapes(stored, right.stored_samples)
     endpoint_report = compare_wave_shapes(left, right)
@@ -544,7 +701,7 @@ def interpolate_xt_wave(
         right_distance=right_distance_report.perceptual_distance,
         polarity_score=polarity_score,
         objective_score=objective,
-        evidence=tuple(dict.fromkeys(method_evidence + protection_evidence)),
+        evidence=tuple(dict.fromkeys(method_evidence + tuple(protection_evidence_list))),
         warnings=tuple(warnings),
         reason="XT-native transition generated without changing either source keyframe.",
     )

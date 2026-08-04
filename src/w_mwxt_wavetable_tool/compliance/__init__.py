@@ -111,3 +111,20 @@ __all__ = [
     "assert_zero_pre_v8_debt",
     "load_pre_v8_compliance_closure",
 ]
+
+from .adapters import (
+    LEGACY_REQUIREMENT_ID_CROSSWALK,
+    resolve_requirement_reference,
+    resolve_requirement_references,
+)
+from .migrations import migrate_requirement_references
+
+try:
+    __all__ += (
+        "LEGACY_REQUIREMENT_ID_CROSSWALK",
+        "resolve_requirement_reference",
+        "resolve_requirement_references",
+        "migrate_requirement_references",
+    )
+except NameError:
+    pass

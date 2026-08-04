@@ -3,7 +3,7 @@ from __future__ import annotations
 from copy import deepcopy
 from typing import Any, Mapping, Sequence
 
-from .adapters import adapt_audit_matrix_rows
+from .adapters import adapt_audit_matrix_rows, resolve_requirement_references
 from .models import ComplianceFormatError, ComplianceRegistry, REGISTRY_SCHEMA_VERSION
 
 
@@ -66,3 +66,12 @@ def migrate_registry_payload(
         audit_matrix_sha256=audit_matrix_sha256 or "",
         execution_plan_sha256=execution_plan_sha256 or "",
     )
+
+def migrate_requirement_references(
+    requirement_ids: Sequence[str],
+    *,
+    registry: ComplianceRegistry,
+) -> tuple[str, ...]:
+    """Migrate legacy validation labels to canonical CDC identifiers."""
+
+    return resolve_requirement_references(requirement_ids, registry=registry)

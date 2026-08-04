@@ -938,3 +938,68 @@ __all__ = [
     "migrate_registry_payload",
     "summarize_capabilities",
 ]
+
+from .compliance import (
+    LEGACY_REQUIREMENT_ID_CROSSWALK,
+    migrate_requirement_references,
+    resolve_requirement_reference,
+    resolve_requirement_references,
+)
+from .wavetable import (
+    WAVETABLE_TRANSITION_PLANNER_SCHEMA_VERSION,
+    AdaptiveSlotBudgetPolicy,
+    DEFAULT_ADAPTIVE_SLOT_BUDGET_POLICY,
+    RegionSlotBudget,
+    AdaptiveSlotBudgetPlan,
+    InterpolationOracleThresholds,
+    DEFAULT_INTERPOLATION_ORACLE_THRESHOLDS,
+    PerceptualProgressPlan,
+    InterpolationMethodOracle,
+    TransitionIntervalDecision,
+    plan_adaptive_slot_budget,
+    solve_perceptual_progress_plan,
+    evaluate_interval_interpolation_method,
+    select_interval_interpolation_method,
+    WAVETABLE_CONTINUITY_REPAIR_SCHEMA_VERSION,
+    ContinuityRepairStatus,
+    ContinuityRepairReport,
+    repair_wavetable_continuity,
+    CODE_V8G_SCHEMA_VERSION,
+    CodeV8GStatus,
+    CodeV8GVariant,
+    CodeV8GAnalysis,
+    build_code_v8g,
+)
+
+try:
+    __all__ += (
+        "LEGACY_REQUIREMENT_ID_CROSSWALK",
+        "migrate_requirement_references",
+        "resolve_requirement_reference",
+        "resolve_requirement_references",
+        "WAVETABLE_TRANSITION_PLANNER_SCHEMA_VERSION",
+        "AdaptiveSlotBudgetPolicy",
+        "DEFAULT_ADAPTIVE_SLOT_BUDGET_POLICY",
+        "RegionSlotBudget",
+        "AdaptiveSlotBudgetPlan",
+        "InterpolationOracleThresholds",
+        "DEFAULT_INTERPOLATION_ORACLE_THRESHOLDS",
+        "PerceptualProgressPlan",
+        "InterpolationMethodOracle",
+        "TransitionIntervalDecision",
+        "plan_adaptive_slot_budget",
+        "solve_perceptual_progress_plan",
+        "evaluate_interval_interpolation_method",
+        "select_interval_interpolation_method",
+        "WAVETABLE_CONTINUITY_REPAIR_SCHEMA_VERSION",
+        "ContinuityRepairStatus",
+        "ContinuityRepairReport",
+        "repair_wavetable_continuity",
+        "CODE_V8G_SCHEMA_VERSION",
+        "CodeV8GStatus",
+        "CodeV8GVariant",
+        "CodeV8GAnalysis",
+        "build_code_v8g",
+    )
+except NameError:
+    pass

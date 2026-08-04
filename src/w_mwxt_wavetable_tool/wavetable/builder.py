@@ -19,10 +19,11 @@ from .interpolation import (
     DEFAULT_INTERPOLATION_POLICY,
     InterpolatedWave,
     InterpolationPolicy,
+    interpolate_xt_wave,
     progression_value,
-    select_interpolation_method,
 )
 from .metrics import analyze_wave_shape, compare_wave_shapes
+from .transition_planner import select_interval_interpolation_method
 from .models import (
     GenerationMethod,
     USER_POSITION_COUNT,
@@ -812,8 +813,41 @@ def _build_variant(
     unsupported = tuple(method for method in allowed_methods if not method.is_interpolation)
     if unsupported:
         raise WavetableContractError("request contains a non-interpolation generation method")
+    interval_decisions = {
+        (
+            plan.left_candidate_id,
+            plan.right_candidate_id,
+            plan.left_position,
+            plan.right_position,
+        ): select_interval_interpolation_method(
+            candidates[plan.left_candidate_id],
+            candidates[plan.right_candidate_id],
+            allowed_methods,
+            interpolation_policy,
+            tuple(
+                sorted(
+                    {
+                        progression_value(
+                            value,
+                            request.policy.progression_curve,
+                            plan.complexity_score,
+                        )
+                        for value in plan.progress_values
+                    }
+                )
+            ),
+        )
+        for plan in plans
+    }
     records: list[TransitionPositionRecord] = []
     variant_warnings = list(request.warnings)
+    for decision in interval_decisions.values():
+        if decision.fallback_used:
+            variant_warnings.append(
+                f"interval {decision.left_candidate_id}->"
+                f"{decision.right_candidate_id} used explicit "
+                "interpolation fallback"
+            )
     previous_key: tuple[str, str, float] | None = None
     for position in range(assignments[0].position):
         assignment = assignments[0]
@@ -842,16 +876,31 @@ def _build_variant(
         plan, raw_progress = plan_by_position[position]
         left = candidates[plan.left_candidate_id]
         right = candidates[plan.right_candidate_id]
-        shaped = progression_value(
+        target_progress = progression_value(
             raw_progress,
             request.policy.progression_curve,
             plan.complexity_score,
         )
-        wave = select_interpolation_method(
+        decision = interval_decisions[
+            (
+                plan.left_candidate_id,
+                plan.right_candidate_id,
+                plan.left_position,
+                plan.right_position,
+            )
+        ]
+        progress_map = dict(
+            zip(
+                decision.selected_progress_plan.target_fractions,
+                decision.selected_progress_plan.solved_progress_values,
+            )
+        )
+        shaped = progress_map[target_progress]
+        wave = interpolate_xt_wave(
             left,
             right,
             shaped,
-            allowed_methods,
+            decision.selected_method,
             interpolation_policy,
         )
         variant_warnings.extend(wave.warnings)
@@ -870,8 +919,10 @@ def _build_variant(
             _source_time(left, right, shaped),
             (
                 f"density plan {plan.analysis_sha256}",
+                f"interval decision {decision.analysis_sha256}",
                 f"raw progress {raw_progress:.12f}",
-                f"shaped progress {shaped:.12f}",
+                f"target perceptual fraction {target_progress:.12f}",
+                f"solved progress {shaped:.12f}",
             ),
         )
         slots[position] = slot
@@ -888,6 +939,7 @@ def _build_variant(
                 active_stage=active,
                 evidence=(
                     f"density plan {plan.analysis_sha256}",
+                    f"interval decision {decision.analysis_sha256}",
                     f"interpolation {wave.analysis_sha256}",
                 ),
                 reason=(

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from enum import Enum
 from hashlib import sha256
 import json
@@ -9,10 +9,18 @@ from typing import Mapping, Sequence
 
 import numpy as np
 
+from .interpolation import (
+    DEFAULT_INTERPOLATION_POLICY,
+    InterpolationPolicy,
+    interpolate_xt_wave,
+)
 from .metrics import analyze_wave_shape, compare_wave_shapes
 from .models import (
+    GenerationMethod,
+    WaveOrigin,
     WavetableBuild,
     WavetableBuildStatus,
+    WavetableCandidate,
     WavetableContractError,
     WavetableSlot,
     reconstruct_xt_cycle,
@@ -517,6 +525,402 @@ def analyze_wavetable_continuity(
     )
 
 
+WAVETABLE_CONTINUITY_REPAIR_SCHEMA_VERSION = 1
+
+
+class ContinuityRepairStatus(str, Enum):
+    NOT_REQUIRED = "not_required"
+    IMPROVED = "improved"
+    PARTIAL = "partial"
+    UNCHANGED = "unchanged"
+    BLOCKED = "blocked"
+
+
+@dataclass(frozen=True, slots=True)
+class ContinuityRepairReport:
+    schema_version: int
+    original_build_sha256: str
+    repaired_build_sha256: str
+    original_report_sha256: str
+    repaired_report_sha256: str
+    status: ContinuityRepairStatus
+    attempted_positions: tuple[int, ...]
+    accepted_positions: tuple[int, ...]
+    rejected_positions: tuple[int, ...]
+    original_failure_count: int
+    repaired_failure_count: int
+    original_warning_count: int
+    repaired_warning_count: int
+    original_mean_score: float
+    repaired_mean_score: float
+    reason: str
+
+    def __post_init__(self) -> None:
+        if (
+            self.schema_version
+            != WAVETABLE_CONTINUITY_REPAIR_SCHEMA_VERSION
+        ):
+            raise WavetableContractError(
+                "Unsupported continuity-repair schema version"
+            )
+        for name in (
+            "original_build_sha256",
+            "repaired_build_sha256",
+            "original_report_sha256",
+            "repaired_report_sha256",
+        ):
+            _sha256(getattr(self, name), name=name)
+        if not isinstance(self.status, ContinuityRepairStatus):
+            raise WavetableContractError(
+                "status must be ContinuityRepairStatus"
+            )
+        for name in (
+            "attempted_positions",
+            "accepted_positions",
+            "rejected_positions",
+        ):
+            values = tuple(getattr(self, name))
+            object.__setattr__(self, name, values)
+            if (
+                values != tuple(sorted(set(values)))
+                or any(
+                    position <= 0 or position >= 60
+                    for position in values
+                )
+            ):
+                raise WavetableContractError(
+                    f"{name} must contain unique interior positions"
+                )
+        if (
+            set(self.accepted_positions)
+            | set(self.rejected_positions)
+        ) != set(self.attempted_positions):
+            raise WavetableContractError(
+                "attempted positions must partition into "
+                "accepted and rejected"
+            )
+        for name in (
+            "original_failure_count",
+            "repaired_failure_count",
+            "original_warning_count",
+            "repaired_warning_count",
+        ):
+            value = getattr(self, name)
+            if (
+                isinstance(value, bool)
+                or not isinstance(value, int)
+                or value < 0
+            ):
+                raise WavetableContractError(
+                    f"{name} must be a non-negative integer"
+                )
+        _ratio(self.original_mean_score, name="original_mean_score")
+        _ratio(self.repaired_mean_score, name="repaired_mean_score")
+        _normalized(self.reason, name="reason")
+
+    def _content_dict(self) -> dict[str, object]:
+        return {
+            "schema_version": self.schema_version,
+            "original_build_sha256": self.original_build_sha256,
+            "repaired_build_sha256": self.repaired_build_sha256,
+            "original_report_sha256": self.original_report_sha256,
+            "repaired_report_sha256": self.repaired_report_sha256,
+            "status": self.status.value,
+            "attempted_positions": list(
+                self.attempted_positions
+            ),
+            "accepted_positions": list(
+                self.accepted_positions
+            ),
+            "rejected_positions": list(
+                self.rejected_positions
+            ),
+            "original_failure_count":
+                self.original_failure_count,
+            "repaired_failure_count":
+                self.repaired_failure_count,
+            "original_warning_count":
+                self.original_warning_count,
+            "repaired_warning_count":
+                self.repaired_warning_count,
+            "original_mean_score": self.original_mean_score,
+            "repaired_mean_score": self.repaired_mean_score,
+            "reason": self.reason,
+        }
+
+    @property
+    def analysis_sha256(self) -> str:
+        return _canonical_hash(self._content_dict())
+
+    def to_dict(self) -> dict[str, object]:
+        result = self._content_dict()
+        result["analysis_sha256"] = self.analysis_sha256
+        return result
+
+
+def _report_quality(
+    report: WavetableContinuityReport,
+) -> tuple[float, ...]:
+    return (
+        -float(report.failure_count),
+        -float(report.warning_count),
+        report.minimum_continuity_score,
+        report.mean_continuity_score,
+    )
+
+
+def _slot_candidate(
+    slot: WavetableSlot,
+    label: str,
+) -> WavetableCandidate:
+    return WavetableCandidate(
+        schema_version=1,
+        candidate_id=f"repair-{label}-{slot.position:02d}",
+        source_artifact_sha256=slot.slot_sha256,
+        origin=WaveOrigin.REPAIRED_REAL,
+        generation_method=GenerationMethod.AUTO_REPAIR,
+        stored_samples=slot.stored_samples,
+        metrics=slot.metrics,
+        source_time_seconds=slot.source_time_seconds,
+        source_index=slot.position,
+        structural_eligible=False,
+        evidence=(
+            f"continuity repair source slot {slot.slot_sha256}",
+        ),
+        reason=(
+            "Temporary immutable candidate used only to evaluate "
+            "a V8-G continuity repair."
+        ),
+    )
+
+
+def _repair_candidate(
+    left: WavetableSlot,
+    current: WavetableSlot,
+    right: WavetableSlot,
+    policy: InterpolationPolicy,
+) -> WavetableSlot:
+    method = (
+        current.generation_method
+        if (
+            current.generation_method.is_interpolation
+            and current.generation_method
+            in policy.method_priority
+        )
+        else GenerationMethod.WAVEFORM_INTERPOLATION
+    )
+    wave = interpolate_xt_wave(
+        _slot_candidate(left, "left"),
+        _slot_candidate(right, "right"),
+        0.5,
+        method,
+        policy,
+    )
+    source_ids = tuple(
+        dict.fromkeys(
+            left.source_candidate_ids
+            + current.source_candidate_ids
+            + right.source_candidate_ids
+        )
+    )
+    return replace(
+        current,
+        stored_samples=wave.stored_samples,
+        origin=WaveOrigin.INTERPOLATED_TRANSITION,
+        generation_method=wave.method,
+        source_candidate_ids=source_ids,
+        evidence=tuple(
+            dict.fromkeys(
+                current.evidence
+                + (
+                    "continuity repair interpolation "
+                    f"{wave.analysis_sha256}",
+                )
+            )
+        ),
+        reason=(
+            "V8-G repair accepted only after strict full-table "
+            "before/after improvement."
+        ),
+    )
+
+
+def repair_wavetable_continuity(
+    build: WavetableBuild,
+    thresholds: ContinuityThresholds =
+        DEFAULT_CONTINUITY_THRESHOLDS,
+    interpolation_policy: InterpolationPolicy =
+        DEFAULT_INTERPOLATION_POLICY,
+    *,
+    max_accepted_repairs: int = 8,
+) -> tuple[
+    WavetableBuild,
+    WavetableContinuityReport,
+    ContinuityRepairReport,
+]:
+    """Accept only repairs that improve the full-table report."""
+
+    if (
+        not isinstance(build, WavetableBuild)
+        or build.status is not WavetableBuildStatus.COMPLETE
+    ):
+        raise WavetableContractError(
+            "repair requires a complete WavetableBuild"
+        )
+    if (
+        not isinstance(thresholds, ContinuityThresholds)
+        or not isinstance(
+            interpolation_policy, InterpolationPolicy
+        )
+    ):
+        raise WavetableContractError(
+            "invalid continuity repair policy"
+        )
+    if (
+        isinstance(max_accepted_repairs, bool)
+        or not isinstance(max_accepted_repairs, int)
+        or max_accepted_repairs < 0
+    ):
+        raise WavetableContractError(
+            "max_accepted_repairs must be a "
+            "non-negative integer"
+        )
+    original = analyze_wavetable_continuity(
+        build, thresholds
+    )
+    if (
+        original.status is ContinuityStatus.PASS
+        or max_accepted_repairs == 0
+    ):
+        status = (
+            ContinuityRepairStatus.NOT_REQUIRED
+            if original.status is ContinuityStatus.PASS
+            else ContinuityRepairStatus.BLOCKED
+        )
+        report = ContinuityRepairReport(
+            schema_version=1,
+            original_build_sha256=build.analysis_sha256,
+            repaired_build_sha256=build.analysis_sha256,
+            original_report_sha256=original.analysis_sha256,
+            repaired_report_sha256=original.analysis_sha256,
+            status=status,
+            attempted_positions=(),
+            accepted_positions=(),
+            rejected_positions=(),
+            original_failure_count=original.failure_count,
+            repaired_failure_count=original.failure_count,
+            original_warning_count=original.warning_count,
+            repaired_warning_count=original.warning_count,
+            original_mean_score=original.mean_continuity_score,
+            repaired_mean_score=original.mean_continuity_score,
+            reason=(
+                "Continuity repair was not required."
+                if status
+                is ContinuityRepairStatus.NOT_REQUIRED
+                else "Continuity repair was disabled by policy."
+            ),
+        )
+        return build, original, report
+    slots = list(build.slots)
+    current_build = build
+    current_report = original
+    attempted: list[int] = []
+    accepted: list[int] = []
+    rejected: list[int] = []
+    candidates: list[tuple[float, int]] = []
+    for position in range(1, 60):
+        slot = slots[position]
+        if (
+            slot.transition
+            and not slot.locked
+            and not slot.structural
+        ):
+            local = min(
+                current_report.transitions[
+                    position - 1
+                ].continuity_score,
+                current_report.transitions[
+                    position
+                ].continuity_score,
+            )
+            candidates.append((local, position))
+    for _, position in sorted(candidates):
+        if len(accepted) >= max_accepted_repairs:
+            break
+        attempted.append(position)
+        candidate_slot = _repair_candidate(
+            slots[position - 1],
+            slots[position],
+            slots[position + 1],
+            interpolation_policy,
+        )
+        candidate_slots = list(slots)
+        candidate_slots[position] = candidate_slot
+        candidate_build = replace(
+            current_build,
+            slots=tuple(candidate_slots),
+            warnings=tuple(
+                dict.fromkeys(
+                    current_build.warnings
+                    + (
+                        "continuity repair evaluated position "
+                        f"{position + 1}",
+                    )
+                )
+            ),
+            reason=(
+                "V8-G complete build after measured "
+                "continuity repair."
+            ),
+        )
+        candidate_report = analyze_wavetable_continuity(
+            candidate_build, thresholds
+        )
+        if (
+            _report_quality(candidate_report)
+            > _report_quality(current_report)
+        ):
+            slots = candidate_slots
+            current_build = candidate_build
+            current_report = candidate_report
+            accepted.append(position)
+        else:
+            rejected.append(position)
+    status = (
+        ContinuityRepairStatus.IMPROVED
+        if (
+            accepted
+            and current_report.status
+            is not ContinuityStatus.FAIL
+        )
+        else ContinuityRepairStatus.PARTIAL
+        if accepted
+        else ContinuityRepairStatus.UNCHANGED
+    )
+    report = ContinuityRepairReport(
+        schema_version=1,
+        original_build_sha256=build.analysis_sha256,
+        repaired_build_sha256=current_build.analysis_sha256,
+        original_report_sha256=original.analysis_sha256,
+        repaired_report_sha256=current_report.analysis_sha256,
+        status=status,
+        attempted_positions=tuple(sorted(attempted)),
+        accepted_positions=tuple(sorted(accepted)),
+        rejected_positions=tuple(sorted(rejected)),
+        original_failure_count=original.failure_count,
+        repaired_failure_count=current_report.failure_count,
+        original_warning_count=original.warning_count,
+        repaired_warning_count=current_report.warning_count,
+        original_mean_score=original.mean_continuity_score,
+        repaired_mean_score=current_report.mean_continuity_score,
+        reason=(
+            "Only repairs that strictly improved the full-table "
+            "continuity report were accepted."
+        ),
+    )
+    return current_build, current_report, report
+
+
 __all__ = [
     "DEFAULT_CONTINUITY_THRESHOLDS",
     "WAVETABLE_CONTINUITY_SCHEMA_VERSION",
@@ -526,4 +930,8 @@ __all__ = [
     "WavetableContinuityReport",
     "analyze_slot_continuity",
     "analyze_wavetable_continuity",
+    "WAVETABLE_CONTINUITY_REPAIR_SCHEMA_VERSION",
+    "ContinuityRepairStatus",
+    "ContinuityRepairReport",
+    "repair_wavetable_continuity",
 ]

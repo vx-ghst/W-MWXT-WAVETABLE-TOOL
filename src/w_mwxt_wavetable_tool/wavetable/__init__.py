@@ -341,3 +341,62 @@ __all__ = [
     "stored_samples_sha256",
     "validate_candidate_inventory",
 ]
+
+from .transition_planner import (
+    WAVETABLE_TRANSITION_PLANNER_SCHEMA_VERSION,
+    AdaptiveSlotBudgetPolicy,
+    DEFAULT_ADAPTIVE_SLOT_BUDGET_POLICY,
+    RegionSlotBudget,
+    AdaptiveSlotBudgetPlan,
+    InterpolationOracleThresholds,
+    DEFAULT_INTERPOLATION_ORACLE_THRESHOLDS,
+    PerceptualProgressPlan,
+    InterpolationMethodOracle,
+    TransitionIntervalDecision,
+    plan_adaptive_slot_budget,
+    solve_perceptual_progress_plan,
+    evaluate_interval_interpolation_method,
+    select_interval_interpolation_method,
+)
+from .continuity import (
+    WAVETABLE_CONTINUITY_REPAIR_SCHEMA_VERSION,
+    ContinuityRepairStatus,
+    ContinuityRepairReport,
+    repair_wavetable_continuity,
+)
+from .code_v8g import (
+    CODE_V8G_SCHEMA_VERSION,
+    CodeV8GStatus,
+    CodeV8GVariant,
+    CodeV8GAnalysis,
+    build_code_v8g,
+)
+
+try:
+    __all__ += (
+        "WAVETABLE_TRANSITION_PLANNER_SCHEMA_VERSION",
+        "AdaptiveSlotBudgetPolicy",
+        "DEFAULT_ADAPTIVE_SLOT_BUDGET_POLICY",
+        "RegionSlotBudget",
+        "AdaptiveSlotBudgetPlan",
+        "InterpolationOracleThresholds",
+        "DEFAULT_INTERPOLATION_ORACLE_THRESHOLDS",
+        "PerceptualProgressPlan",
+        "InterpolationMethodOracle",
+        "TransitionIntervalDecision",
+        "plan_adaptive_slot_budget",
+        "solve_perceptual_progress_plan",
+        "evaluate_interval_interpolation_method",
+        "select_interval_interpolation_method",
+        "WAVETABLE_CONTINUITY_REPAIR_SCHEMA_VERSION",
+        "ContinuityRepairStatus",
+        "ContinuityRepairReport",
+        "repair_wavetable_continuity",
+        "CODE_V8G_SCHEMA_VERSION",
+        "CodeV8GStatus",
+        "CodeV8GVariant",
+        "CodeV8GAnalysis",
+        "build_code_v8g",
+    )
+except NameError:
+    pass

@@ -1,0 +1,35 @@
+{
+  "baseline": {
+    "branch": "code-v8-wavetable-builder",
+    "commit": "030664cfec04c7d36a2726fbb83801486c80f503"
+  },
+  "boundaries": {
+    "factory_style": false,
+    "hardware_pass_claim": false,
+    "inventory_allocation": false,
+    "midi_transport": false,
+    "physical_wave_consolidation": false,
+    "sysex_generation": false,
+    "wctd_materialization": false
+  },
+  "canonical_registry": {
+    "registry_id": "w-mwxt-cdc-traceability",
+    "requirement_count": 206
+  },
+  "closure_id": "code-v8-g-priority-closure-v2",
+  "legacy_crosswalk_count": 21,
+  "requirements": {
+    "CDC-TRN-001": "implemented_pending_full_validation",
+    "CDC-TRN-002": "implemented_pending_full_validation",
+    "CDC-TRN-003": "implemented_pending_full_validation",
+    "CDC-TRN-004": "implemented_pending_full_validation",
+    "CDC-TRN-005": "implemented_pending_full_validation",
+    "CDC-TRN-006": "implemented_pending_full_validation",
+    "CDC-TRN-007": "implemented_pending_full_validation",
+    "CDC-W61-003": "implemented_pending_full_validation",
+    "CDC-W61-004": "implemented_pending_full_validation",
+    "CDC-W61-005": "implemented_pending_full_validation",
+    "CDC-W61-006": "implemented_pending_full_validation"
+  },
+  "schema_version": 2
+}
