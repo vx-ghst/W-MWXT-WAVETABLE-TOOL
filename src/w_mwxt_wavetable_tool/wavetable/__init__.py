@@ -465,3 +465,56 @@ try:
     )
 except NameError:
     pass
+
+from .consolidation import (
+    WAVETABLE_CONSOLIDATION_SCHEMA_VERSION,
+    ConsolidationStatus,
+    ConsolidationMatchKind,
+    FinalSlotClass,
+    ConsolidationPolicy,
+    DEFAULT_CONSOLIDATION_POLICY,
+    LogicalWavetable61,
+    PhysicalWaveMetricsSummary,
+    PhysicalWave,
+    PhysicalWaveSet,
+    LogicalToPhysicalMapping,
+    ConsolidationPairDecision,
+    FinalUsefulnessAnalysis,
+    ConsolidationReport,
+    WavetableConsolidationAnalysis,
+    consolidate_wavetable_build,
+)
+from .code_v8i import (
+    CODE_V8I_SCHEMA_VERSION,
+    CodeV8IStatus,
+    CodeV8IVariant,
+    CodeV8IAnalysis,
+    build_code_v8i,
+)
+
+try:
+    __all__ += (
+        "WAVETABLE_CONSOLIDATION_SCHEMA_VERSION",
+        "ConsolidationStatus",
+        "ConsolidationMatchKind",
+        "FinalSlotClass",
+        "ConsolidationPolicy",
+        "DEFAULT_CONSOLIDATION_POLICY",
+        "LogicalWavetable61",
+        "PhysicalWaveMetricsSummary",
+        "PhysicalWave",
+        "PhysicalWaveSet",
+        "LogicalToPhysicalMapping",
+        "ConsolidationPairDecision",
+        "FinalUsefulnessAnalysis",
+        "ConsolidationReport",
+        "WavetableConsolidationAnalysis",
+        "consolidate_wavetable_build",
+        "CODE_V8I_SCHEMA_VERSION",
+        "CodeV8IStatus",
+        "CodeV8IVariant",
+        "CodeV8IAnalysis",
+        "build_code_v8i",
+    )
+except NameError:
+    pass
