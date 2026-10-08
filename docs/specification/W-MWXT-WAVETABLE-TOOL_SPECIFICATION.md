@@ -4,7 +4,7 @@
 **Project:** W-MWXT-WAVETABLE-TOOL  
 **Owner:** R-MiT  
 **Document type:** public specification  
-**Document version:** 1.0  
+**Document version:** 1.1-public  
 **Target:** `v1.0.0-prototype`  
 **Primary platform:** Windows 11  
 **Target instrument:** Waldorf Microwave XT only
@@ -562,7 +562,7 @@ For each wave, the optimizer shall be able to test:
 - multiple half-wave candidates;
 - multiple reduction methods.
 
-It shall search for the transmitted 64-sample representation that produces the best reconstructed 128-sample wave under the confirmed XT User Wave rule.
+It shall search for the transmitted 64-sample representation that produces the best reconstructed 128-sample wave under the versioned XT User-WAVD reconstruction model. For User Waves transmitted by a `WAVD` message, the current software model is `full[n] = stored[n]` for `n=0..63` and `full[64+k] = -stored[63-k]` for `k=0..63`. This model remains subject to the CODE V8-K hardware gate and shall not be generalized to ROM waves, algorithmic waves, or every internal full-cycle capability described by the instrument documentation.
 
 Metrics shall include:
 
@@ -1026,6 +1026,28 @@ Provides justified starting recommendations for:
 - Aftertouch;
 - Mod Wheel.
 
+For a project created from an analyzed sample, the XT Patch Guide shall also derive a
+time-dependent **target wavetable-position trajectory** from the source evolution before
+choosing an XT modulator. It shall recommend, as justified by that trajectory:
+
+- a fixed/held Wave position when modulation is not warranted;
+- LFO-driven Wave-position modulation;
+- Wave Envelope-driven Wave-position modulation;
+- a combined LFO + Wave Envelope strategy when the two modulators explain distinct
+  components of the source evolution.
+
+The recommendation shall serialize the target trajectory reference, the selected strategy,
+the confirmed relevant XT parameters, confidence, and reasons. Relevant parameters include,
+where applicable and where their XT encoding is confirmed, Wave start/end or usable range,
+modulation amount, LFO rate/timing, direction or polarity, Wave Envelope amount, Wave
+Envelope timing/levels, and trigger/retrigger/loop behavior.
+
+The target trajectory shall remain independent of the chosen modulator. CODE V9 is
+responsible for recommendation and Sound/patch-guide generation; CODE V10 is responsible
+for previewing and hardware-calibrating LFO, Wave Envelope, and combined realizations
+against that target. No LFO or Wave Envelope recommendation may be emitted merely because
+the parameter exists; it must be supported by measured source/table behavior.
+
 ## 28.7 Additional reports
 
 - Build Manifest;
@@ -1092,7 +1114,20 @@ Typical complete package:
 
 This is one user-facing file, not one undocumented monolithic message.
 
-## 30.1 Confirmed address families
+## 30.1 Stage-specific package boundaries
+
+The complete prototype package above belongs to the Sound/export stage. Intermediate stages have narrower contracts:
+
+```text
+CODE V8-K product output : N WAVD + 1 WCTD
+CODE V9 complete output  : N WAVD + 1 WCTD + 1 SNDD
+```
+
+CODE V8-K may use private, temporary `WAVD + WCTD + SNDD` diagnostic fixtures during hardware validation. Such fixtures are not product exports, are restored after testing, and must not be committed with private slot content.
+
+Dense WCTD materialization is the default. A sparse representation may be built as a hardware-test candidate, but it remains disabled until real read-back, audio-comparison, and exact-restoration evidence pass. Repeated WCTD references are valid after logical-to-physical consolidation.
+
+## 30.2 Confirmed address families
 
 - 250 User Waves: `1000–1249`;
 - 61 consecutive User Waves allow a maximum starting location of `1189`;
@@ -1105,7 +1140,7 @@ This is one user-facing file, not one undocumented monolithic message.
 
 The WCTD format has no confirmed name field. A friendly wavetable name may exist in project metadata and reports only.
 
-## 30.2 Safety
+## 30.3 Safety
 
 Before generation or transmission, the software shall show:
 

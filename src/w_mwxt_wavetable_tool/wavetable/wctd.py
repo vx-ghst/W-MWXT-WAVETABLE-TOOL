@@ -315,8 +315,6 @@ def _user_references(values: Sequence[int] | None) -> tuple[int, ...] | None:
             raise WavetableContractError("user reference is outside uint16")
         if value == INTERPOLATED_WAVE_REFERENCE:
             raise WavetableContractError("resolved user references cannot use 0xFFFF")
-    if len(set(result)) != len(result):
-        raise WavetableContractError("resolved user references must be unique")
     return result
 
 

@@ -114,7 +114,6 @@ def test_wctd_models_are_frozen() -> None:
         (),
         tuple(range(60)),
         tuple(range(62)),
-        tuple([1000] * 61),
         tuple(range(60)) + (0xFFFF,),
         tuple(range(60)) + (-1,),
         tuple(range(60)) + (0x10000,),
@@ -124,6 +123,13 @@ def test_invalid_user_allocations_are_rejected(references) -> None:
     _, factory = _factory()
     with pytest.raises(WavetableContractError):
         materialize_wctd_reference_model(factory.primary_variant.build, references)
+
+
+def test_repeated_user_references_are_valid_after_consolidation() -> None:
+    _, factory = _factory()
+    model = materialize_wctd_reference_model(factory.primary_variant.build, tuple([1000] * 61))
+    assert model.binary_ready is True
+    assert model.reference_words[:61] == tuple([1000] * 61)
 
 
 def test_unknown_allocation_variant_is_rejected() -> None:

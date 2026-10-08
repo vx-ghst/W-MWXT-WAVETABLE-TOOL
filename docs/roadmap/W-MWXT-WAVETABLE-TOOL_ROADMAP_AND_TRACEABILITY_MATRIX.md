@@ -4,11 +4,11 @@
 **Project:** W-MWXT-WAVETABLE-TOOL  
 **Owner:** R-MiT  
 **Document type:** public development roadmap and traceability register  
-**Document version:** 2.5-public<br>
+**Document version:** 2.6-public<br>
 **Baseline:** CODE V7 / `v0.7.0`<br>
 **Target:** `v1.0.0-prototype`  
 **Primary platform:** Windows 11  
-**Status:** authoritative public execution order; CODE V8-0A through V8-0F closed, CODE V8-A through V8-E closed, CODE V8-F active
+**Status:** authoritative public execution order; CODE V8-0A through V8-0F and CODE V8-A through V8-J published; CODE V8-K software candidate validated locally with hardware campaign not started; CODE V8-L not started
 
 ---
 
@@ -712,50 +712,26 @@ next stage: CODE V8
 
 ---
 
-# 11. CODE V8 — 61-position generation, placement, and transitions
+# 11. CODE V8 — generic WavetableBuild, physical materialization, and hardware gate
 
 ## Objective
 
-Build a complete musically useful table plan.
+Build a deterministic 61-position logical wavetable, consolidate it to a safe
+physical representation, materialize the XT WCTD and an ordered offline SysEx
+package, then close the V8 hardware gate without opening a MIDI transport path.
 
-## Scope
+## Canonical invariants
 
-- always 61 user positions;
-- real/reconstructed mix;
-- structural-wave detection;
-- redundancy detection;
-- transition labeling;
-- essential-position report;
-- deterministic variants;
-- placement optimization;
-- locked positions;
-- chronology constraints;
-- waveform, spectral, harmonic, and perceptual interpolation;
-- adaptive step density;
-- continuity checks;
-- fundamental, level, and polarity protection;
-- Waldorf Factory-style profile;
-- positions 61–63 fixed behavior.
-
-## Modules
-
-```text
-wavetable/models.py
-wavetable/contracts.py
-wavetable/metrics.py
-wavetable/usefulness.py
-wavetable/deduplication.py
-wavetable/selection.py
-wavetable/ordering.py
-wavetable/placement.py
-wavetable/interpolation.py
-wavetable/continuity.py
-wavetable/variants.py
-wavetable/factory_style.py
-wavetable/wctd.py
-wavetable/builder.py
-wavetable/hardware_gate.py
-```
+- exactly 61 logical user positions are produced;
+- `1 <= N <= 61` physical User Waves may remain after consolidation;
+- repeated WCTD references are valid;
+- the User Wavetable destination is selected manually;
+- User Wave destinations are proposed conservatively;
+- `UNKNOWN` inventory entries are never selected automatically;
+- `SAFE_FREE` requires complete conflict-free coverage and a hardware-validated empty signature;
+- the CODE V8-K product package is `N WAVD + 1 WCTD`;
+- the complete `N WAVD + 1 WCTD + 1 SNDD` product contract remains CODE V9;
+- no CODE V8 stage opens a MIDI port or performs an automatic memory write.
 
 ## Controlled execution order
 
@@ -765,95 +741,89 @@ V8-B  usefulness, structure, breakpoints and deduplication
 V8-C  structural/keyframe selection for positions 1-61
 V8-D  ordering, placement, locks, chronology and variants
 V8-E  interpolation families and adaptive transition density
-V8-F  Factory Style, WCTD materialization and hardware gates
-V8-G  integration, compliance closure, documentation and release gate
+V8-F  initial Factory Style, WCTD models and hardware-gate contracts
+V8-G  normative reconciliation, adaptive transitions and continuity repair
+V8-H  Factory Style placement profiles and immutable lock handling
+V8-I  logical 61-position to physical N-wave consolidation
+V8-J  conservative inventory and safe destination proposal
+V8-K  WCTD materialization, N+1 offline package and real hardware campaign
+V8-L  aggregate closure, documentation, release gate and 0.8.0 decision
 ```
 
-## CODE V8-A completion gate
+## Published completion gates
+
+| Stage | Public status | Primary result |
+|---|---|---|
+| V8-A | `CLOSED` | generic contracts |
+| V8-B | `CLOSED` | usefulness, structure and deduplication |
+| V8-C | `CLOSED` | deterministic keyframe selection |
+| V8-D | `CLOSED` | ordering, placement, locks and variants |
+| V8-E | `CLOSED` | interpolation and transition density |
+| V8-F | `CLOSED` | initial Factory Style/WCTD/hardware contracts |
+| V8-G | `PUBLISHED` | normative reconciliation and transition repair |
+| V8-H | `PUBLISHED` | Factory Style placement |
+| V8-I | `PUBLISHED` | reversible `61 -> N` consolidation |
+| V8-J | `PUBLISHED` | inventory and conservative allocation |
+
+## CODE V8-K software candidate
+
+The software candidate consumes V8-I and V8-J outputs and provides:
+
+- dense WCTD materialization with 61 explicit user-position references;
+- a sparse WCTD candidate with explicit anchors and interpolation sentinels;
+- exact preservation of the three fixed tail references;
+- deterministic `N WAVD + 1 WCTD` offline packaging;
+- strict WAVD-before-WCTD ordering and complete reparse validation;
+- a file-backed 18-step hardware campaign contract;
+- a default `READY_FOR_HARDWARE` state with sparse mode disabled.
+
+The software candidate is not a hardware acceptance claim. The real campaign
+has not started at the time of this roadmap revision.
+
+## CODE V8-K hardware gate
+
+The active public protocol requires:
+
+- complete backups and non-broadcast Device ID;
+- explicit authorization of temporary destinations;
+- byte-identical read-back before every audio capture;
+- diagnostic test kits separated from the V8-K product package;
+- eight mandatory audio-analysis families, including User-WAVD `64 -> 128`;
+- one shared, hashed Ableton MIDI clip for dense/sparse comparison;
+- no invalid-reference transmission;
+- final Everything restoration byte-identical to the initial backup.
+
+Private dumps, read-backs, audio files, slot contents, local paths, and test-kit
+payloads remain outside Git. Public evidence contains only contracts, aggregate
+results, and non-sensitive hashes.
+
+## CODE V8-L release boundary
+
+V8-L remains not started. It may begin only after explicit authorization and a
+valid V8-K hardware result. No `0.8.0` tag, merge, or release acceptance is
+permitted before the V8-L aggregate gate.
+
+## Current gate
 
 ```text
-V8-A formally closed
-generic WavetableBuild contracts validated
-115 targeted tests passed
-1637 public tests passed, 4 private tests skipped
-1641 private tests passed
-12/12 implementation checks passed
-next stage: V8-B
+V8-G through V8-J: published on the draft branch
+V8-K software candidate: validated locally, not yet hardware-accepted
+V8-K hardware campaign: NOT_STARTED
+sparse WCTD: disabled
+V8-L: NOT_STARTED
 ```
 
-## CODE V8-B completion gate
+## Deferred mandatory modulation-reconstruction work
 
-```text
-V8-B formally closed
-usefulness, structure, breakpoint and deduplication analysis validated
-112 targeted tests passed
-1749 public tests passed, 4 private tests skipped
-1753 private tests passed
-12/12 implementation checks passed
-next stage: V8-C
-```
+The active V8-K hardware campaign shall not be altered to introduce musical LFO or Wave
+Envelope recommendation logic. After a valid V8-K hardware result, and while respecting the
+V8-L release boundary, the subsequent V9/V10 work shall implement source-derived XT
+modulation reconstruction.
 
-## CODE V8-C completion gate
-
-```text
-V8-C formally closed
-structural and essential keyframe selection validated
-82 targeted tests passed
-1831 public tests passed, 4 private tests skipped
-1835 private tests passed
-12/12 implementation checks passed
-next stage: V8-D
-```
-
-## CODE V8-D completion gate
-
-```text
-V8-D formally closed
-ordering, placement, locks, chronology and variants validated
-97 targeted tests passed
-1928 public tests passed, 4 private tests skipped
-1932 private tests passed
-12/12 implementation checks passed
-next stage: V8-E
-```
-
-## CODE V8-E completion gate
-
-```text
-V8-E formally closed
-interpolation families and adaptive transition density validated
-125 targeted tests passed
-2053 public tests passed, 4 private tests skipped
-2057 private tests passed
-12/12 implementation checks passed
-next stage: V8-F
-```
-
-## CODE V8-F active scope
-
-```text
-consume validated complete V8-E 61-slot builds and continuity evidence
-apply deterministic Waldorf Factory Style policies without mutating protected keyframes
-materialize canonical WCTD reference models for 61 user positions plus three fixed tail positions
-preserve exact slot provenance, safe ranges and fixed-tail reference semantics
-define executable hardware gates for known references, positions 60-63, scans and read-back
-report unresolved hardware-dependent behavior explicitly without guessing
-defer final integration, compliance audit, documentation and release to V8-G
-```
-
-V8-F is the active stage. It must consume immutable V8-A through V8-E evidence. It may apply controlled Factory Style policies, materialize canonical WCTD models, and define hardware-gate fixtures and evidence contracts. It must not claim hardware acceptance without actual read-back evidence, generate or transmit SysEx, open MIDI, or complete the final release.
-
-## Hardware gates
-
-- WCTD containing two known references;
-- intermediate XT positions;
-- positions 60, 61, 62, 63;
-- slow and fast scans;
-- read-back of the table.
-
-## Acceptance
-
-The stage shall output a valid 61-position plan, structural-wave count, essential positions, transition map, continuity report, and valid WCTD model.
+The implementation shall derive a target wavetable-position trajectory from the analyzed
+sample and then evaluate whether that trajectory is best realized on the XT by a fixed Wave
+position, an LFO, the Wave Envelope, or a justified combination of LFO + Wave Envelope.
+This is mandatory deferred work, not an optional enhancement.
 
 ---
 
@@ -870,6 +840,9 @@ Turn a table plan into a complete reproducible project and export bundle.
 - template or existing Sound source;
 - Wavetable selection;
 - essential oscillator and modulation parameters;
+- source-derived target wavetable-position trajectory;
+- justified modulation strategy: fixed Wave position, LFO, Wave Envelope, or LFO + Wave Envelope;
+- serializable confirmed XT modulation parameters, confidence, and reasons;
 - 16-character name;
 - A/B/Edit Buffer destination;
 - preserve untouched bytes;
@@ -935,6 +908,12 @@ project/migrations.py
 
 Saving, reopening, and rebuilding a project shall produce the same binary package and reports. A friendly table name may exist in project metadata but must not be written into WCTD.
 
+For sample-derived projects, the XT Patch Guide shall deterministically preserve the target
+wavetable-position trajectory, the selected fixed/LFO/Wave-Envelope/hybrid strategy, the
+confirmed XT parameter values, confidence, and explanation. Rebuilding the same project
+shall reproduce the same recommendation unless an explicitly versioned calibration profile
+changes.
+
 ---
 
 # 13. CODE V10 — Preview, simulator, and hardware calibration
@@ -951,6 +930,8 @@ Render and analyze the generated material before hardware transmission.
 - position scans;
 - LFO scans;
 - envelope scans;
+- source-derived target-trajectory replay;
+- comparison of fixed, LFO, Wave Envelope, and justified hybrid realizations;
 - start/end;
 - direction;
 - speed;
@@ -994,11 +975,16 @@ Test corpus:
 - Time Quantization 0–5;
 - Clipping modes;
 - phase settings;
-- repeated notes.
+- repeated notes;
+- matched captures for representative source-derived LFO and Wave Envelope trajectories.
 
 ## Acceptance
 
 The simulator shall be structurally exact where confirmed, audibly calibrated within documented conditions, and explicit about unresolved differences. Bit-exact DSP emulation shall not be claimed.
+
+For modulation reconstruction, V10 shall compare the rendered/captured Wave-position
+trajectory against the source-derived target and publish the conditions, error metrics, and
+limits under which an LFO, Wave Envelope, or combined recommendation is accepted.
 
 ---
 
@@ -1310,12 +1296,12 @@ The private matrix contains 206 atomic or tightly grouped requirements. The tabl
 | Auto Repair | `CDC-REP-001..003` | IN | V7, V10, V11, V13 | `repair/*`, reports, preview | one fixture per detector and policy | exact logged action; before/after available |
 | Bass/Sub specialization | `CDC-BASS-001..007` | IN | V5–V9 | profiles, metrics, continuity, reports | bass corpus, phase/subharmonic cases | fundamental/H2/H3 priority and separate Sub/Bass scores |
 | Musical profiles | `CDC-PROF-001..003` | IN | V5, V7, V8 | `profile_selector.py`, weights, factory style | one fixture per profile | profile-specific weights; Experimental preservation explicit |
-| Simulation and preview | `CDC-SIM-001..009` | IN / POST-PROTOTYPE | V10, V13, V15 | `preview/*`, `calibration/*` | golden rendering, artifact fixtures, XT captures | structurally exact where confirmed; calibrated limits published; no bit-exact claim |
+| Simulation and preview | `CDC-SIM-001..009` | IN / POST-PROTOTYPE | V10, V13, V15 | `preview/*`, `calibration/*` | golden rendering, artifact fixtures, target-trajectory LFO/Wave-Envelope/hybrid fixtures, XT captures | structurally exact where confirmed; calibrated limits published; source-derived modulation recommendation validated; no bit-exact claim |
 | Editor | `CDC-EDT-001..003` | IN | V11, V13 | `editor/*` | one test per command, full undo, variants | every command reversible; original state exactly restorable |
 | GUI | `CDC-GUI-001..005` | IN | V13 | views, controllers, view models | controller tests, snapshots, workflow test | all required views; no DSP in widgets |
 | CLI | `CDC-CLI-001..005` | IN | V12 | `cli/*`, `config/*` | end-to-end commands and config combinations | requested outputs only; deterministic reruns |
 | Batch | `CDC-BAT-001..005` | IN | V12 | `batch/*` | mixed folder, invalid file, partial error | isolated outputs and complete global report |
-| Reports | `CDC-RPT-001..005` | IN | V5, V9, V12, V14 | `reports/*`, explanations | schemas, snapshots, mode/profile cases | all report sections present and justified |
+| Reports | `CDC-RPT-001..005` | IN | V5, V9, V12, V14 | `reports/*`, explanations | schemas, snapshots, mode/profile cases, XT modulation-strategy cases | all report sections present and justified; Patch Guide states fixed/LFO/Wave-Envelope/hybrid choice, confirmed parameters, confidence, and reasons |
 | Exports | `CDC-EXP-001..005` | IN | V2, V9 | `exports/*`, `sysex/package.py`, project | each format, bundle snapshot, golden package | readable manifested files; WCTD has no invented name |
 | Quality | `CDC-QLT-001..011` | IN | all stages | config, logging, errors, tests, architecture | double-build hashes, architecture checks, CI | deterministic, modular, non-destructive, Windows-compatible |
 | Explicit exclusions | `CDC-EXC-001..005` | EXCLUDED | all audits | documentation, CLI/GUI audit | non-introduction tests | no other synth target, PPG export, Reese-only design, WaveEdit dependency, or opaque AI |

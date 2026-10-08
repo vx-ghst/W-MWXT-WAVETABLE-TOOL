@@ -551,3 +551,82 @@ try:
     )
 except NameError:
     pass
+
+from .materialization import (
+    WCTD_MATERIALIZATION_V8K_SCHEMA_VERSION,
+    WctdMode,
+    WctdMaterializationPolicy,
+    DEFAULT_WCTD_MATERIALIZATION_POLICY,
+    MaterializedWctd,
+    WctdMaterialization,
+    materialize_v8k_wctd,
+)
+from .package import (
+    WAVETABLE_PACKAGE_V8K_SCHEMA_VERSION,
+    WavetablePackageMessage,
+    WavetablePackageManifest,
+    WavetablePackage,
+    CompletePackageContract,
+    build_wavetable_package,
+    complete_package_contract,
+)
+from .hardware_gate import (
+    V8K_HARDWARE_GATE_SCHEMA_VERSION,
+    V8KHardwareGateStatus,
+    V8KHardwareStep,
+    V8K_REQUIRED_HARDWARE_STEPS,
+    V8KHardwareCampaignStepResult,
+    V8KHardwareArtifact,
+    V8KHardwareCampaignEvidence,
+    V8KHardwareGatePlan,
+    V8KHardwareGateReport,
+    load_v8k_hardware_campaign,
+    create_v8k_hardware_gate_plan,
+    evaluate_v8k_hardware_campaign,
+)
+from .code_v8k import (
+    CODE_V8K_SCHEMA_VERSION,
+    CodeV8KStatus,
+    CodeV8KPolicy,
+    DEFAULT_CODE_V8K_POLICY,
+    CodeV8KAnalysis,
+    build_code_v8k,
+)
+
+try:
+    __all__ += (
+        "WCTD_MATERIALIZATION_V8K_SCHEMA_VERSION",
+        "WctdMode",
+        "WctdMaterializationPolicy",
+        "DEFAULT_WCTD_MATERIALIZATION_POLICY",
+        "MaterializedWctd",
+        "WctdMaterialization",
+        "materialize_v8k_wctd",
+        "WAVETABLE_PACKAGE_V8K_SCHEMA_VERSION",
+        "WavetablePackageMessage",
+        "WavetablePackageManifest",
+        "WavetablePackage",
+        "CompletePackageContract",
+        "build_wavetable_package",
+        "complete_package_contract",
+        "V8K_HARDWARE_GATE_SCHEMA_VERSION",
+        "V8KHardwareGateStatus",
+        "V8KHardwareStep",
+        "V8K_REQUIRED_HARDWARE_STEPS",
+        "V8KHardwareCampaignStepResult",
+        "V8KHardwareArtifact",
+        "V8KHardwareCampaignEvidence",
+        "V8KHardwareGatePlan",
+        "V8KHardwareGateReport",
+        "load_v8k_hardware_campaign",
+        "create_v8k_hardware_gate_plan",
+        "evaluate_v8k_hardware_campaign",
+        "CODE_V8K_SCHEMA_VERSION",
+        "CodeV8KStatus",
+        "CodeV8KPolicy",
+        "DEFAULT_CODE_V8K_POLICY",
+        "CodeV8KAnalysis",
+        "build_code_v8k",
+    )
+except NameError:
+    pass

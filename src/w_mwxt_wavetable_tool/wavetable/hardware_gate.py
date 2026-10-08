@@ -657,3 +657,505 @@ __all__ = [
     "default_hardware_gate_requirements",
     "evaluate_hardware_gates",
 ]
+
+# ---------------------------------------------------------------------------
+# CODE V8-K real-artifact hardware campaign contracts.
+# These additive contracts intentionally do not alter the historical V8-F API.
+# ---------------------------------------------------------------------------
+
+from pathlib import Path as _Path
+
+from .code_v8j import CodeV8JAnalysis, CodeV8JStatus
+from .package import WavetablePackage
+
+V8K_HARDWARE_GATE_SCHEMA_VERSION = 1
+
+
+class V8KHardwareGateStatus(str, Enum):
+    PENDING = "pending"
+    PASS = "pass"
+    FAIL = "fail"
+
+
+class V8KHardwareStep(str, Enum):
+    BACKUP_EVERYTHING = "backup_everything"
+    BACKUP_ALL_WAVETABLES_WAVES = "backup_all_wavetables_waves"
+    BACKUP_GLOBAL = "backup_global"
+    INVENTORY_AND_EMPTY_SIGNATURE = "inventory_and_empty_signature"
+    RESERVE_DESTINATIONS = "reserve_destinations"
+    INSTALL_KNOWN_WAVES = "install_known_waves"
+    INSTALL_DENSE_WCTD = "install_dense_wctd"
+    INSTALL_SPARSE_WCTD = "install_sparse_wctd"
+    EXACT_REDUMP = "exact_redump"
+    INTERPOLATION_50_50 = "interpolation_50_50"
+    INTERPOLATION_2_3_1_3 = "interpolation_2_3_1_3"
+    BOUNDARIES_59_60_61_62_63 = "boundaries_59_60_61_62_63"
+    INVALID_REFERENCES_SAFE_PROTOCOL = "invalid_references_safe_protocol"
+    SLOW_SWEEP = "slow_sweep"
+    FAST_SWEEP = "fast_sweep"
+    ROUND_TRIP_SWEEP = "round_trip_sweep"
+    DENSE_SPARSE_COMPARISON = "dense_sparse_comparison"
+    EXACT_RESTORE_AND_FINAL_STATE = "exact_restore_and_final_state"
+
+
+V8K_REQUIRED_HARDWARE_STEPS = tuple(V8KHardwareStep)
+
+
+@dataclass(frozen=True, slots=True)
+class V8KHardwareCampaignStepResult:
+    step: V8KHardwareStep
+    passed: bool
+    evidence_paths: tuple[str, ...]
+    reason: str
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.step, V8KHardwareStep):
+            raise WavetableContractError("step must be V8KHardwareStep")
+        if not isinstance(self.passed, bool):
+            raise WavetableContractError("passed must be boolean")
+        paths = tuple(self.evidence_paths)
+        object.__setattr__(self, "evidence_paths", paths)
+        if not paths or any(not isinstance(item, str) or not item or item.startswith(("/", "\\")) or ".." in _Path(item).parts for item in paths):
+            raise WavetableContractError("hardware step evidence paths must be safe non-empty relative paths")
+        if len(set(paths)) != len(paths):
+            raise WavetableContractError("hardware step evidence paths must be unique")
+        _normalized(self.reason, name="reason")
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "step": self.step.value,
+            "passed": self.passed,
+            "evidence_paths": list(self.evidence_paths),
+            "reason": self.reason,
+        }
+
+
+@dataclass(frozen=True, slots=True)
+class V8KHardwareArtifact:
+    relative_path: str
+    sha256: str
+    byte_length: int
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.relative_path, str) or not self.relative_path or self.relative_path.startswith(("/", "\\")) or ".." in _Path(self.relative_path).parts:
+            raise WavetableContractError("artifact relative_path must be safe and relative")
+        _sha256(self.sha256, name="artifact.sha256")
+        if isinstance(self.byte_length, bool) or not isinstance(self.byte_length, int) or self.byte_length <= 0:
+            raise WavetableContractError("artifact byte_length must be positive")
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "relative_path": self.relative_path,
+            "sha256": self.sha256,
+            "byte_length": self.byte_length,
+        }
+
+
+@dataclass(frozen=True, slots=True)
+class V8KHardwareCampaignEvidence:
+    schema_version: int
+    campaign_id: str
+    device_model: str
+    os_version: str
+    dense_package_sha256: str
+    sparse_package_sha256: str
+    inventory_sha256: str
+    empty_signature_sha256: str | None
+    manifest_sha256: str
+    artifacts: tuple[V8KHardwareArtifact, ...]
+    steps: tuple[V8KHardwareCampaignStepResult, ...]
+    verified_from_files: bool
+    reason: str
+
+    def __post_init__(self) -> None:
+        if self.schema_version != V8K_HARDWARE_GATE_SCHEMA_VERSION:
+            raise WavetableContractError("Unsupported V8-K hardware evidence schema version")
+        for name in ("campaign_id", "device_model", "os_version", "reason"):
+            _normalized(getattr(self, name), name=name)
+        for name in ("dense_package_sha256", "sparse_package_sha256", "inventory_sha256", "manifest_sha256"):
+            _sha256(getattr(self, name), name=name)
+        if self.empty_signature_sha256 is not None:
+            _sha256(self.empty_signature_sha256, name="empty_signature_sha256")
+        artifacts = tuple(self.artifacts)
+        steps = tuple(self.steps)
+        object.__setattr__(self, "artifacts", artifacts)
+        object.__setattr__(self, "steps", steps)
+        if not artifacts or any(not isinstance(item, V8KHardwareArtifact) for item in artifacts):
+            raise WavetableContractError("hardware evidence requires verified artifacts")
+        if len({item.relative_path for item in artifacts}) != len(artifacts):
+            raise WavetableContractError("hardware artifact paths must be unique")
+        if tuple(item.step for item in steps) != V8K_REQUIRED_HARDWARE_STEPS:
+            raise WavetableContractError("hardware evidence must contain all 18 steps in canonical order")
+        artifact_paths = {item.relative_path for item in artifacts}
+        if any(path not in artifact_paths for step in steps for path in step.evidence_paths):
+            raise WavetableContractError("hardware step references an unverified artifact")
+        if not isinstance(self.verified_from_files, bool) or not self.verified_from_files:
+            raise WavetableContractError("hardware evidence must be loaded and verified from real files")
+
+    @property
+    def all_steps_passed(self) -> bool:
+        return all(item.passed for item in self.steps)
+
+    def _content_dict(self) -> dict[str, object]:
+        return {
+            "schema_version": self.schema_version,
+            "campaign_id": self.campaign_id,
+            "device_model": self.device_model,
+            "os_version": self.os_version,
+            "dense_package_sha256": self.dense_package_sha256,
+            "sparse_package_sha256": self.sparse_package_sha256,
+            "inventory_sha256": self.inventory_sha256,
+            "empty_signature_sha256": self.empty_signature_sha256,
+            "manifest_sha256": self.manifest_sha256,
+            "artifacts": [item.to_dict() for item in self.artifacts],
+            "steps": [item.to_dict() for item in self.steps],
+            "all_steps_passed": self.all_steps_passed,
+            "verified_from_files": self.verified_from_files,
+            "reason": self.reason,
+        }
+
+    @property
+    def analysis_sha256(self) -> str:
+        return _canonical_hash(self._content_dict())
+
+    def to_dict(self) -> dict[str, object]:
+        result = self._content_dict()
+        result["analysis_sha256"] = self.analysis_sha256
+        return result
+
+
+@dataclass(frozen=True, slots=True)
+class V8KHardwareGatePlan:
+    schema_version: int
+    dense_package_sha256: str
+    sparse_package_sha256: str
+    inventory_sha256: str
+    empty_signature_sha256: str | None
+    required_steps: tuple[V8KHardwareStep, ...]
+    reason: str
+
+    def __post_init__(self) -> None:
+        if self.schema_version != V8K_HARDWARE_GATE_SCHEMA_VERSION:
+            raise WavetableContractError("Unsupported V8-K hardware plan schema version")
+        for name in ("dense_package_sha256", "sparse_package_sha256", "inventory_sha256"):
+            _sha256(getattr(self, name), name=name)
+        if self.empty_signature_sha256 is not None:
+            _sha256(self.empty_signature_sha256, name="empty_signature_sha256")
+        steps = tuple(self.required_steps)
+        object.__setattr__(self, "required_steps", steps)
+        if steps != V8K_REQUIRED_HARDWARE_STEPS:
+            raise WavetableContractError("V8-K plan requires the canonical 18-step campaign")
+        _normalized(self.reason, name="reason")
+
+    def _content_dict(self) -> dict[str, object]:
+        return {
+            "schema_version": self.schema_version,
+            "dense_package_sha256": self.dense_package_sha256,
+            "sparse_package_sha256": self.sparse_package_sha256,
+            "inventory_sha256": self.inventory_sha256,
+            "empty_signature_sha256": self.empty_signature_sha256,
+            "required_steps": [item.value for item in self.required_steps],
+            "hardware_evidence_required": True,
+            "synthetic_passing_evidence_accepted": False,
+            "reason": self.reason,
+        }
+
+    @property
+    def analysis_sha256(self) -> str:
+        return _canonical_hash(self._content_dict())
+
+    def to_dict(self) -> dict[str, object]:
+        result = self._content_dict()
+        result["analysis_sha256"] = self.analysis_sha256
+        return result
+
+
+@dataclass(frozen=True, slots=True)
+class V8KHardwareGateReport:
+    schema_version: int
+    status: V8KHardwareGateStatus
+    plan_sha256: str
+    evidence_sha256: str | None
+    passed_steps: tuple[V8KHardwareStep, ...]
+    failed_steps: tuple[V8KHardwareStep, ...]
+    blockers: tuple[str, ...]
+    warnings: tuple[str, ...]
+    sparse_enabled: bool
+    restore_exact_pass: bool
+    v8_scope_status: str
+    reason: str
+
+    def __post_init__(self) -> None:
+        if self.schema_version != V8K_HARDWARE_GATE_SCHEMA_VERSION:
+            raise WavetableContractError("Unsupported V8-K hardware report schema version")
+        if not isinstance(self.status, V8KHardwareGateStatus):
+            raise WavetableContractError("status must be V8KHardwareGateStatus")
+        _sha256(self.plan_sha256, name="plan_sha256")
+        if self.evidence_sha256 is not None:
+            _sha256(self.evidence_sha256, name="evidence_sha256")
+        passed = tuple(self.passed_steps)
+        failed = tuple(self.failed_steps)
+        object.__setattr__(self, "passed_steps", passed)
+        object.__setattr__(self, "failed_steps", failed)
+        if len(set(passed + failed)) != len(passed) + len(failed):
+            raise WavetableContractError("hardware report step sets must not overlap")
+        if any(not isinstance(item, V8KHardwareStep) for item in passed + failed):
+            raise WavetableContractError("hardware report steps must be V8KHardwareStep")
+        object.__setattr__(self, "blockers", _entries(self.blockers, name="blockers"))
+        object.__setattr__(self, "warnings", _entries(self.warnings, name="warnings"))
+        for name in ("sparse_enabled", "restore_exact_pass"):
+            if not isinstance(getattr(self, name), bool):
+                raise WavetableContractError(f"{name} must be boolean")
+        if self.status is V8KHardwareGateStatus.PASS:
+            if self.blockers or failed or passed != V8K_REQUIRED_HARDWARE_STEPS:
+                raise WavetableContractError("passing V8-K report requires all 18 steps and no blockers")
+            if not self.sparse_enabled or not self.restore_exact_pass:
+                raise WavetableContractError("passing V8-K report requires sparse enablement and exact restore")
+            if self.v8_scope_status != "V8_SCOPE_PASS_V10_OPEN":
+                raise WavetableContractError("passing V8-K report requires V8_SCOPE_PASS_V10_OPEN")
+        elif self.status is V8KHardwareGateStatus.PENDING:
+            if self.evidence_sha256 is not None or passed or failed or self.sparse_enabled or self.restore_exact_pass:
+                raise WavetableContractError("pending V8-K report cannot claim evidence or passed gates")
+        else:
+            if not self.blockers or not failed or self.sparse_enabled:
+                raise WavetableContractError("failed V8-K report requires blockers and failed steps")
+        _normalized(self.v8_scope_status, name="v8_scope_status")
+        _normalized(self.reason, name="reason")
+
+    def _content_dict(self) -> dict[str, object]:
+        return {
+            "schema_version": self.schema_version,
+            "status": self.status.value,
+            "plan_sha256": self.plan_sha256,
+            "evidence_sha256": self.evidence_sha256,
+            "passed_steps": [item.value for item in self.passed_steps],
+            "failed_steps": [item.value for item in self.failed_steps],
+            "blockers": list(self.blockers),
+            "warnings": list(self.warnings),
+            "sparse_enabled": self.sparse_enabled,
+            "restore_exact_pass": self.restore_exact_pass,
+            "v8_scope_status": self.v8_scope_status,
+            "boundaries": {
+                "real_artifact_campaign_required": True,
+                "claims_v10_calibration_complete": False,
+                "opens_midi_port": False,
+                "transmits_midi": False,
+                "writes_memory": False,
+            },
+            "reason": self.reason,
+        }
+
+    @property
+    def analysis_sha256(self) -> str:
+        return _canonical_hash(self._content_dict())
+
+    def to_dict(self) -> dict[str, object]:
+        result = self._content_dict()
+        result["analysis_sha256"] = self.analysis_sha256
+        return result
+
+
+def load_v8k_hardware_campaign(directory: str | _Path) -> V8KHardwareCampaignEvidence:
+    """Load a V8-K campaign only after verifying every referenced artifact file.
+
+    The directory must contain ``campaign.json`` and all files listed in its
+    ``artifacts`` array.  The loader hashes the actual bytes; an in-memory
+    synthetic ``passed=True`` object is not accepted by the V8-K gate.
+    """
+
+    root = _Path(directory)
+    manifest_path = root / "campaign.json"
+    try:
+        manifest_bytes = manifest_path.read_bytes()
+        payload = json.loads(manifest_bytes.decode("utf-8-sig"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise WavetableContractError(f"Unable to load V8-K hardware campaign: {exc}") from exc
+    if not isinstance(payload, Mapping):
+        raise WavetableContractError("campaign.json must contain an object")
+    if int(payload.get("schema_version", 0)) != V8K_HARDWARE_GATE_SCHEMA_VERSION:
+        raise WavetableContractError("Unsupported campaign.json schema version")
+
+    artifacts_payload = payload.get("artifacts")
+    if not isinstance(artifacts_payload, list) or not artifacts_payload:
+        raise WavetableContractError("campaign.json requires a non-empty artifacts list")
+    artifacts: list[V8KHardwareArtifact] = []
+    for item in artifacts_payload:
+        if not isinstance(item, Mapping):
+            raise WavetableContractError("campaign artifact must be an object")
+        relative = str(item.get("path", ""))
+        expected = str(item.get("sha256", ""))
+        if not relative or relative.startswith(("/", "\\")) or ".." in _Path(relative).parts:
+            raise WavetableContractError("campaign artifact path must be safe and relative")
+        _sha256(expected, name="campaign artifact sha256")
+        path = root / relative
+        try:
+            data = path.read_bytes()
+        except OSError as exc:
+            raise WavetableContractError(f"Unable to read campaign artifact {relative}: {exc}") from exc
+        actual = sha256(data).hexdigest()
+        if actual != expected:
+            raise WavetableContractError(f"Campaign artifact hash mismatch for {relative}")
+        artifacts.append(V8KHardwareArtifact(relative, actual, len(data)))
+
+    steps_payload = payload.get("steps")
+    if not isinstance(steps_payload, list):
+        raise WavetableContractError("campaign.json requires a steps list")
+    by_step: dict[V8KHardwareStep, V8KHardwareCampaignStepResult] = {}
+    for item in steps_payload:
+        if not isinstance(item, Mapping):
+            raise WavetableContractError("campaign step must be an object")
+        try:
+            step = V8KHardwareStep(str(item.get("step", "")))
+        except ValueError as exc:
+            raise WavetableContractError(f"Unknown V8-K campaign step: {item.get('step')}") from exc
+        if step in by_step:
+            raise WavetableContractError("campaign steps must be unique")
+        evidence_paths = item.get("evidence_paths")
+        if not isinstance(evidence_paths, list):
+            raise WavetableContractError("campaign step evidence_paths must be a list")
+        passed = item.get("passed")
+        if not isinstance(passed, bool):
+            raise WavetableContractError("campaign step passed must be boolean")
+        by_step[step] = V8KHardwareCampaignStepResult(
+            step=step,
+            passed=passed,
+            evidence_paths=tuple(str(value) for value in evidence_paths),
+            reason=str(item.get("reason", "")),
+        )
+    if set(by_step) != set(V8K_REQUIRED_HARDWARE_STEPS):
+        missing = sorted(item.value for item in set(V8K_REQUIRED_HARDWARE_STEPS) - set(by_step))
+        extra = sorted(item.value for item in set(by_step) - set(V8K_REQUIRED_HARDWARE_STEPS))
+        raise WavetableContractError(f"campaign steps mismatch; missing={missing}, extra={extra}")
+
+    empty_value = payload.get("empty_signature_sha256")
+    empty_signature = None if empty_value is None else str(empty_value)
+    return V8KHardwareCampaignEvidence(
+        schema_version=V8K_HARDWARE_GATE_SCHEMA_VERSION,
+        campaign_id=str(payload.get("campaign_id", "")),
+        device_model=str(payload.get("device_model", "")),
+        os_version=str(payload.get("os_version", "")),
+        dense_package_sha256=str(payload.get("dense_package_sha256", "")),
+        sparse_package_sha256=str(payload.get("sparse_package_sha256", "")),
+        inventory_sha256=str(payload.get("inventory_sha256", "")),
+        empty_signature_sha256=empty_signature,
+        manifest_sha256=sha256(manifest_bytes).hexdigest(),
+        artifacts=tuple(sorted(artifacts, key=lambda item: item.relative_path)),
+        steps=tuple(by_step[item] for item in V8K_REQUIRED_HARDWARE_STEPS),
+        verified_from_files=True,
+        reason=str(payload.get("reason", "")),
+    )
+
+
+def create_v8k_hardware_gate_plan(
+    dense_package: WavetablePackage,
+    sparse_package: WavetablePackage,
+    v8j_analysis: CodeV8JAnalysis,
+) -> V8KHardwareGatePlan:
+    if not isinstance(dense_package, WavetablePackage) or not isinstance(sparse_package, WavetablePackage):
+        raise WavetableContractError("V8-K hardware plan requires dense and sparse WavetablePackage values")
+    if not isinstance(v8j_analysis, CodeV8JAnalysis) or v8j_analysis.status is not CodeV8JStatus.COMPLETE:
+        raise WavetableContractError("V8-K hardware plan requires complete V8-J analysis")
+    if v8j_analysis.inventory is None:
+        raise WavetableContractError("V8-J analysis lacks inventory")
+    empty_signature_sha = (
+        None
+        if v8j_analysis.inventory.empty_wave_signature is None
+        else v8j_analysis.inventory.empty_wave_signature.hardware_evidence_sha256
+    )
+    return V8KHardwareGatePlan(
+        schema_version=V8K_HARDWARE_GATE_SCHEMA_VERSION,
+        dense_package_sha256=dense_package.sha256,
+        sparse_package_sha256=sparse_package.sha256,
+        inventory_sha256=v8j_analysis.inventory.analysis_sha256,
+        empty_signature_sha256=empty_signature_sha,
+        required_steps=V8K_REQUIRED_HARDWARE_STEPS,
+        reason="V8-K requires the canonical 18-step real-artifact campaign before enabling sparse WCTD or claiming hardware acceptance.",
+    )
+
+
+def evaluate_v8k_hardware_campaign(
+    plan: V8KHardwareGatePlan,
+    evidence: V8KHardwareCampaignEvidence | None = None,
+) -> V8KHardwareGateReport:
+    if not isinstance(plan, V8KHardwareGatePlan):
+        raise WavetableContractError("plan must be V8KHardwareGatePlan")
+    if evidence is None:
+        return V8KHardwareGateReport(
+            schema_version=V8K_HARDWARE_GATE_SCHEMA_VERSION,
+            status=V8KHardwareGateStatus.PENDING,
+            plan_sha256=plan.analysis_sha256,
+            evidence_sha256=None,
+            passed_steps=(),
+            failed_steps=(),
+            blockers=(),
+            warnings=("Real V8-K hardware campaign is not mounted; dense remains the only enabled mode.",),
+            sparse_enabled=False,
+            restore_exact_pass=False,
+            v8_scope_status="PENDING_REAL_HARDWARE",
+            reason="V8-K software materialization is ready, but no hardware acceptance is claimed.",
+        )
+    if not isinstance(evidence, V8KHardwareCampaignEvidence) or not evidence.verified_from_files:
+        raise WavetableContractError("V8-K accepts only evidence verified from artifact files")
+
+    blockers: list[str] = []
+    if evidence.dense_package_sha256 != plan.dense_package_sha256:
+        blockers.append("Dense package SHA-256 does not match the hardware plan.")
+    if evidence.sparse_package_sha256 != plan.sparse_package_sha256:
+        blockers.append("Sparse package SHA-256 does not match the hardware plan.")
+    if evidence.inventory_sha256 != plan.inventory_sha256:
+        blockers.append("Inventory SHA-256 does not match the hardware plan.")
+    if evidence.empty_signature_sha256 != plan.empty_signature_sha256:
+        blockers.append("Validated empty-wave signature does not match the hardware plan.")
+    failed = tuple(item.step for item in evidence.steps if not item.passed)
+    if failed:
+        blockers.extend(f"Hardware step failed: {item.value}" for item in failed)
+    passed = tuple(item.step for item in evidence.steps if item.passed)
+    restore_pass = V8KHardwareStep.EXACT_RESTORE_AND_FINAL_STATE in passed
+
+    if blockers:
+        reported_failed = failed or (V8KHardwareStep.EXACT_REDUMP,)
+        reported_passed = tuple(item for item in passed if item not in reported_failed)
+        return V8KHardwareGateReport(
+            schema_version=V8K_HARDWARE_GATE_SCHEMA_VERSION,
+            status=V8KHardwareGateStatus.FAIL,
+            plan_sha256=plan.analysis_sha256,
+            evidence_sha256=evidence.analysis_sha256,
+            passed_steps=reported_passed,
+            failed_steps=reported_failed,
+            blockers=tuple(dict.fromkeys(blockers)),
+            warnings=(),
+            sparse_enabled=False,
+            restore_exact_pass=restore_pass,
+            v8_scope_status="HARDWARE_CAMPAIGN_FAILED",
+            reason="V8-K hardware campaign failed or does not match the generated packages.",
+        )
+    return V8KHardwareGateReport(
+        schema_version=V8K_HARDWARE_GATE_SCHEMA_VERSION,
+        status=V8KHardwareGateStatus.PASS,
+        plan_sha256=plan.analysis_sha256,
+        evidence_sha256=evidence.analysis_sha256,
+        passed_steps=V8K_REQUIRED_HARDWARE_STEPS,
+        failed_steps=(),
+        blockers=(),
+        warnings=("V10 calibration and complete hardware emulation remain open.",),
+        sparse_enabled=True,
+        restore_exact_pass=True,
+        v8_scope_status="V8_SCOPE_PASS_V10_OPEN",
+        reason="All 18 real-artifact V8-K hardware steps passed, including exact restore and dense/sparse comparison.",
+    )
+
+
+__all__ += [
+    "V8K_HARDWARE_GATE_SCHEMA_VERSION",
+    "V8KHardwareGateStatus",
+    "V8KHardwareStep",
+    "V8K_REQUIRED_HARDWARE_STEPS",
+    "V8KHardwareCampaignStepResult",
+    "V8KHardwareArtifact",
+    "V8KHardwareCampaignEvidence",
+    "V8KHardwareGatePlan",
+    "V8KHardwareGateReport",
+    "load_v8k_hardware_campaign",
+    "create_v8k_hardware_gate_plan",
+    "evaluate_v8k_hardware_campaign",
+]
