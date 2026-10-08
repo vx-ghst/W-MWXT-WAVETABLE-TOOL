@@ -1,0 +1,51 @@
+{
+  "baseline": {
+    "branch": "code-v8-wavetable-builder",
+    "commit": "b6d445329bd49f412663f942f71feb20f477c0b0"
+  },
+  "boundaries": {
+    "physical_wave_consolidation": true,
+    "logical_position_count": 61,
+    "physical_wave_count_min": 1,
+    "physical_wave_count_max": 61,
+    "inventory_allocation": false,
+    "safe_free_inference": false,
+    "wctd_materialization": false,
+    "sysex_generation": false,
+    "midi_transport": false,
+    "v9_user_report_generated": false,
+    "hardware_pass_claim": false
+  },
+  "canonical_registry": {
+    "registry_id": "w-mwxt-cdc-traceability",
+    "requirement_count": 206
+  },
+  "closure_id": "code-v8-i-priority-closure-v4",
+  "predecessor": {
+    "closure_id": "code-v8-h-priority-closure-v3",
+    "sha256": "faafbe0048d03fb05898e4ccc37df9ffea72f730d3d48084c6aa4523dd9d0e90"
+  },
+  "requirements": {
+    "CDC-W61-002": "implemented_pending_full_validation",
+    "CDC-W61-007": "implemented_pending_full_validation",
+    "CDC-USE-001": "implemented_pending_full_validation",
+    "CDC-USE-002": "implemented_pending_full_validation",
+    "CDC-USE-003": "revalidated_pending_full_validation",
+    "CDC-USE-004": "prepared_for_v9"
+  },
+  "policy": {
+    "exact_xt_native_equality": "automatic_merge",
+    "near_duplicates": "opt_in_versioned_thresholds_and_non_degradation_gates",
+    "protected_positions": [
+      "locked",
+      "essential",
+      "breakpoint",
+      "structural",
+      "extreme"
+    ],
+    "polarity_equivalence": "diagnostic_only_by_default",
+    "logical_mapping": "reversible_61_to_n",
+    "consolidation_timing": "after_interpolation_and_optional_transition_shaping"
+  },
+  "schema_version": 4
+}

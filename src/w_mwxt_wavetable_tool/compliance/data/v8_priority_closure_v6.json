@@ -1,0 +1,51 @@
+{
+  "baseline": {
+    "branch": "code-v8-wavetable-builder",
+    "commit": "7d51e2a2f77afb682e2f3cace09fcca364b5dd17"
+  },
+  "boundaries": {
+    "allocation_proposal": true,
+    "complete_package_n_plus_2": false,
+    "dense_wctd_materialization": true,
+    "hardware_pass_claim": false,
+    "memory_write": false,
+    "midi_transport": false,
+    "offline_sysex_generation": true,
+    "safe_free_hardware_activation": false,
+    "sound_generation": false,
+    "sparse_wctd_candidate": true,
+    "sparse_wctd_hardware_activation": false,
+    "v8_l_started": false,
+    "wavetable_package_n_plus_1": true,
+    "wctd_materialization": true
+  },
+  "canonical_registry": {
+    "registry_id": "w-mwxt-cdc-traceability",
+    "requirement_count": 206
+  },
+  "closure_id": "code-v8-k-priority-closure-v6",
+  "policy": {
+    "complete_package_contract": "N WAVD + 1 WCTD + 1 SNDD deferred to V9",
+    "dense_mode": "default_and_61_explicit_user_positions",
+    "hardware_campaign": "18 ordered real-artifact steps including exact restore",
+    "hardware_evidence": "file_backed_hash_verified_only_no_synthetic_pass",
+    "package_order": "all WAVD then one WCTD",
+    "sparse_mode": "candidate_only_until_real_hardware_campaign_passes",
+    "wctd_logical_model": "64 uint16 references equals 128 bytes",
+    "wctd_wire_model": "256 nibbles and 265-byte SysEx message"
+  },
+  "predecessor": {
+    "closure_id": "code-v8-j-priority-closure-v5",
+    "sha256": "50bca8825e7213f5c467fbcf7145da1e8c960c879e300d5c0d12608d6afd0a34"
+  },
+  "requirements": {},
+  "schema_version": 6,
+  "software_gate": {
+    "cdc_hw_002": "pending_real_hardware_campaign",
+    "cdc_syx_002": "implemented_pending_full_validation",
+    "cdc_syx_005": "implemented_pending_full_validation",
+    "dense_package": "implemented_pending_full_validation",
+    "exact_restore": "pending_real_hardware_campaign",
+    "sparse_enablement": "blocked_pending_real_hardware_campaign"
+  }
+}

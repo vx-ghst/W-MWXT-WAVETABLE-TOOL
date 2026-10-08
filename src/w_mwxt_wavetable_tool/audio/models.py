@@ -21,7 +21,12 @@ class AudioContainerFormat(str, Enum):
 
 class MonoPolicy(str, Enum):
     AUTO = "auto"
+    SUM = "sum"
     AVERAGE = "average"
+    LEFT = "left"
+    RIGHT = "right"
+    MID = "mid"
+    BEST_PERIODICITY = "best_periodicity"
     FIRST_CHANNEL = "first_channel"
     DOMINANT_CHANNEL = "dominant_channel"
 
@@ -31,7 +36,13 @@ class MonoStrategy(str, Enum):
     IDENTICAL_CHANNELS = "identical_channels"
     SILENT_CHANNEL_REMOVED = "silent_channel_removed"
     ANTIPHASE_CHANNEL_SELECTED = "antiphase_channel_selected"
+    SUM = "sum"
     AVERAGE = "average"
+    LEFT = "left"
+    RIGHT = "right"
+    MID = "mid"
+    BEST_PERIODICITY = "best_periodicity"
+    AUTO_BEST_PERIODICITY = "auto_best_periodicity"
     FIRST_CHANNEL = "first_channel"
     DOMINANT_CHANNEL = "dominant_channel"
 
@@ -114,6 +125,49 @@ class MonoConversionReport:
     channel_rms: tuple[float, ...]
     stereo_correlation: float | None
     reason: str
+    selected_candidate: str | None = None
+    candidate_periodicity_scores: tuple[tuple[str, float], ...] = ()
+    periodicity_margin: float | None = None
+
+    def __post_init__(self) -> None:
+        if self.source_channels <= 0:
+            raise ValueError("source_channels must be positive")
+        if len(self.channel_rms) != self.source_channels:
+            raise ValueError("channel_rms must contain one value per source channel")
+        for index, value in enumerate(self.channel_rms):
+            checked = float(value)
+            if not np.isfinite(checked) or checked < 0.0:
+                raise ValueError(f"channel_rms[{index}] must be finite and non-negative")
+        if self.selected_channel is not None and not (
+            0 <= self.selected_channel < self.source_channels
+        ):
+            raise ValueError("selected_channel is outside the source channel range")
+        if self.stereo_correlation is not None:
+            correlation = float(self.stereo_correlation)
+            if not np.isfinite(correlation) or not -1.0 <= correlation <= 1.0:
+                raise ValueError("stereo_correlation must be finite and between -1 and 1")
+        if not self.reason or self.reason.strip() != self.reason:
+            raise ValueError("reason must be a non-empty normalized string")
+        candidate_names = tuple(name for name, _ in self.candidate_periodicity_scores)
+        if len(set(candidate_names)) != len(candidate_names):
+            raise ValueError("candidate periodicity score names must be unique")
+        for name, value in self.candidate_periodicity_scores:
+            if not name or name.strip() != name:
+                raise ValueError("candidate periodicity score names must be normalized")
+            score = float(value)
+            if not np.isfinite(score) or not 0.0 <= score <= 1.0:
+                raise ValueError("candidate periodicity scores must be finite ratios")
+        if self.candidate_periodicity_scores:
+            if self.selected_candidate not in candidate_names:
+                raise ValueError("selected_candidate must name a scored candidate")
+            if self.periodicity_margin is None:
+                raise ValueError("scored mono selection requires periodicity_margin")
+        elif self.selected_candidate is not None or self.periodicity_margin is not None:
+            raise ValueError("unscored mono selection cannot expose periodicity metadata")
+        if self.periodicity_margin is not None:
+            margin = float(self.periodicity_margin)
+            if not np.isfinite(margin) or not 0.0 <= margin <= 1.0:
+                raise ValueError("periodicity_margin must be a finite ratio")
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -124,6 +178,12 @@ class MonoConversionReport:
             "channel_rms": list(self.channel_rms),
             "stereo_correlation": self.stereo_correlation,
             "reason": self.reason,
+            "selected_candidate": self.selected_candidate,
+            "candidate_periodicity_scores": [
+                {"name": name, "periodicity_score": score}
+                for name, score in self.candidate_periodicity_scores
+            ],
+            "periodicity_margin": self.periodicity_margin,
         }
 
 

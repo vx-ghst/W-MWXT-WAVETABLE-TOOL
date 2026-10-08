@@ -14,6 +14,7 @@ from .models import (
     MonoStrategy,
 )
 from .mono import convert_to_mono
+from .mono_scoring import MonoCandidateScore, periodicity_score, score_mono_candidates, select_best_candidate
 from .preprocessing import normalize_float_samples
 
 __all__ = [
@@ -22,6 +23,7 @@ __all__ = [
     "AudioMetadata",
     "AudioSource",
     "InvalidSamplePolicy",
+    "MonoCandidateScore",
     "MonoConversionReport",
     "MonoPolicy",
     "MonoStrategy",
@@ -30,6 +32,9 @@ __all__ = [
     "fingerprint_file",
     "import_audio",
     "measure_mono",
+    "periodicity_score",
+    "score_mono_candidates",
+    "select_best_candidate",
     "normalize_float_samples",
     "stereo_correlation",
     "supported_extensions",
